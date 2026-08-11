@@ -1,12 +1,67 @@
+import { useEffect, useState } from "react";
+import API from "../api/axios";
+
 function DashboardCards() {
 
+    const [dashboard, setDashboard] = useState(null);
+
+    useEffect(() => {
+
+        const fetchDashboard = async () => {
+
+            try {
+
+                const token = localStorage.getItem("token");
+
+                const response = await API.get("/dashboard", {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                });
+
+                setDashboard(response.data.data);
+
+            } catch (error) {
+
+                console.error("Dashboard API Error:", error);
+
+            }
+
+        };
+
+        fetchDashboard();
+
+    }, []);
+
+    if (!dashboard) {
+        return <p>Loading Dashboard...</p>;
+    }
+
     const cards = [
-        { title: "Total Assets", value: 120 },
-        { title: "Assigned", value: 82 },
-        { title: "In Stock", value: 28 },
-        { title: "Repair", value: 5 },
-        { title: "Scrap", value: 3 },
-        { title: "Employees", value: 80 }
+        {
+            title: "Total Assets",
+            value: dashboard.total_assets
+        },
+        {
+            title: "Assigned",
+            value: dashboard.assigned_assets
+        },
+        {
+            title: "In Stock",
+            value: dashboard.in_stock
+        },
+        {
+            title: "Repair",
+            value: dashboard.repair_assets
+        },
+        {
+            title: "Scrap",
+            value: dashboard.scrap_assets
+        },
+        {
+            title: "Lost",
+            value: dashboard.lost_assets
+        }
     ];
 
     return (

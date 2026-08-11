@@ -1,6 +1,7 @@
 import Sidebar from "../components/Sidebar";
 import Navbar from "../components/Navbar";
 import DashboardCards from "../components/DashboardCards";
+import RecentActivity from "../components/RecentActivity";
 
 function Dashboard() {
 
@@ -30,6 +31,8 @@ function Dashboard() {
                 >
 
                     <DashboardCards />
+                    
+                    <RecentActivity />
 
                 </div>
 
