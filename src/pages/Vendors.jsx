@@ -3,27 +3,27 @@ import Sidebar from "../components/Sidebar";
 import Navbar from "../components/Navbar";
 import API from "../api/axios";
 
-function Employees() {
-    const [employees, setEmployees] = useState([]);
+function Vendors() {
+    const [vendors, setVendors] = useState([]);
     const [search, setSearch] = useState("");
     const [loading, setLoading] = useState(true);
 
-    const loadEmployees = async () => {
+    const loadVendors = async () => {
         try {
             setLoading(true);
 
-            const response = await API.get("/employees");
+            const response = await API.get("/vendors");
 
-            console.log("Employees API Response:", response.data);
+            console.log("Vendors API Response:", response.data);
 
-            setEmployees(response.data.data || []);
+            setVendors(response.data.data || []);
 
         } catch (error) {
             console.error(error);
 
             alert(
                 error.response?.data?.message ||
-                "Failed to load employees"
+                "Failed to load vendors"
             );
         } finally {
             setLoading(false);
@@ -31,19 +31,20 @@ function Employees() {
     };
 
     useEffect(() => {
-        loadEmployees();
+        loadVendors();
     }, []);
 
-    const filteredEmployees = employees.filter((employee) => {
+    const filteredVendors = vendors.filter((vendor) => {
         const text = `
-            ${employee.employee_id || ""}
-            ${employee.employee_code || ""}
-            ${employee.display_name || ""}
-            ${employee.official_email || ""}
-            ${employee.mobile_number || ""}
-            ${employee.department_name || ""}
-            ${employee.designation_name || ""}
-            ${employee.work_location || ""}
+            ${vendor.vendor_id || ""}
+            ${vendor.vendor_code || ""}
+            ${vendor.vendor_name || ""}
+            ${vendor.contact_person || ""}
+            ${vendor.email || ""}
+            ${vendor.phone || ""}
+            ${vendor.mobile_number || ""}
+            ${vendor.address || ""}
+            ${vendor.status || ""}
         `.toLowerCase();
 
         return text.includes(search.toLowerCase());
@@ -73,15 +74,15 @@ function Employees() {
                     >
                         <div>
                             <h1 style={{ margin: 0 }}>
-                                Employees
+                                Vendors
                             </h1>
 
                             <p>
-                                Manage company employees
+                                Manage asset vendors
                             </p>
                         </div>
 
-                        <button onClick={loadEmployees}>
+                        <button onClick={loadVendors}>
                             Refresh
                         </button>
                     </div>
@@ -89,7 +90,7 @@ function Employees() {
                     <div style={{ margin: "20px 0" }}>
                         <input
                             type="text"
-                            placeholder="Search employees..."
+                            placeholder="Search vendors..."
                             value={search}
                             onChange={(e) =>
                                 setSearch(e.target.value)
@@ -119,13 +120,11 @@ function Employees() {
                             <thead>
                                 <tr>
                                     <th>ID</th>
-                                    <th>Employee Code</th>
-                                    <th>Employee</th>
+                                    <th>Vendor Code</th>
+                                    <th>Vendor Name</th>
+                                    <th>Contact Person</th>
                                     <th>Email</th>
-                                    <th>Mobile</th>
-                                    <th>Department</th>
-                                    <th>Designation</th>
-                                    <th>Location</th>
+                                    <th>Phone</th>
                                     <th>Status</th>
                                 </tr>
                             </thead>
@@ -134,7 +133,7 @@ function Employees() {
                                 {loading ? (
                                     <tr>
                                         <td
-                                            colSpan="9"
+                                            colSpan="7"
                                             style={{
                                                 padding: "20px",
                                                 textAlign: "center"
@@ -143,81 +142,72 @@ function Employees() {
                                             Loading...
                                         </td>
                                     </tr>
-                                ) : filteredEmployees.length === 0 ? (
+                                ) : filteredVendors.length === 0 ? (
                                     <tr>
                                         <td
-                                            colSpan="9"
+                                            colSpan="7"
                                             style={{
                                                 padding: "20px",
                                                 textAlign: "center"
                                             }}
                                         >
-                                            No employees found
+                                            No vendors found
                                         </td>
                                     </tr>
                                 ) : (
-                                    filteredEmployees.map(
-                                        (employee) => (
+                                    filteredVendors.map(
+                                        (vendor) => (
                                             <tr
                                                 key={
-                                                    employee.employee_id
+                                                    vendor.vendor_id
                                                 }
                                             >
                                                 <td>
                                                     {
-                                                        employee.employee_id
+                                                        vendor.vendor_id
                                                     }
                                                 </td>
 
                                                 <td>
                                                     {
-                                                        employee.employee_code
-                                                    }
-                                                </td>
-
-                                                <td>
-                                                    {
-                                                        employee.display_name
-                                                    }
-                                                </td>
-
-                                                <td>
-                                                    {
-                                                        employee.official_email
-                                                    }
-                                                </td>
-
-                                                <td>
-                                                    {
-                                                        employee.mobile_number ||
+                                                        vendor.vendor_code ||
                                                         "-"
                                                     }
                                                 </td>
 
                                                 <td>
                                                     {
-                                                        employee.department_name ||
+                                                        vendor.vendor_name ||
                                                         "-"
                                                     }
                                                 </td>
 
                                                 <td>
                                                     {
-                                                        employee.designation_name ||
+                                                        vendor.contact_person ||
                                                         "-"
                                                     }
                                                 </td>
 
                                                 <td>
                                                     {
-                                                        employee.work_location ||
+                                                        vendor.email ||
                                                         "-"
                                                     }
                                                 </td>
 
                                                 <td>
                                                     {
-                                                        employee.status
+                                                        vendor.phone ||
+                                                        vendor.mobile_number ||
+                                                        "-"
+                                                    }
+                                                </td>
+
+                                                <td>
+                                                    {
+                                                        vendor.status ||
+                                                        "-"
                                                     }
                                                 </td>
                                             </tr>
@@ -234,4 +224,4 @@ function Employees() {
     );
 }
 
-export default Employees;
+export default Vendors;
