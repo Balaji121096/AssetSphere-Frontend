@@ -1,49 +1,156 @@
+import { NavLink, useNavigate } from "react-router-dom";
 import {
-  FaHome,
-  FaDesktop,
-  FaLaptop,
-  FaUsers,
-  FaBuilding,
-  FaChartBar,
-  FaCog,
-  FaSignOutAlt
+    FaTachometerAlt,
+    FaDesktop,
+    FaLaptop,
+    FaUsers,
+    FaBuilding,
+    FaChartBar,
+    FaCog,
+    FaSignOutAlt
 } from "react-icons/fa";
 
 function Sidebar() {
-  return (
-    <div
-      style={{
-        width: "240px",
-        height: "100vh",
-        background: "#1e293b",
-        color: "#fff",
-        padding: "20px",
-        boxSizing: "border-box"
-      }}
-    >
-      <h2>AssetSphere</h2>
+    const navigate = useNavigate();
 
-      <hr />
+    const handleLogout = () => {
+        localStorage.clear();
+        sessionStorage.clear();
 
-      <p><FaHome /> Dashboard</p>
+        navigate("/");
+    };
 
-      <p><FaDesktop /> Hardware</p>
+    const menuStyle = ({ isActive }) => ({
+        display: "flex",
+        alignItems: "center",
+        gap: "8px",
+        padding: "7px 10px",
+        color: isActive ? "#ffffff" : "#ffffff",
+        textDecoration: "none",
+        background: isActive ? "#334155" : "transparent",
+        borderRadius: "5px",
+        marginBottom: "2px",
+        fontSize: "14px"
+    });
 
-      <p><FaLaptop /> Software</p>
+    return (
+        <div
+            style={{
+                width: "180px",
+                minHeight: "100vh",
+                background: "#1e293b",
+                color: "#ffffff",
+                padding: "15px",
+                boxSizing: "border-box"
+            }}
+        >
 
-      <p><FaUsers /> Employees</p>
+            {/* Logo / Application Name */}
+            <div
+                style={{
+                    textAlign: "center",
+                    fontSize: "20px",
+                    fontWeight: "600",
+                    marginBottom: "15px",
+                    paddingBottom: "10px",
+                    borderBottom: "1px solid #ffffff"
+                }}
+            >
+                AssetSphere
+            </div>
 
-      <p><FaBuilding /> Vendors</p>
+            {/* Navigation */}
+            <nav>
 
-      <p><FaChartBar /> Reports</p>
+                <NavLink
+                    to="/dashboard"
+                    style={menuStyle}
+                >
+                    <FaTachometerAlt />
+                    Dashboard
+                </NavLink>
 
-      <p><FaCog /> Settings</p>
+                <NavLink
+                    to="/assets"
+                    style={menuStyle}
+                >
+                    <FaDesktop />
+                    Hardware
+                </NavLink>
 
-      <hr />
+                <NavLink
+                    to="/software"
+                    style={menuStyle}
+                >
+                    <FaLaptop />
+                    Software
+                </NavLink>
 
-      <p><FaSignOutAlt /> Logout</p>
-    </div>
-  );
+                <NavLink
+                    to="/employees"
+                    style={menuStyle}
+                >
+                    <FaUsers />
+                    Employees
+                </NavLink>
+
+                <NavLink
+                    to="/vendors"
+                    style={menuStyle}
+                >
+                    <FaBuilding />
+                    Vendors
+                </NavLink>
+
+                <NavLink
+                    to="/asset-history"
+                    style={menuStyle}
+                >
+                    <FaChartBar />
+                    Reports
+                </NavLink>
+
+                <NavLink
+                    to="/settings"
+                    style={menuStyle}
+                >
+                    <FaCog />
+                    Settings
+                </NavLink>
+
+            </nav>
+
+            {/* Logout */}
+            <div
+                style={{
+                    marginTop: "15px",
+                    paddingTop: "12px",
+                    borderTop: "1px solid #ffffff"
+                }}
+            >
+                <button
+                    onClick={handleLogout}
+                    style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "8px",
+                        width: "100%",
+                        padding: "7px 10px",
+                        border: "none",
+                        background: "transparent",
+                        color: "#ffffff",
+                        cursor: "pointer",
+                        fontSize: "14px",
+                        textAlign: "left"
+                    }}
+                >
+                    <FaSignOutAlt />
+                    Logout
+                </button>
+            </div>
+
+        </div>
+    );
 }
 
 export default Sidebar;
