@@ -8,6 +8,9 @@ import AssignAsset from "../pages/AssignAsset";
 import AssetHistory from "../pages/AssetHistory";
 import Employees from "../pages/Employees";
 import Vendors from "../pages/Vendors";
+import Software from "../pages/Software";
+import AddSoftware from "../pages/AddSoftware";
+import SoftwareEdit from "../pages/SoftwareEdit";
 
 import ProtectedRoute from "../components/ProtectedRoute";
 
@@ -87,6 +90,34 @@ function AppRoutes() {
                 element={
                     <ProtectedRoute>
                         <Vendors />
+                    </ProtectedRoute>
+                }
+            />
+
+            {/* Software */}
+            <Route
+                path="/software"
+                element={
+                    <ProtectedRoute>
+                        <Software />
+                    </ProtectedRoute>
+                }
+            />
+
+            <Route
+                path="/software/add"
+                element={
+                    <ProtectedRoute>
+                        <AddSoftware />
+                    </ProtectedRoute>
+                }
+            />
+
+            <Route
+                path="/software/edit/:id"
+                element={
+                    <ProtectedRoute>
+                        <SoftwareEdit />
                     </ProtectedRoute>
                 }
             />
