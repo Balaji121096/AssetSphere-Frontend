@@ -1,4 +1,5 @@
 import { NavLink, useNavigate } from "react-router-dom";
+
 import {
     FaTachometerAlt,
     FaDesktop,
@@ -7,33 +8,55 @@ import {
     FaBuilding,
     FaChartBar,
     FaCog,
-    FaSignOutAlt
+    FaSignOutAlt,
+    FaHistory,
+    FaShoppingCart
 } from "react-icons/fa";
 
+
 function Sidebar() {
+
     const navigate = useNavigate();
 
+
     const handleLogout = () => {
+
         localStorage.clear();
         sessionStorage.clear();
 
         navigate("/");
+
     };
 
+
     const menuStyle = ({ isActive }) => ({
+
         display: "flex",
         alignItems: "center",
         gap: "8px",
+
         padding: "7px 10px",
-        color: isActive ? "#ffffff" : "#ffffff",
+
+        color: "#ffffff",
+
         textDecoration: "none",
-        background: isActive ? "#334155" : "transparent",
+
+        background:
+            isActive
+                ? "#334155"
+                : "transparent",
+
         borderRadius: "5px",
+
         marginBottom: "2px",
+
         fontSize: "14px"
+
     });
 
+
     return (
+
         <div
             style={{
                 width: "180px",
@@ -45,7 +68,8 @@ function Sidebar() {
             }}
         >
 
-            {/* Logo / Application Name */}
+            {/* Application Name */}
+
             <div
                 style={{
                     textAlign: "center",
@@ -53,14 +77,19 @@ function Sidebar() {
                     fontWeight: "600",
                     marginBottom: "15px",
                     paddingBottom: "10px",
-                    borderBottom: "1px solid #ffffff"
+                    borderBottom:
+                        "1px solid #ffffff"
                 }}
             >
                 AssetSphere
             </div>
 
+
             {/* Navigation */}
+
             <nav>
+
+                {/* Dashboard */}
 
                 <NavLink
                     to="/dashboard"
@@ -70,6 +99,9 @@ function Sidebar() {
                     Dashboard
                 </NavLink>
 
+
+                {/* Hardware */}
+
                 <NavLink
                     to="/assets"
                     style={menuStyle}
@@ -77,6 +109,9 @@ function Sidebar() {
                     <FaDesktop />
                     Hardware
                 </NavLink>
+
+
+                {/* Software */}
 
                 <NavLink
                     to="/software"
@@ -86,6 +121,9 @@ function Sidebar() {
                     Software
                 </NavLink>
 
+
+                {/* Employees */}
+
                 <NavLink
                     to="/employees"
                     style={menuStyle}
@@ -93,6 +131,9 @@ function Sidebar() {
                     <FaUsers />
                     Employees
                 </NavLink>
+
+
+                {/* Vendors */}
 
                 <NavLink
                     to="/vendors"
@@ -102,13 +143,41 @@ function Sidebar() {
                     Vendors
                 </NavLink>
 
+
+                {/* Purchase Management */}
+
                 <NavLink
-                    to="/asset-history"
+                    to="/purchases"
+                    style={menuStyle}
+                >
+                    <FaShoppingCart />
+                    Purchases
+                </NavLink>
+
+
+                {/* Reports */}
+
+                <NavLink
+                    to="/reports"
                     style={menuStyle}
                 >
                     <FaChartBar />
                     Reports
                 </NavLink>
+
+
+                {/* Asset History */}
+
+                <NavLink
+                    to="/asset-history"
+                    style={menuStyle}
+                >
+                    <FaHistory />
+                    Asset History
+                </NavLink>
+
+
+                {/* Settings */}
 
                 <NavLink
                     to="/settings"
@@ -120,14 +189,18 @@ function Sidebar() {
 
             </nav>
 
+
             {/* Logout */}
+
             <div
                 style={{
                     marginTop: "15px",
                     paddingTop: "12px",
-                    borderTop: "1px solid #ffffff"
+                    borderTop:
+                        "1px solid #ffffff"
                 }}
             >
+
                 <button
                     onClick={handleLogout}
                     style={{
@@ -137,20 +210,28 @@ function Sidebar() {
                         width: "100%",
                         padding: "7px 10px",
                         border: "none",
-                        background: "transparent",
+                        background:
+                            "transparent",
                         color: "#ffffff",
                         cursor: "pointer",
                         fontSize: "14px",
                         textAlign: "left"
                     }}
                 >
+
                     <FaSignOutAlt />
+
                     Logout
+
                 </button>
+
             </div>
 
         </div>
+
     );
+
 }
+
 
 export default Sidebar;

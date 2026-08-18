@@ -2,29 +2,52 @@ import { Routes, Route } from "react-router-dom";
 
 import Login from "../pages/Login";
 import Dashboard from "../pages/Dashboard";
+
 import Assets from "../pages/Assets";
 import AddAsset from "../pages/AddAsset";
 import AssignAsset from "../pages/AssignAsset";
 import AssetHistory from "../pages/AssetHistory";
+
 import Employees from "../pages/Employees";
+
 import Vendors from "../pages/Vendors";
+import AddVendor from "../pages/AddVendor";
+import EditVendor from "../pages/EditVendor";
+import VendorDetails from "../pages/VendorDetails";
+import VendorDocuments from "../pages/VendorDocuments";
+
 import Software from "../pages/Software";
 import AddSoftware from "../pages/AddSoftware";
 import SoftwareEdit from "../pages/SoftwareEdit";
 
+import Reports from "../pages/Reports";
+
+import Purchase from "../pages/Purchase";
+import AddPurchase from "../pages/AddPurchase";
+
 import ProtectedRoute from "../components/ProtectedRoute";
 
+
 function AppRoutes() {
+
     return (
+
         <Routes>
 
-            {/* Login */}
+            {/* =====================================================
+                LOGIN
+            ===================================================== */}
+
             <Route
                 path="/"
                 element={<Login />}
             />
 
-            {/* Dashboard */}
+
+            {/* =====================================================
+                DASHBOARD
+            ===================================================== */}
+
             <Route
                 path="/dashboard"
                 element={
@@ -34,7 +57,11 @@ function AppRoutes() {
                 }
             />
 
-            {/* Hardware Assets */}
+
+            {/* =====================================================
+                HARDWARE ASSETS
+            ===================================================== */}
+
             <Route
                 path="/assets"
                 element={
@@ -44,7 +71,6 @@ function AppRoutes() {
                 }
             />
 
-            {/* Add Asset */}
             <Route
                 path="/assets/add"
                 element={
@@ -54,7 +80,6 @@ function AppRoutes() {
                 }
             />
 
-            {/* Assign Asset */}
             <Route
                 path="/assets/assign/:id"
                 element={
@@ -64,7 +89,6 @@ function AppRoutes() {
                 }
             />
 
-            {/* Asset History */}
             <Route
                 path="/asset-history"
                 element={
@@ -74,7 +98,11 @@ function AppRoutes() {
                 }
             />
 
-            {/* Employees */}
+
+            {/* =====================================================
+                EMPLOYEES
+            ===================================================== */}
+
             <Route
                 path="/employees"
                 element={
@@ -84,7 +112,13 @@ function AppRoutes() {
                 }
             />
 
-            {/* Vendors */}
+
+            {/* =====================================================
+                VENDORS
+            ===================================================== */}
+
+            {/* Vendor List */}
+
             <Route
                 path="/vendors"
                 element={
@@ -94,7 +128,59 @@ function AppRoutes() {
                 }
             />
 
-            {/* Software */}
+
+            {/* Add Vendor */}
+
+            <Route
+                path="/vendors/add"
+                element={
+                    <ProtectedRoute>
+                        <AddVendor />
+                    </ProtectedRoute>
+                }
+            />
+
+
+            {/* Edit Vendor */}
+
+            <Route
+                path="/vendors/edit/:id"
+                element={
+                    <ProtectedRoute>
+                        <EditVendor />
+                    </ProtectedRoute>
+                }
+            />
+
+
+            {/* Vendor Documents */}
+
+            <Route
+                path="/vendors/:id/documents"
+                element={
+                    <ProtectedRoute>
+                        <VendorDocuments />
+                    </ProtectedRoute>
+                }
+            />
+
+
+            {/* Vendor Details */}
+
+            <Route
+                path="/vendors/:id"
+                element={
+                    <ProtectedRoute>
+                        <VendorDetails />
+                    </ProtectedRoute>
+                }
+            />
+
+
+            {/* =====================================================
+                SOFTWARE
+            ===================================================== */}
+
             <Route
                 path="/software"
                 element={
@@ -122,8 +208,52 @@ function AppRoutes() {
                 }
             />
 
+
+            {/* =====================================================
+                REPORTS
+            ===================================================== */}
+
+            <Route
+                path="/reports"
+                element={
+                    <ProtectedRoute>
+                        <Reports />
+                    </ProtectedRoute>
+                }
+            />
+
+
+            {/* =====================================================
+                PURCHASES
+            ===================================================== */}
+
+            {/* Purchase List */}
+
+            <Route
+                path="/purchases"
+                element={
+                    <ProtectedRoute>
+                        <Purchase />
+                    </ProtectedRoute>
+                }
+            />
+
+
+            {/* Add Purchase */}
+
+            <Route
+                path="/purchases/add"
+                element={
+                    <ProtectedRoute>
+                        <AddPurchase />
+                    </ProtectedRoute>
+                }
+            />
+
         </Routes>
+
     );
+
 }
 
 export default AppRoutes;
