@@ -24,6 +24,7 @@ import Reports from "../pages/Reports";
 
 import Purchase from "../pages/Purchase";
 import AddPurchase from "../pages/AddPurchase";
+import EditPurchase from "../pages/EditPurchase";
 
 import ProtectedRoute from "../components/ProtectedRoute";
 
@@ -117,8 +118,6 @@ function AppRoutes() {
                 VENDORS
             ===================================================== */}
 
-            {/* Vendor List */}
-
             <Route
                 path="/vendors"
                 element={
@@ -127,9 +126,6 @@ function AppRoutes() {
                     </ProtectedRoute>
                 }
             />
-
-
-            {/* Add Vendor */}
 
             <Route
                 path="/vendors/add"
@@ -140,9 +136,6 @@ function AppRoutes() {
                 }
             />
 
-
-            {/* Edit Vendor */}
-
             <Route
                 path="/vendors/edit/:id"
                 element={
@@ -152,9 +145,6 @@ function AppRoutes() {
                 }
             />
 
-
-            {/* Vendor Documents */}
-
             <Route
                 path="/vendors/:id/documents"
                 element={
@@ -163,9 +153,6 @@ function AppRoutes() {
                     </ProtectedRoute>
                 }
             />
-
-
-            {/* Vendor Details */}
 
             <Route
                 path="/vendors/:id"
@@ -227,13 +214,13 @@ function AppRoutes() {
                 PURCHASES
             ===================================================== */}
 
-            {/* Purchase List */}
+            {/* Edit Purchase */}
 
             <Route
-                path="/purchases"
+                path="/purchases/edit/:id"
                 element={
                     <ProtectedRoute>
-                        <Purchase />
+                        <EditPurchase />
                     </ProtectedRoute>
                 }
             />
@@ -246,6 +233,18 @@ function AppRoutes() {
                 element={
                     <ProtectedRoute>
                         <AddPurchase />
+                    </ProtectedRoute>
+                }
+            />
+
+
+            {/* Purchase List */}
+
+            <Route
+                path="/purchases"
+                element={
+                    <ProtectedRoute>
+                        <Purchase />
                     </ProtectedRoute>
                 }
             />
