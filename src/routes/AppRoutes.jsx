@@ -9,6 +9,8 @@ import AssignAsset from "../pages/AssignAsset";
 import AssetHistory from "../pages/AssetHistory";
 
 import Employees from "../pages/Employees";
+import AddEmployee from "../pages/AddEmployee";
+import EditEmployee from "../pages/EditEmployee";
 
 import Vendors from "../pages/Vendors";
 import AddVendor from "../pages/AddVendor";
@@ -109,6 +111,28 @@ function AppRoutes() {
                 element={
                     <ProtectedRoute>
                         <Employees />
+                    </ProtectedRoute>
+                }
+            />
+
+            {/* ADD EMPLOYEE */}
+
+            <Route
+                path="/employees/add"
+                element={
+                    <ProtectedRoute>
+                        <AddEmployee />
+                    </ProtectedRoute>
+                }
+            />
+
+            {/* EDIT EMPLOYEE */}
+
+            <Route
+                path="/employees/edit/:id"
+                element={
+                    <ProtectedRoute>
+                        <EditEmployee />
                     </ProtectedRoute>
                 }
             />
@@ -214,7 +238,7 @@ function AppRoutes() {
                 PURCHASES
             ===================================================== */}
 
-            {/* Edit Purchase */}
+            {/* EDIT PURCHASE */}
 
             <Route
                 path="/purchases/edit/:id"
@@ -225,8 +249,7 @@ function AppRoutes() {
                 }
             />
 
-
-            {/* Add Purchase */}
+            {/* ADD PURCHASE */}
 
             <Route
                 path="/purchases/add"
@@ -237,8 +260,7 @@ function AppRoutes() {
                 }
             />
 
-
-            {/* Purchase List */}
+            {/* PURCHASE LIST */}
 
             <Route
                 path="/purchases"

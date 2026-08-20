@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import API from "../api/axios";
 
 function DashboardCards() {
 
+    const navigate = useNavigate();
+
     const [dashboard, setDashboard] = useState(null);
     const [expiryAlerts, setExpiryAlerts] = useState([]);
     const [loading, setLoading] = useState(true);
-
 
     const fetchDashboard = async () => {
 
@@ -18,22 +20,19 @@ function DashboardCards() {
 
         } catch (error) {
 
-            console.error(
-                "Dashboard API Error:",
-                error
-            );
+            console.error("Dashboard API Error:", error);
 
         }
 
     };
 
-
     const fetchExpiryAlerts = async () => {
 
         try {
 
-            const response =
-                await API.get("/software/expiry-alerts");
+            const response = await API.get(
+                "/software/expiry-alerts"
+            );
 
             setExpiryAlerts(
                 response.data.data || []
@@ -49,7 +48,6 @@ function DashboardCards() {
         }
 
     };
-
 
     const loadDashboard = async () => {
 
@@ -70,73 +68,74 @@ function DashboardCards() {
 
     };
 
-
     useEffect(() => {
 
         loadDashboard();
 
     }, []);
 
-
     if (loading || !dashboard) {
 
         return (
-            <p>
-                Loading Dashboard...
-            </p>
+            <p>Loading Dashboard...</p>
         );
 
     }
 
-
-    // --------------------------------
-    // Hardware Dashboard Cards
-    // --------------------------------
+    // =================================
+    // HARDWARE CARDS
+    // =================================
 
     const hardwareCards = [
 
         {
             title: "Total Assets",
-            value: dashboard.total_assets
+            value: dashboard.total_assets,
+            path: "/assets"
         },
 
         {
             title: "Assigned",
-            value: dashboard.assigned_assets
+            value: dashboard.assigned_assets,
+            path: "/assets?status=Assigned"
         },
 
         {
             title: "In Stock",
-            value: dashboard.in_stock
+            value: dashboard.in_stock,
+            path: "/assets?status=In%20Stock"
         },
 
         {
             title: "Repair",
-            value: dashboard.repair_assets
+            value: dashboard.repair_assets,
+            path: "/assets?status=Repair"
         },
 
         {
             title: "Scrap",
-            value: dashboard.scrap_assets
+            value: dashboard.scrap_assets,
+            path: "/assets?status=Scrap"
         },
 
         {
             title: "Lost",
-            value: dashboard.lost_assets
+            value: dashboard.lost_assets,
+            path: "/assets?status=Lost"
         }
 
     ];
 
-
-    // --------------------------------
-    // Software Expiry Summary Cards
-    // --------------------------------
+    // =================================
+    // SOFTWARE CARDS
+    // =================================
 
     const softwareCards = [
 
         {
             title: "Expired",
             value: dashboard.expired_software,
+            filter: "expired",
             background: "#ffebee",
             border: "#ef5350"
         },
@@ -145,6 +144,7 @@ function DashboardCards() {
             title: "Critical",
             subtitle: "0-10 Days",
             value: dashboard.critical_software,
+            filter: "critical",
             background: "#fff3e0",
             border: "#ff9800"
         },
@@ -152,6 +152,7 @@ function DashboardCards() {
         {
             title: "10-20 Days",
             value: dashboard.ten_to_twenty_software,
+            filter: "10-20",
             background: "#fffde7",
             border: "#fbc02d"
         },
@@ -159,16 +160,16 @@ function DashboardCards() {
         {
             title: "20-30 Days",
             value: dashboard.twenty_to_thirty_software,
+            filter: "20-30",
             background: "#e8f5e9",
             border: "#66bb6a"
         }
 
     ];
 
-
-    // --------------------------------
-    // Expiry Alert Style
-    // --------------------------------
+    // =================================
+    // EXPIRY ALERT STYLE
+    // =================================
 
     const getAlertStyle = (status) => {
 
@@ -181,7 +182,6 @@ function DashboardCards() {
 
         }
 
-
         if (status === "Critical") {
 
             return {
@@ -190,7 +190,6 @@ function DashboardCards() {
             };
 
         }
-
 
         if (status === "10-20 Days") {
 
@@ -201,14 +200,12 @@ function DashboardCards() {
 
         }
 
-
         return {
             background: "#e8f5e9",
             border: "1px solid #66bb6a"
         };
 
     };
-
 
     return (
 
@@ -233,17 +230,37 @@ function DashboardCards() {
 
                         <div
                             key={index}
+                            onClick={() =>
+                                navigate(card.path)
+                            }
                             style={{
-                                background:
-                                    "#ffffff",
-                                padding:
-                                    "20px",
-                                borderRadius:
-                                    "10px",
+                                background: "#ffffff",
+                                padding: "20px",
+                                borderRadius: "10px",
                                 boxShadow:
                                     "0 2px 5px rgba(0,0,0,0.15)",
-                                textAlign:
-                                    "center"
+                                textAlign: "center",
+                                cursor: "pointer",
+                                transition:
+                                    "transform 0.2s, box-shadow 0.2s"
+                            }}
+                            onMouseEnter={(e) => {
+
+                                e.currentTarget.style.transform =
+                                    "translateY(-3px)";
+
+                                e.currentTarget.style.boxShadow =
+                                    "0 4px 10px rgba(0,0,0,0.2)";
+
+                            }}
+                            onMouseLeave={(e) => {
+
+                                e.currentTarget.style.transform =
+                                    "translateY(0)";
+
+                                e.currentTarget.style.boxShadow =
+                                    "0 2px 5px rgba(0,0,0,0.15)";
+
                             }}
                         >
 
@@ -254,6 +271,16 @@ function DashboardCards() {
                             <h1>
                                 {card.value}
                             </h1>
+
+                            <p
+                                style={{
+                                    margin: 0,
+                                    fontSize: "12px",
+                                    color: "#555"
+                                }}
+                            >
+                                Click to view
+                            </p>
 
                         </div>
 
@@ -281,7 +308,6 @@ function DashboardCards() {
                     Software License Summary
                 </h2>
 
-
                 <div
                     style={{
                         display: "grid",
@@ -296,17 +322,40 @@ function DashboardCards() {
 
                             <div
                                 key={index}
+                                onClick={() =>
+                                    navigate(
+                                        `/software?expiry=${card.filter}`
+                                    )
+                                }
                                 style={{
                                     background:
                                         card.background,
                                     border:
                                         `1px solid ${card.border}`,
-                                    padding:
-                                        "20px",
-                                    borderRadius:
-                                        "10px",
-                                    textAlign:
-                                        "center"
+                                    padding: "20px",
+                                    borderRadius: "10px",
+                                    textAlign: "center",
+                                    cursor: "pointer",
+                                    transition:
+                                        "transform 0.2s, box-shadow 0.2s"
+                                }}
+                                onMouseEnter={(e) => {
+
+                                    e.currentTarget.style.transform =
+                                        "translateY(-3px)";
+
+                                    e.currentTarget.style.boxShadow =
+                                        "0 4px 10px rgba(0,0,0,0.15)";
+
+                                }}
+                                onMouseLeave={(e) => {
+
+                                    e.currentTarget.style.transform =
+                                        "translateY(0)";
+
+                                    e.currentTarget.style.boxShadow =
+                                        "none";
+
                                 }}
                             >
 
@@ -319,22 +368,19 @@ function DashboardCards() {
                                     {card.title}
                                 </h3>
 
-
                                 {card.subtitle && (
 
                                     <p
                                         style={{
                                             margin:
                                                 "0 0 10px 0",
-                                            fontSize:
-                                                "13px"
+                                            fontSize: "13px"
                                         }}
                                     >
                                         {card.subtitle}
                                     </p>
 
                                 )}
-
 
                                 <h1
                                     style={{
@@ -343,6 +389,16 @@ function DashboardCards() {
                                 >
                                     {card.value}
                                 </h1>
+
+                                <p
+                                    style={{
+                                        marginTop: "10px",
+                                        fontSize: "12px",
+                                        color: "#555"
+                                    }}
+                                >
+                                    Click to view
+                                </p>
 
                             </div>
 
@@ -361,12 +417,9 @@ function DashboardCards() {
             <div
                 style={{
                     marginTop: "30px",
-                    background:
-                        "#ffffff",
-                    padding:
-                        "20px",
-                    borderRadius:
-                        "10px",
+                    background: "#ffffff",
+                    padding: "20px",
+                    borderRadius: "10px",
                     boxShadow:
                         "0 2px 5px rgba(0,0,0,0.15)"
                 }}
@@ -374,20 +427,17 @@ function DashboardCards() {
 
                 <h2
                     style={{
-                        textAlign:
-                            "center"
+                        textAlign: "center"
                     }}
                 >
                     Software Expiry Alerts
                 </h2>
 
-
                 {expiryAlerts.length === 0 ? (
 
                     <p
                         style={{
-                            textAlign:
-                                "center"
+                            textAlign: "center"
                         }}
                     >
                         No software expiry alerts.
@@ -405,7 +455,6 @@ function DashboardCards() {
                                         software.expiry_status
                                     );
 
-
                                 return (
 
                                     <div
@@ -414,19 +463,15 @@ function DashboardCards() {
                                         }
                                         style={{
                                             ...alertStyle,
-                                            padding:
-                                                "15px",
-                                            borderRadius:
-                                                "8px",
-                                            marginBottom:
-                                                "10px"
+                                            padding: "15px",
+                                            borderRadius: "8px",
+                                            marginBottom: "10px"
                                         }}
                                     >
 
                                         <div
                                             style={{
-                                                display:
-                                                    "flex",
+                                                display: "flex",
                                                 justifyContent:
                                                     "space-between",
                                                 alignItems:
@@ -456,7 +501,6 @@ function DashboardCards() {
 
                                             </div>
 
-
                                             <div
                                                 style={{
                                                     textAlign:
@@ -476,12 +520,10 @@ function DashboardCards() {
                                                             "5px"
                                                     }}
                                                 >
-
                                                     {
                                                         software.days_remaining
                                                     }{" "}
                                                     days remaining
-
                                                 </div>
 
                                             </div>

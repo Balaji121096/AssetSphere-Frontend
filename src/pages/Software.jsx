@@ -14,6 +14,10 @@ function Software() {
     const [loading, setLoading] = useState(true);
 
 
+    // =================================
+    // LOAD SOFTWARE
+    // =================================
+
     const loadSoftware = async () => {
 
         try {
@@ -40,6 +44,7 @@ function Software() {
             setLoading(false);
 
         }
+
     };
 
 
@@ -49,6 +54,10 @@ function Software() {
 
     }, []);
 
+
+    // =================================
+    // DELETE SOFTWARE
+    // =================================
 
     const handleDelete = async (id) => {
 
@@ -82,12 +91,20 @@ function Software() {
             );
 
         }
+
     };
 
 
+    // =================================
+    // EXPIRY STATUS
+    // =================================
+
     const getExpiryStatus = (days) => {
 
-        if (days === null || days === undefined) {
+        if (
+            days === null ||
+            days === undefined
+        ) {
 
             return {
                 text: "No Expiry",
@@ -95,7 +112,6 @@ function Software() {
             };
 
         }
-
 
         const remaining = Number(days);
 
@@ -148,6 +164,10 @@ function Software() {
     };
 
 
+    // =================================
+    // SEARCH FILTER
+    // =================================
+
     const filteredSoftware = software.filter(
         (item) => {
 
@@ -170,6 +190,10 @@ function Software() {
     );
 
 
+    // =================================
+    // DATE FORMAT
+    // =================================
+
     const formatDate = (date) => {
 
         if (!date) {
@@ -180,6 +204,31 @@ function Software() {
             "en-IN"
         );
 
+    };
+
+
+    // =================================
+    // TABLE STYLES
+    // =================================
+
+    const thStyle = {
+        padding: "14px 12px",
+        textAlign: "left",
+        whiteSpace: "nowrap",
+        fontSize: "14px",
+        color: "#555",
+        background: "#f8f9fa",
+        borderBottom: "1px solid #ddd"
+    };
+
+
+    const tdStyle = {
+        padding: "14px 12px",
+        textAlign: "left",
+        whiteSpace: "nowrap",
+        fontSize: "14px",
+        color: "#333",
+        borderBottom: "1px solid #eee"
     };
 
 
@@ -198,7 +247,8 @@ function Software() {
 
             <div
                 style={{
-                    flex: 1
+                    flex: 1,
+                    minWidth: 0
                 }}
             >
 
@@ -211,11 +261,16 @@ function Software() {
                     }}
                 >
 
+                    {/* ================================= */}
+                    {/* HEADER */}
+                    {/* ================================= */}
+
                     <div
                         style={{
                             display: "flex",
                             justifyContent: "space-between",
-                            alignItems: "center"
+                            alignItems: "center",
+                            marginBottom: "20px"
                         }}
                     >
 
@@ -223,13 +278,19 @@ function Software() {
 
                             <h1
                                 style={{
-                                    margin: 0
+                                    margin: 0,
+                                    fontSize: "32px"
                                 }}
                             >
                                 Software Licenses
                             </h1>
 
-                            <p>
+                            <p
+                                style={{
+                                    marginTop: "8px",
+                                    color: "#777"
+                                }}
+                            >
                                 Manage company software licenses
                             </p>
 
@@ -263,6 +324,10 @@ function Software() {
                     </div>
 
 
+                    {/* ================================= */}
+                    {/* SEARCH */}
+                    {/* ================================= */}
+
                     <div
                         style={{
                             margin: "20px 0"
@@ -282,82 +347,95 @@ function Software() {
                                 padding: "10px",
                                 width: "320px",
                                 border: "1px solid #ccc",
-                                borderRadius: "6px"
+                                borderRadius: "6px",
+                                fontSize: "14px"
                             }}
                         />
 
                     </div>
 
 
+                    {/* ================================= */}
+                    {/* TABLE CONTAINER */}
+                    {/* ================================= */}
+
                     <div
                         style={{
                             background: "#fff",
                             borderRadius: "10px",
-                            overflow: "auto"
+                            overflowX: "auto",
+                            overflowY: "hidden",
+                            boxShadow:
+                                "0 2px 5px rgba(0,0,0,0.08)"
                         }}
                     >
 
                         <table
                             style={{
                                 width: "100%",
-                                borderCollapse:
-                                    "collapse"
+                                minWidth: "1300px",
+                                borderCollapse: "collapse",
+                                tableLayout: "auto"
                             }}
                         >
+
+                            {/* ================================= */}
+                            {/* TABLE HEADER */}
+                            {/* ================================= */}
 
                             <thead>
 
                                 <tr>
 
-                                    <th>
+                                    <th style={thStyle}>
                                         ID
                                     </th>
 
-                                    <th>
+                                    <th style={thStyle}>
                                         Code
                                     </th>
 
-                                    <th>
+                                    <th style={thStyle}>
                                         Software
                                     </th>
 
-                                    <th>
+                                    <th style={thStyle}>
                                         Publisher
                                     </th>
 
-                                    <th>
+                                    <th style={thStyle}>
                                         Version
                                     </th>
 
-                                    <th>
+                                    <th style={thStyle}>
                                         License Type
                                     </th>
 
-                                    <th>
+                                    <th style={thStyle}>
                                         Licenses
                                     </th>
 
-                                    <th>
+                                    <th style={thStyle}>
                                         Purchase Date
                                     </th>
 
-                                    <th>
+                                    <th style={thStyle}>
                                         Expiry Date
                                     </th>
 
-                                    <th>
+                                    <th style={thStyle}>
                                         Days Remaining
                                     </th>
 
-                                    <th>
+                                    <th style={thStyle}>
                                         Cost
                                     </th>
 
-                                    <th>
+                                    <th style={thStyle}>
                                         Status
                                     </th>
 
-                                    <th>
+                                    <th style={thStyle}>
                                         Action
                                     </th>
 
@@ -365,6 +443,10 @@ function Software() {
 
                             </thead>
 
+
+                            {/* ================================= */}
+                            {/* TABLE BODY */}
+                            {/* ================================= */}
 
                             <tbody>
 
@@ -375,9 +457,8 @@ function Software() {
                                         <td
                                             colSpan="13"
                                             style={{
-                                                padding: "20px",
-                                                textAlign:
-                                                    "center"
+                                                padding: "30px",
+                                                textAlign: "center"
                                             }}
                                         >
                                             Loading...
@@ -392,9 +473,8 @@ function Software() {
                                         <td
                                             colSpan="13"
                                             style={{
-                                                padding: "20px",
-                                                textAlign:
-                                                    "center"
+                                                padding: "30px",
+                                                textAlign: "center"
                                             }}
                                         >
                                             No software found
@@ -421,28 +501,36 @@ function Software() {
                                                     }
                                                 >
 
-                                                    <td>
+                                                    {/* ID */}
+
+                                                    <td style={tdStyle}>
                                                         {
                                                             item.software_id
                                                         }
                                                     </td>
 
 
-                                                    <td>
+                                                    {/* CODE */}
+
+                                                    <td style={tdStyle}>
                                                         {
                                                             item.software_code
                                                         }
                                                     </td>
 
 
-                                                    <td>
+                                                    {/* SOFTWARE */}
+
+                                                    <td style={tdStyle}>
                                                         {
                                                             item.software_name
                                                         }
                                                     </td>
 
 
-                                                    <td>
+                                                    {/* PUBLISHER */}
+
+                                                    <td style={tdStyle}>
                                                         {
                                                             item.publisher ||
                                                             "-"
@@ -450,7 +538,9 @@ function Software() {
                                                     </td>
 
 
-                                                    <td>
+                                                    {/* VERSION */}
+
+                                                    <td style={tdStyle}>
                                                         {
                                                             item.version ||
                                                             "-"
@@ -458,7 +548,9 @@ function Software() {
                                                     </td>
 
 
-                                                    <td>
+                                                    {/* LICENSE TYPE */}
+
+                                                    <td style={tdStyle}>
                                                         {
                                                             item.license_type ||
                                                             "-"
@@ -466,14 +558,18 @@ function Software() {
                                                     </td>
 
 
-                                                    <td>
+                                                    {/* LICENSES */}
+
+                                                    <td style={tdStyle}>
                                                         {
                                                             item.total_licenses
                                                         }
                                                     </td>
 
 
-                                                    <td>
+                                                    {/* PURCHASE DATE */}
+
+                                                    <td style={tdStyle}>
                                                         {
                                                             formatDate(
                                                                 item.purchase_date
@@ -482,7 +578,9 @@ function Software() {
                                                     </td>
 
 
-                                                    <td>
+                                                    {/* EXPIRY DATE */}
+
+                                                    <td style={tdStyle}>
                                                         {
                                                             formatDate(
                                                                 item.expiry_date
@@ -491,9 +589,16 @@ function Software() {
                                                     </td>
 
 
-                                                    <td>
+                                                    {/* DAYS REMAINING */}
 
-                                                        <div>
+                                                    <td style={tdStyle}>
+
+                                                        <div
+                                                            style={{
+                                                                lineHeight:
+                                                                    "1.5"
+                                                            }}
+                                                        >
 
                                                             <strong>
                                                                 {
@@ -517,12 +622,13 @@ function Software() {
                                                     </td>
 
 
-                                                    <td>
+                                                    {/* COST */}
+
+                                                    <td style={tdStyle}>
                                                         ₹{" "}
                                                         {
                                                             Number(
-                                                                item.cost ||
-                                                                0
+                                                                item.cost || 0
                                                             ).toLocaleString(
                                                                 "en-IN"
                                                             )
@@ -530,14 +636,18 @@ function Software() {
                                                     </td>
 
 
-                                                    <td>
+                                                    {/* STATUS */}
+
+                                                    <td style={tdStyle}>
                                                         {
                                                             item.status
                                                         }
                                                     </td>
 
 
-                                                    <td>
+                                                    {/* ACTION */}
+
+                                                    <td style={tdStyle}>
 
                                                         <button
                                                             onClick={() =>
