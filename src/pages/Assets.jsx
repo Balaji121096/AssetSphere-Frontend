@@ -1,9 +1,17 @@
-import { useNavigate, useSearchParams } from "react-router-dom";
-import { useEffect, useState } from "react";
+import {
+    useNavigate,
+    useSearchParams
+} from "react-router-dom";
+
+import {
+    useEffect,
+    useState
+} from "react";
 
 import Sidebar from "../components/Sidebar";
 import Navbar from "../components/Navbar";
 import API from "../api/axios";
+
 
 function Assets() {
 
@@ -12,7 +20,8 @@ function Assets() {
     const [searchParams, setSearchParams] =
         useSearchParams();
 
-    const [assets, setAssets] = useState([]);
+    const [assets, setAssets] =
+        useState([]);
 
     const [search, setSearch] =
         useState("");
@@ -24,6 +33,15 @@ function Assets() {
 
     const [loading, setLoading] =
         useState(true);
+
+    const [viewAsset, setViewAsset] =
+        useState(null);
+
+    const [editAsset, setEditAsset] =
+        useState(null);
+
+    const [saving, setSaving] =
+        useState(false);
 
 
     // =====================================================
@@ -64,10 +82,6 @@ function Assets() {
     };
 
 
-    // =====================================================
-    // INITIAL LOAD
-    // =====================================================
-
     useEffect(() => {
 
         loadAssets();
@@ -107,7 +121,7 @@ function Assets() {
 
 
     // =====================================================
-    // STATUS FILTER CHANGE
+    // STATUS FILTER
     // =====================================================
 
     const handleStatusChange = (value) => {
@@ -145,7 +159,7 @@ function Assets() {
 
 
     // =====================================================
-    // RETURN ASSET
+    // RETURN
     // =====================================================
 
     const handleReturn = async (id) => {
@@ -173,10 +187,7 @@ function Assets() {
 
         } catch (error) {
 
-            console.error(
-                "Return Asset Error:",
-                error
-            );
+            console.error(error);
 
             alert(
                 error.response?.data?.message ||
@@ -189,7 +200,7 @@ function Assets() {
 
 
     // =====================================================
-    // SCRAP ASSET
+    // SCRAP
     // =====================================================
 
     const handleScrap = async (id) => {
@@ -217,10 +228,7 @@ function Assets() {
 
         } catch (error) {
 
-            console.error(
-                "Scrap Asset Error:",
-                error
-            );
+            console.error(error);
 
             alert(
                 error.response?.data?.message ||
@@ -233,7 +241,162 @@ function Assets() {
 
 
     // =====================================================
-    // FILTER ASSETS
+    // DELETE
+    // =====================================================
+
+    const handleDelete = async (id) => {
+
+        const confirmDelete =
+            window.confirm(
+                "Are you sure you want to delete this asset?"
+            );
+
+        if (!confirmDelete) {
+            return;
+        }
+
+        try {
+
+            await API.delete(
+                `/assets/${id}`
+            );
+
+            alert(
+                "Asset deleted successfully"
+            );
+
+            loadAssets();
+
+        } catch (error) {
+
+            console.error(
+                "Delete Asset Error:",
+                error
+            );
+
+            alert(
+                error.response?.data?.message ||
+                "Failed to delete asset"
+            );
+
+        }
+
+    };
+
+
+    // =====================================================
+    // STATUS UPDATE
+    // =====================================================
+
+    const handleStatusUpdate = async (
+        id,
+        newStatus
+    ) => {
+
+        try {
+
+            await API.put(
+                `/assets/status/${id}`,
+                {
+                    status: newStatus
+                }
+            );
+
+            alert(
+                "Asset status updated successfully"
+            );
+
+            loadAssets();
+
+        } catch (error) {
+
+            console.error(error);
+
+            alert(
+                error.response?.data?.message ||
+                "Failed to update status"
+            );
+
+        }
+
+    };
+
+
+    // =====================================================
+    // EDIT SAVE
+    // =====================================================
+
+    const handleEditSave = async (e) => {
+
+        e.preventDefault();
+
+        try {
+
+            setSaving(true);
+
+            await API.put(
+                `/assets/${editAsset.asset_id}`,
+                {
+                    asset_code:
+                        editAsset.asset_code,
+
+                    asset_name:
+                        editAsset.asset_name,
+
+                    brand:
+                        editAsset.brand,
+
+                    model:
+                        editAsset.model,
+
+                    serial_number:
+                        editAsset.serial_number,
+
+                    category_id:
+                        editAsset.category_id,
+
+                    vendor_id:
+                        editAsset.vendor_id,
+
+                    location_id:
+                        editAsset.location_id,
+
+                    asset_status:
+                        editAsset.asset_status
+                }
+            );
+
+            alert(
+                "Asset updated successfully"
+            );
+
+            setEditAsset(null);
+
+            loadAssets();
+
+        } catch (error) {
+
+            console.error(
+                "Update Asset Error:",
+                error
+            );
+
+            alert(
+                error.response?.data?.message ||
+                "Failed to update asset"
+            );
+
+        } finally {
+
+            setSaving(false);
+
+        }
+
+    };
+
+
+    // =====================================================
+    // FILTER
     // =====================================================
 
     const filteredAssets =
@@ -242,6 +405,9 @@ function Assets() {
             const text = `
                 ${asset.asset_code || ""}
                 ${asset.asset_name || ""}
+                ${asset.brand || ""}
+                ${asset.model || ""}
+                ${asset.serial_number || ""}
                 ${asset.category_name || ""}
                 ${asset.display_name || ""}
                 ${asset.vendor_name || ""}
@@ -249,17 +415,14 @@ function Assets() {
                 ${asset.asset_status || ""}
             `.toLowerCase();
 
-
             const matchesSearch =
                 text.includes(
                     search.toLowerCase()
                 );
 
-
             const matchesStatus =
                 status === "All" ||
                 asset.asset_status === status;
-
 
             return (
                 matchesSearch &&
@@ -273,7 +436,9 @@ function Assets() {
     // STATUS COLORS
     // =====================================================
 
-    const getStatusStyle = (assetStatus) => {
+    const getStatusStyle = (
+        assetStatus
+    ) => {
 
         if (assetStatus === "Assigned") {
 
@@ -328,6 +493,10 @@ function Assets() {
     };
 
 
+    // =====================================================
+    // RETURN UI
+    // =====================================================
+
     return (
 
         <div
@@ -357,16 +526,17 @@ function Assets() {
                     }}
                 >
 
-                    {/* =================================================
-                        HEADER
-                    ================================================= */}
+                    {/* HEADER */}
 
                     <div
                         style={{
                             display: "flex",
-                            justifyContent: "space-between",
+                            justifyContent:
+                                "space-between",
                             alignItems: "center",
-                            marginBottom: "20px"
+                            marginBottom: "20px",
+                            flexWrap: "wrap",
+                            gap: "15px"
                         }}
                     >
 
@@ -408,20 +578,9 @@ function Assets() {
                                         "/assets/add"
                                     )
                                 }
-                                style={{
-                                    padding:
-                                        "10px 16px",
-                                    border: "none",
-                                    background:
-                                        "#2563eb",
-                                    color: "#ffffff",
-                                    borderRadius:
-                                        "7px",
-                                    cursor:
-                                        "pointer",
-                                    fontWeight:
-                                        "600"
-                                }}
+                                style={
+                                    primaryButtonStyle
+                                }
                             >
                                 + Add Asset
                             </button>
@@ -432,20 +591,9 @@ function Assets() {
                                 onClick={
                                     loadAssets
                                 }
-                                style={{
-                                    padding:
-                                        "10px 16px",
-                                    border:
-                                        "1px solid #cbd5e1",
-                                    background:
-                                        "#ffffff",
-                                    color:
-                                        "#334155",
-                                    borderRadius:
-                                        "7px",
-                                    cursor:
-                                        "pointer"
-                                }}
+                                style={
+                                    refreshButtonStyle
+                                }
                             >
                                 Refresh
                             </button>
@@ -455,9 +603,7 @@ function Assets() {
                     </div>
 
 
-                    {/* =================================================
-                        ACTIVE DASHBOARD FILTER
-                    ================================================= */}
+                    {/* FILTER */}
 
                     {status !== "All" && (
 
@@ -495,9 +641,7 @@ function Assets() {
                                 <span
                                     style={{
                                         marginLeft:
-                                            "8px",
-                                        color:
-                                            "#334155"
+                                            "8px"
                                     }}
                                 >
                                     {status}
@@ -516,7 +660,7 @@ function Assets() {
                                     background:
                                         "#2563eb",
                                     color:
-                                        "#ffffff",
+                                        "#fff",
                                     padding:
                                         "6px 12px",
                                     borderRadius:
@@ -533,48 +677,29 @@ function Assets() {
                     )}
 
 
-                    {/* =================================================
-                        SEARCH + FILTER
-                    ================================================= */}
+                    {/* SEARCH */}
 
                     <div
                         style={{
                             display: "flex",
                             gap: "12px",
-                            marginBottom:
-                                "20px",
-                            flexWrap:
-                                "wrap"
+                            marginBottom: "20px",
+                            flexWrap: "wrap"
                         }}
                     >
 
                         <input
                             type="text"
-                            placeholder={
-                                "Search assets..."
-                            }
+                            placeholder="Search assets..."
                             value={search}
                             onChange={(e) =>
                                 setSearch(
                                     e.target.value
                                 )
                             }
-                            style={{
-                                padding:
-                                    "10px 12px",
-                                width:
-                                    "300px",
-                                maxWidth:
-                                    "100%",
-                                border:
-                                    "1px solid #cbd5e1",
-                                borderRadius:
-                                    "7px",
-                                outline:
-                                    "none",
-                                boxSizing:
-                                    "border-box"
-                            }}
+                            style={
+                                searchStyle
+                            }
                         />
 
 
@@ -585,18 +710,9 @@ function Assets() {
                                     e.target.value
                                 )
                             }
-                            style={{
-                                padding:
-                                    "10px 12px",
-                                border:
-                                    "1px solid #cbd5e1",
-                                borderRadius:
-                                    "7px",
-                                background:
-                                    "#ffffff",
-                                outline:
-                                    "none"
-                            }}
+                            style={
+                                selectStyle
+                            }
                         >
 
                             <option value="All">
@@ -628,14 +744,9 @@ function Assets() {
 
                         <div
                             style={{
-                                display:
-                                    "flex",
-                                alignItems:
-                                    "center",
-                                color:
-                                    "#64748b",
-                                fontSize:
-                                    "14px"
+                                display: "flex",
+                                alignItems: "center",
+                                color: "#64748b"
                             }}
                         >
                             Showing{" "}
@@ -657,18 +768,13 @@ function Assets() {
                     </div>
 
 
-                    {/* =================================================
-                        TABLE
-                    ================================================= */}
+                    {/* TABLE */}
 
                     <div
                         style={{
-                            background:
-                                "#ffffff",
-                            borderRadius:
-                                "10px",
-                            overflowX:
-                                "auto",
+                            background: "#fff",
+                            borderRadius: "10px",
+                            overflowX: "auto",
                             boxShadow:
                                 "0 2px 8px rgba(15,23,42,0.08)"
                         }}
@@ -676,12 +782,11 @@ function Assets() {
 
                         <table
                             style={{
-                                width:
-                                    "100%",
+                                width: "100%",
                                 borderCollapse:
                                     "collapse",
                                 minWidth:
-                                    "1100px"
+                                    "1350px"
                             }}
                         >
 
@@ -739,7 +844,9 @@ function Assets() {
 
                                         <td
                                             colSpan="8"
-                                            style={emptyStyle}
+                                            style={
+                                                emptyStyle
+                                            }
                                         >
                                             Loading...
                                         </td>
@@ -752,7 +859,9 @@ function Assets() {
 
                                         <td
                                             colSpan="8"
-                                            style={emptyStyle}
+                                            style={
+                                                emptyStyle
+                                            }
                                         >
                                             No assets found
                                         </td>
@@ -770,69 +879,40 @@ function Assets() {
                                                 }
                                             >
 
-                                                <td
-                                                    style={
-                                                        tdStyle
-                                                    }
-                                                >
+                                                <td style={tdStyle}>
                                                     {
                                                         asset.asset_code
                                                     }
                                                 </td>
 
-
-                                                <td
-                                                    style={
-                                                        tdStyle
-                                                    }
-                                                >
+                                                <td style={tdStyle}>
                                                     {
                                                         asset.asset_name
                                                     }
                                                 </td>
 
-
-                                                <td
-                                                    style={
-                                                        tdStyle
-                                                    }
-                                                >
+                                                <td style={tdStyle}>
                                                     {
                                                         asset.category_name ||
                                                         "-"
                                                     }
                                                 </td>
 
-
-                                                <td
-                                                    style={
-                                                        tdStyle
-                                                    }
-                                                >
+                                                <td style={tdStyle}>
                                                     {
                                                         asset.display_name ||
                                                         "-"
                                                     }
                                                 </td>
 
-
-                                                <td
-                                                    style={
-                                                        tdStyle
-                                                    }
-                                                >
+                                                <td style={tdStyle}>
                                                     {
                                                         asset.vendor_name ||
                                                         "-"
                                                     }
                                                 </td>
 
-
-                                                <td
-                                                    style={
-                                                        tdStyle
-                                                    }
-                                                >
+                                                <td style={tdStyle}>
                                                     {
                                                         asset.location_name ||
                                                         "-"
@@ -840,47 +920,64 @@ function Assets() {
                                                 </td>
 
 
-                                                <td
-                                                    style={
-                                                        tdStyle
-                                                    }
-                                                >
+                                                {/* STATUS */}
 
-                                                    <span
-                                                        style={{
-                                                            ...getStatusStyle(
-                                                                asset.asset_status
-                                                            ),
-                                                            padding:
-                                                                "5px 10px",
-                                                            borderRadius:
-                                                                "15px",
-                                                            fontSize:
-                                                                "12px",
-                                                            fontWeight:
-                                                                "600"
-                                                        }}
-                                                    >
-                                                        {
+                                                <td style={tdStyle}>
+
+                                                    <select
+                                                        value={
                                                             asset.asset_status
                                                         }
-                                                    </span>
+                                                        onChange={(
+                                                            e
+                                                        ) =>
+                                                            handleStatusUpdate(
+                                                                asset.asset_id,
+                                                                e.target.value
+                                                            )
+                                                        }
+                                                        style={{
+                                                            ...statusSelectStyle,
+                                                            ...getStatusStyle(
+                                                                asset.asset_status
+                                                            )
+                                                        }}
+                                                    >
+
+                                                        <option value="Assigned">
+                                                            Assigned
+                                                        </option>
+
+                                                        <option value="In Stock">
+                                                            In Stock
+                                                        </option>
+
+                                                        <option value="Repair">
+                                                            Repair
+                                                        </option>
+
+                                                        <option value="Scrap">
+                                                            Scrap
+                                                        </option>
+
+                                                        <option value="Lost">
+                                                            Lost
+                                                        </option>
+
+                                                    </select>
 
                                                 </td>
 
 
-                                                <td
-                                                    style={
-                                                        tdStyle
-                                                    }
-                                                >
+                                                {/* ACTIONS */}
+
+                                                <td style={tdStyle}>
 
                                                     <div
                                                         style={{
                                                             display:
                                                                 "flex",
-                                                            gap:
-                                                                "6px",
+                                                            gap: "6px",
                                                             flexWrap:
                                                                 "wrap"
                                                         }}
@@ -891,8 +988,8 @@ function Assets() {
                                                         <button
                                                             type="button"
                                                             onClick={() =>
-                                                                alert(
-                                                                    `Asset ID: ${asset.asset_id}`
+                                                                setViewAsset(
+                                                                    asset
                                                                 )
                                                             }
                                                             style={
@@ -903,13 +1000,51 @@ function Assets() {
                                                         </button>
 
 
+                                                        {/* EDIT */}
+
+                                                        <button
+                                                            type="button"
+                                                            onClick={() =>
+                                                                setEditAsset(
+                                                                    {
+                                                                        ...asset
+                                                                    }
+                                                                )
+                                                            }
+                                                            style={
+                                                                editButtonStyle
+                                                            }
+                                                        >
+                                                            Edit
+                                                        </button>
+
+
+                                                        {/* DELETE */}
+
+                                                        <button
+                                                            type="button"
+                                                            onClick={() =>
+                                                                handleDelete(
+                                                                    asset.asset_id
+                                                                )
+                                                            }
+                                                            style={
+                                                                deleteButtonStyle
+                                                            }
+                                                        >
+                                                            Delete
+                                                        </button>
+
+
                                                         {/* ASSIGN */}
 
                                                         {
                                                             asset.asset_status !==
                                                                 "Scrap" &&
                                                             asset.asset_status !==
-                                                                "Assigned" && (
+                                                                "Assigned" &&
+                                                            asset.asset_status !==
+                                                                "Lost" && (
 
                                                                 <button
                                                                     type="button"
@@ -997,6 +1132,413 @@ function Assets() {
 
             </div>
 
+
+            {/* =====================================================
+                VIEW MODAL
+            ===================================================== */}
+
+            {viewAsset && (
+
+                <div style={overlayStyle}>
+
+                    <div style={modalStyle}>
+
+                        <div
+                            style={{
+                                display: "flex",
+                                justifyContent:
+                                    "space-between"
+                            }}
+                        >
+
+                            <h2>
+                                Asset Details
+                            </h2>
+
+                            <button
+                                onClick={() =>
+                                    setViewAsset(null)
+                                }
+                                style={
+                                    closeButtonStyle
+                                }
+                            >
+                                ✕
+                            </button>
+
+                        </div>
+
+
+                        <Detail
+                            label="Asset Code"
+                            value={
+                                viewAsset.asset_code
+                            }
+                        />
+
+                        <Detail
+                            label="Asset Name"
+                            value={
+                                viewAsset.asset_name
+                            }
+                        />
+
+                        <Detail
+                            label="Brand"
+                            value={
+                                viewAsset.brand
+                            }
+                        />
+
+                        <Detail
+                            label="Model"
+                            value={
+                                viewAsset.model
+                            }
+                        />
+
+                        <Detail
+                            label="Serial Number"
+                            value={
+                                viewAsset.serial_number
+                            }
+                        />
+
+                        <Detail
+                            label="Category"
+                            value={
+                                viewAsset.category_name
+                            }
+                        />
+
+                        <Detail
+                            label="Employee"
+                            value={
+                                viewAsset.display_name ||
+                                "-"
+                            }
+                        />
+
+                        <Detail
+                            label="Vendor"
+                            value={
+                                viewAsset.vendor_name ||
+                                "-"
+                            }
+                        />
+
+                        <Detail
+                            label="Location"
+                            value={
+                                viewAsset.location_name ||
+                                "-"
+                            }
+                        />
+
+                        <Detail
+                            label="Status"
+                            value={
+                                viewAsset.asset_status
+                            }
+                        />
+
+                    </div>
+
+                </div>
+
+            )}
+
+
+            {/* =====================================================
+                EDIT MODAL
+            ===================================================== */}
+
+            {editAsset && (
+
+                <div style={overlayStyle}>
+
+                    <div
+                        style={{
+                            ...modalStyle,
+                            maxWidth: "600px"
+                        }}
+                    >
+
+                        <div
+                            style={{
+                                display: "flex",
+                                justifyContent:
+                                    "space-between",
+                                alignItems:
+                                    "center"
+                            }}
+                        >
+
+                            <h2>
+                                Edit Asset
+                            </h2>
+
+                            <button
+                                type="button"
+                                onClick={() =>
+                                    setEditAsset(null)
+                                }
+                                style={
+                                    closeButtonStyle
+                                }
+                            >
+                                ✕
+                            </button>
+
+                        </div>
+
+
+                        <form
+                            onSubmit={
+                                handleEditSave
+                            }
+                        >
+
+                            <label style={labelStyle}>
+                                Asset Code
+                            </label>
+
+                            <input
+                                value={
+                                    editAsset.asset_code ||
+                                    ""
+                                }
+                                onChange={(e) =>
+                                    setEditAsset({
+                                        ...editAsset,
+                                        asset_code:
+                                            e.target.value
+                                    })
+                                }
+                                style={
+                                    inputStyle
+                                }
+                                required
+                            />
+
+
+                            <label style={labelStyle}>
+                                Asset Name
+                            </label>
+
+                            <input
+                                value={
+                                    editAsset.asset_name ||
+                                    ""
+                                }
+                                onChange={(e) =>
+                                    setEditAsset({
+                                        ...editAsset,
+                                        asset_name:
+                                            e.target.value
+                                    })
+                                }
+                                style={
+                                    inputStyle
+                                }
+                                required
+                            />
+
+
+                            <label style={labelStyle}>
+                                Brand
+                            </label>
+
+                            <input
+                                value={
+                                    editAsset.brand ||
+                                    ""
+                                }
+                                onChange={(e) =>
+                                    setEditAsset({
+                                        ...editAsset,
+                                        brand:
+                                            e.target.value
+                                    })
+                                }
+                                style={
+                                    inputStyle
+                                }
+                            />
+
+
+                            <label style={labelStyle}>
+                                Model
+                            </label>
+
+                            <input
+                                value={
+                                    editAsset.model ||
+                                    ""
+                                }
+                                onChange={(e) =>
+                                    setEditAsset({
+                                        ...editAsset,
+                                        model:
+                                            e.target.value
+                                    })
+                                }
+                                style={
+                                    inputStyle
+                                }
+                            />
+
+
+                            <label style={labelStyle}>
+                                Serial Number
+                            </label>
+
+                            <input
+                                value={
+                                    editAsset.serial_number ||
+                                    ""
+                                }
+                                onChange={(e) =>
+                                    setEditAsset({
+                                        ...editAsset,
+                                        serial_number:
+                                            e.target.value
+                                    })
+                                }
+                                style={
+                                    inputStyle
+                                }
+                            />
+
+
+                            <label style={labelStyle}>
+                                Status
+                            </label>
+
+                            <select
+                                value={
+                                    editAsset.asset_status ||
+                                    "In Stock"
+                                }
+                                onChange={(e) =>
+                                    setEditAsset({
+                                        ...editAsset,
+                                        asset_status:
+                                            e.target.value
+                                    })
+                                }
+                                style={
+                                    inputStyle
+                                }
+                            >
+
+                                <option value="Assigned">
+                                    Assigned
+                                </option>
+
+                                <option value="In Stock">
+                                    In Stock
+                                </option>
+
+                                <option value="Repair">
+                                    Repair
+                                </option>
+
+                                <option value="Scrap">
+                                    Scrap
+                                </option>
+
+                                <option value="Lost">
+                                    Lost
+                                </option>
+
+                            </select>
+
+
+                            <div
+                                style={{
+                                    display: "flex",
+                                    justifyContent:
+                                        "flex-end",
+                                    gap: "10px",
+                                    marginTop:
+                                        "20px"
+                                }}
+                            >
+
+                                <button
+                                    type="button"
+                                    onClick={() =>
+                                        setEditAsset(null)
+                                    }
+                                    style={
+                                        cancelButtonStyle
+                                    }
+                                >
+                                    Cancel
+                                </button>
+
+                                <button
+                                    type="submit"
+                                    disabled={saving}
+                                    style={
+                                        saveButtonStyle
+                                    }
+                                >
+                                    {
+                                        saving
+                                            ? "Saving..."
+                                            : "Save Changes"
+                                    }
+                                </button>
+
+                            </div>
+
+                        </form>
+
+                    </div>
+
+                </div>
+
+            )}
+
+        </div>
+
+    );
+
+}
+
+
+// =====================================================
+// DETAIL COMPONENT
+// =====================================================
+
+function Detail({
+    label,
+    value
+}) {
+
+    return (
+
+        <div
+            style={{
+                display: "flex",
+                justifyContent:
+                    "space-between",
+                padding: "10px 0",
+                borderBottom:
+                    "1px solid #e2e8f0"
+            }}
+        >
+
+            <strong>
+                {label}
+            </strong>
+
+            <span>
+                {value || "-"}
+            </span>
+
         </div>
 
     );
@@ -1053,18 +1595,138 @@ const emptyStyle = {
 };
 
 
+const primaryButtonStyle = {
+
+    padding: "10px 16px",
+
+    border: "none",
+
+    background: "#2563eb",
+
+    color: "#fff",
+
+    borderRadius: "7px",
+
+    cursor: "pointer",
+
+    fontWeight: "600"
+
+};
+
+
+const refreshButtonStyle = {
+
+    padding: "10px 16px",
+
+    border: "1px solid #cbd5e1",
+
+    background: "#fff",
+
+    color: "#334155",
+
+    borderRadius: "7px",
+
+    cursor: "pointer"
+
+};
+
+
+const searchStyle = {
+
+    padding: "10px 12px",
+
+    width: "300px",
+
+    maxWidth: "100%",
+
+    border: "1px solid #cbd5e1",
+
+    borderRadius: "7px",
+
+    boxSizing: "border-box"
+
+};
+
+
+const selectStyle = {
+
+    padding: "10px 12px",
+
+    border: "1px solid #cbd5e1",
+
+    borderRadius: "7px",
+
+    background: "#fff"
+
+};
+
+
+const statusSelectStyle = {
+
+    padding: "5px 8px",
+
+    border: "none",
+
+    borderRadius: "15px",
+
+    fontSize: "12px",
+
+    fontWeight: "600",
+
+    cursor: "pointer",
+
+    outline: "none"
+
+};
+
+
 const viewButtonStyle = {
 
     padding: "6px 10px",
 
-    border:
-        "1px solid #64748b",
+    border: "1px solid #64748b",
 
-    background:
-        "#ffffff",
+    background: "#fff",
 
-    color:
-        "#475569",
+    color: "#475569",
+
+    borderRadius: "6px",
+
+    cursor: "pointer",
+
+    fontSize: "12px"
+
+};
+
+
+const editButtonStyle = {
+
+    padding: "6px 10px",
+
+    border: "1px solid #2563eb",
+
+    background: "#eff6ff",
+
+    color: "#1d4ed8",
+
+    borderRadius: "6px",
+
+    cursor: "pointer",
+
+    fontSize: "12px"
+
+};
+
+
+const deleteButtonStyle = {
+
+    padding: "6px 10px",
+
+    border: "1px solid #dc2626",
+
+    background: "#fef2f2",
+
+    color: "#b91c1c",
 
     borderRadius: "6px",
 
@@ -1079,14 +1741,11 @@ const assignButtonStyle = {
 
     padding: "6px 10px",
 
-    border:
-        "1px solid #2563eb",
+    border: "1px solid #2563eb",
 
-    background:
-        "#eff6ff",
+    background: "#eff6ff",
 
-    color:
-        "#1d4ed8",
+    color: "#1d4ed8",
 
     borderRadius: "6px",
 
@@ -1101,14 +1760,11 @@ const returnButtonStyle = {
 
     padding: "6px 10px",
 
-    border:
-        "1px solid #16a34a",
+    border: "1px solid #16a34a",
 
-    background:
-        "#f0fdf4",
+    background: "#f0fdf4",
 
-    color:
-        "#15803d",
+    color: "#15803d",
 
     borderRadius: "6px",
 
@@ -1123,20 +1779,142 @@ const scrapButtonStyle = {
 
     padding: "6px 10px",
 
-    border:
-        "1px solid #dc2626",
+    border: "1px solid #dc2626",
 
-    background:
-        "#fef2f2",
+    background: "#fef2f2",
 
-    color:
-        "#b91c1c",
+    color: "#b91c1c",
 
     borderRadius: "6px",
 
     cursor: "pointer",
 
     fontSize: "12px"
+
+};
+
+
+const overlayStyle = {
+
+    position: "fixed",
+
+    inset: 0,
+
+    background:
+        "rgba(15,23,42,0.45)",
+
+    display: "flex",
+
+    justifyContent: "center",
+
+    alignItems: "center",
+
+    zIndex: 1000,
+
+    padding: "20px"
+
+};
+
+
+const modalStyle = {
+
+    background: "#fff",
+
+    width: "100%",
+
+    maxWidth: "550px",
+
+    maxHeight: "90vh",
+
+    overflowY: "auto",
+
+    borderRadius: "12px",
+
+    padding: "25px",
+
+    boxShadow:
+        "0 20px 50px rgba(0,0,0,0.2)"
+
+};
+
+
+const closeButtonStyle = {
+
+    border: "none",
+
+    background: "#f1f5f9",
+
+    borderRadius: "6px",
+
+    padding: "7px 10px",
+
+    cursor: "pointer"
+
+};
+
+
+const labelStyle = {
+
+    display: "block",
+
+    marginTop: "14px",
+
+    marginBottom: "6px",
+
+    fontWeight: "600",
+
+    color: "#334155"
+
+};
+
+
+const inputStyle = {
+
+    width: "100%",
+
+    padding: "10px",
+
+    border: "1px solid #cbd5e1",
+
+    borderRadius: "7px",
+
+    boxSizing: "border-box",
+
+    outline: "none"
+
+};
+
+
+const cancelButtonStyle = {
+
+    padding: "10px 16px",
+
+    border: "1px solid #cbd5e1",
+
+    background: "#fff",
+
+    borderRadius: "7px",
+
+    cursor: "pointer"
+
+};
+
+
+const saveButtonStyle = {
+
+    padding: "10px 16px",
+
+    border: "none",
+
+    background: "#2563eb",
+
+    color: "#fff",
+
+    borderRadius: "7px",
+
+    cursor: "pointer",
+
+    fontWeight: "600"
 
 };
 

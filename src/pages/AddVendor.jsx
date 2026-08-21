@@ -159,28 +159,38 @@ function AddVendor() {
                     {/* HEADER */}
 
                     <div
-                        style={{
-                            marginBottom: "25px"
-                        }}
-                    >
+    style={{
+        marginBottom: "25px",
+        display: "flex",
+        flexDirection: "column",
+        gap: "6px"
+    }}
+>
+    <h1
+        style={{
+            margin: 0,
+            padding: 0,
+            fontSize: "40px",
+            lineHeight: "1.1",
+            fontWeight: "700",
+            color: "#111827"
+        }}
+    >
+        Add Vendor
+    </h1>
 
-                        <h1
-                            style={{
-                                margin: 0
-                            }}
-                        >
-                            Add Vendor
-                        </h1>
-
-                        <p
-                            style={{
-                                color: "#64748b"
-                            }}
-                        >
-                            Create a new asset vendor
-                        </p>
-
-                    </div>
+    <p
+        style={{
+            margin: 0,
+            padding: 0,
+            color: "#666",
+            fontSize: "15px",
+            lineHeight: "1.4"
+        }}
+    >
+        Add a new vendor
+    </p>
+</div>
 
 
                     {/* FORM */}

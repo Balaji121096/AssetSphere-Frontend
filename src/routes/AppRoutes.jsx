@@ -7,6 +7,7 @@ import Assets from "../pages/Assets";
 import AddAsset from "../pages/AddAsset";
 import AssignAsset from "../pages/AssignAsset";
 import AssetHistory from "../pages/AssetHistory";
+import EditAsset from "../pages/EditAsset";
 
 import Employees from "../pages/Employees";
 import AddEmployee from "../pages/AddEmployee";
@@ -70,6 +71,15 @@ function AppRoutes() {
                 element={
                     <ProtectedRoute>
                         <Assets />
+                    </ProtectedRoute>
+                }
+            />
+
+            <Route
+                path="/assets/edit/:id"
+                element={
+                    <ProtectedRoute>
+                        <EditAsset />
                     </ProtectedRoute>
                 }
             />

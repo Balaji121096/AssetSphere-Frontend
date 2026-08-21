@@ -286,25 +286,37 @@ function Employees() {
                         }}
                     >
 
-                        <div>
+                        <div
+                            style={{
+                                display: "flex",
+                                flexDirection: "column",
+                                gap: "6px"
+                            }}
+                        >
+                        <h1
+                            style={{
+                                margin: 0,
+                                padding: 0,
+                                fontSize: "40px",
+                                lineHeight: "1.1",
+                                fontWeight: "700",
+                                color: "#111827"
+                            }}
+                        >
+                            Employees
+                        </h1>
 
-                            <h1
-                                style={{
-                                    margin: 0
-                                }}
-                            >
-                                Employees
-                            </h1>
-
-                            <p
-                                style={{
-                                    marginTop: "8px",
-                                    color: "#666"
-                                }}
-                            >
-                                Manage company employees
-                            </p>
-
+                        <p
+                            style={{
+                                margin: 0,
+                                padding: 0,
+                                color: "#666",
+                                fontSize: "15px",
+                                lineHeight: "1.4"
+                            }}
+                        >
+                            Manage company employees
+                        </p>
                         </div>
 
 
