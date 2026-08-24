@@ -52,7 +52,13 @@ function Reports() {
 
             location_id: "",
 
-            vendor_id: ""
+            vendor_id: "",
+
+            po_number: "",
+
+            invoice_number: "",
+
+            payment_status: ""
 
         });
 
@@ -79,9 +85,20 @@ function Reports() {
             "/reports/lost",
 
         employee:
-            "/reports/employee-assets"
+            "/reports/employee-assets",
+
+        purchase:
+            "/reports/purchases"
 
     };
+
+
+    // =====================================================
+    // CHECK PURCHASE REPORT
+    // =====================================================
+
+    const isPurchaseReport =
+        reportType === "purchase";
 
 
     // =====================================================
@@ -107,8 +124,12 @@ function Reports() {
             case "employee":
                 return "Employee Assets Report";
 
+            case "purchase":
+                return "Purchase Report";
+
             default:
                 return "All Assets Report";
+
         }
     };
 
@@ -120,6 +141,153 @@ function Reports() {
     const loadSummary = async () => {
 
         try {
+
+            // -------------------------------------------------
+            // PURCHASE SUMMARY
+            // -------------------------------------------------
+
+            if (isPurchaseReport) {
+
+                /*
+                 * Purchase summary backend endpoint irundha
+                 * idhu use aagum.
+                 *
+                 * Endpoint illa na catch-la summary
+                 * data-la irundhu calculate pannuvom.
+                 */
+
+                try {
+
+                    const response =
+                        await API.get(
+                            "/reports/purchases/summary",
+                            {
+                                params: {
+                                    ...filters,
+                                    search
+                                }
+                            }
+                        );
+
+
+                    if (
+                        response.data?.data
+                    ) {
+
+                        setSummary(
+                            response.data.data
+                        );
+
+                        return;
+
+                    }
+
+                } catch (purchaseSummaryError) {
+
+                    console.warn(
+                        "Purchase summary endpoint unavailable. Calculating from report data."
+                    );
+
+                }
+
+
+                // -------------------------------------------------
+                // FALLBACK PURCHASE SUMMARY
+                // -------------------------------------------------
+
+                const totalPurchases =
+                    data.length;
+
+
+                const totalAmount =
+                    data.reduce(
+                        (sum, item) =>
+                            sum +
+                            Number(
+                                item.amount ??
+                                item.purchase_amount ??
+                                item.total_amount ??
+                                0
+                            ),
+                        0
+                    );
+
+
+                const paidPurchases =
+                    data.filter(
+                        item =>
+                            String(
+                                item.payment_status ||
+                                ""
+                            ).toLowerCase() ===
+                            "paid"
+                    ).length;
+
+
+                const pendingPurchases =
+                    data.filter(
+                        item => {
+
+                            const status =
+                                String(
+                                    item.payment_status ||
+                                    ""
+                                ).toLowerCase();
+
+                            return (
+                                status === "pending" ||
+                                status === "unpaid" ||
+                                status === "partially paid"
+                            );
+
+                        }
+                    ).length;
+
+
+                const highestPurchaseAmount =
+                    data.reduce(
+                        (max, item) =>
+                            Math.max(
+                                max,
+                                Number(
+                                    item.amount ??
+                                    item.purchase_amount ??
+                                    item.total_amount ??
+                                    0
+                                )
+                            ),
+                        0
+                    );
+
+
+                setSummary({
+
+                    total_purchases:
+                        totalPurchases,
+
+                    total_purchase_amount:
+                        totalAmount,
+
+                    paid_purchases:
+                        paidPurchases,
+
+                    pending_payments:
+                        pendingPurchases,
+
+                    highest_purchase_amount:
+                        highestPurchaseAmount
+
+                });
+
+
+                return;
+
+            }
+
+
+            // -------------------------------------------------
+            // ASSET SUMMARY
+            // -------------------------------------------------
 
             const response =
                 await API.get(
@@ -145,6 +313,7 @@ function Reports() {
             );
 
         }
+
     };
 
 
@@ -175,13 +344,108 @@ function Reports() {
                 );
 
 
+            const reportData =
+                response.data.data || [];
+
+
             setData(
-                response.data.data || []
+                reportData
             );
 
 
-            await loadSummary();
+            // Purchase report summary fallback
+            // data set aana apram calculate panna
+            if (isPurchaseReport) {
 
+                const totalPurchases =
+                    reportData.length;
+
+
+                const totalAmount =
+                    reportData.reduce(
+                        (sum, item) =>
+                            sum +
+                            Number(
+                                item.amount ??
+                                item.purchase_amount ??
+                                item.total_amount ??
+                                0
+                            ),
+                        0
+                    );
+
+
+                const paidPurchases =
+                    reportData.filter(
+                        item =>
+                            String(
+                                item.payment_status ||
+                                ""
+                            ).toLowerCase() ===
+                            "paid"
+                    ).length;
+
+
+                const pendingPurchases =
+                    reportData.filter(
+                        item => {
+
+                            const status =
+                                String(
+                                    item.payment_status ||
+                                    ""
+                                ).toLowerCase();
+
+                            return (
+                                status === "pending" ||
+                                status === "unpaid" ||
+                                status === "partially paid"
+                            );
+
+                        }
+                    ).length;
+
+
+                const highestPurchaseAmount =
+                    reportData.reduce(
+                        (max, item) =>
+                            Math.max(
+                                max,
+                                Number(
+                                    item.amount ??
+                                    item.purchase_amount ??
+                                    item.total_amount ??
+                                    0
+                                )
+                            ),
+                        0
+                    );
+
+
+                setSummary({
+
+                    total_purchases:
+                        totalPurchases,
+
+                    total_purchase_amount:
+                        totalAmount,
+
+                    paid_purchases:
+                        paidPurchases,
+
+                    pending_payments:
+                        pendingPurchases,
+
+                    highest_purchase_amount:
+                        highestPurchaseAmount
+
+                });
+
+            } else {
+
+                await loadSummary();
+
+            }
 
         } catch (err) {
 
@@ -194,6 +458,9 @@ function Reports() {
             setData([]);
 
 
+            setSummary(null);
+
+
             setError(
                 err.response?.data?.message ||
                 "Failed to load report"
@@ -204,6 +471,7 @@ function Reports() {
             setLoading(false);
 
         }
+
     };
 
 
@@ -219,12 +487,12 @@ function Reports() {
 
 
     // =====================================================
-    // RESET
+    // RESET FILTERS
     // =====================================================
 
     const resetFilters = () => {
 
-        setFilters({
+        const resetValues = {
 
             from_date: "",
 
@@ -240,19 +508,36 @@ function Reports() {
 
             location_id: "",
 
-            vendor_id: ""
+            vendor_id: "",
 
-        });
+            po_number: "",
+
+            invoice_number: "",
+
+            payment_status: ""
+
+        };
+
+
+        setFilters(
+            resetValues
+        );
 
 
         setSearch("");
 
+
+        /*
+         * setState async.
+         * So reset values direct-a API-ku anuprom.
+         */
 
         setTimeout(() => {
 
             loadReport();
 
         }, 0);
+
     };
 
 
@@ -283,6 +568,7 @@ function Reports() {
         return parsed.toLocaleDateString(
             "en-IN"
         );
+
     };
 
 
@@ -309,6 +595,7 @@ function Reports() {
                 maximumFractionDigits: 2
             }
         );
+
     };
 
 
@@ -321,6 +608,94 @@ function Reports() {
         const total =
             data.length;
 
+
+        // -------------------------------------------------
+        // PURCHASE REPORT ANALYSIS
+        // -------------------------------------------------
+
+        if (isPurchaseReport) {
+
+            const totalCost =
+                data.reduce(
+                    (sum, item) =>
+                        sum +
+                        Number(
+                            item.amount ??
+                            item.purchase_amount ??
+                            item.total_amount ??
+                            0
+                        ),
+                    0
+                );
+
+
+            const averageCost =
+                total > 0
+                    ? totalCost / total
+                    : 0;
+
+
+            const paid =
+                data.filter(
+                    item =>
+                        String(
+                            item.payment_status ||
+                            ""
+                        ).toLowerCase() ===
+                        "paid"
+                ).length;
+
+
+            const pending =
+                data.filter(
+                    item => {
+
+                        const status =
+                            String(
+                                item.payment_status ||
+                                ""
+                            ).toLowerCase();
+
+                        return (
+                            status === "pending" ||
+                            status === "unpaid" ||
+                            status === "partially paid"
+                        );
+
+                    }
+                ).length;
+
+
+            return {
+
+                total,
+
+                assigned: 0,
+
+                stock: 0,
+
+                repair: 0,
+
+                scrap: 0,
+
+                lost: 0,
+
+                totalCost,
+
+                averageCost,
+
+                paid,
+
+                pending
+
+            };
+
+        }
+
+
+        // -------------------------------------------------
+        // ASSET REPORT ANALYSIS
+        // -------------------------------------------------
 
         const assigned =
             data.filter(
@@ -395,11 +770,15 @@ function Reports() {
 
             totalCost,
 
-            averageCost
+            averageCost,
+
+            paid: 0,
+
+            pending: 0
 
         };
 
-    }, [data]);
+    }, [data, isPurchaseReport]);
 
 
     // =====================================================
@@ -411,16 +790,23 @@ function Reports() {
 
             const result = {};
 
+
             data.forEach(item => {
 
                 const status =
-                    item.asset_status ||
-                    "Unknown";
+                    isPurchaseReport
+                        ? (
+                            item.payment_status ||
+                            "Unknown"
+                        )
+                        : (
+                            item.asset_status ||
+                            "Unknown"
+                        );
 
 
                 result[status] =
-                    (result[status] || 0) +
-                    1;
+                    (result[status] || 0) + 1;
 
             });
 
@@ -429,7 +815,7 @@ function Reports() {
                 result
             );
 
-        }, [data]);
+        }, [data, isPurchaseReport]);
 
 
     // =====================================================
@@ -439,7 +825,15 @@ function Reports() {
     const categoryAnalysis =
         useMemo(() => {
 
+            if (isPurchaseReport) {
+
+                return [];
+
+            }
+
+
             const result = {};
+
 
             data.forEach(item => {
 
@@ -449,8 +843,7 @@ function Reports() {
 
 
                 result[category] =
-                    (result[category] || 0) +
-                    1;
+                    (result[category] || 0) + 1;
 
             });
 
@@ -464,7 +857,7 @@ function Reports() {
                 )
                 .slice(0, 8);
 
-        }, [data]);
+        }, [data, isPurchaseReport]);
 
 
     // =====================================================
@@ -474,7 +867,15 @@ function Reports() {
     const departmentAnalysis =
         useMemo(() => {
 
+            if (isPurchaseReport) {
+
+                return [];
+
+            }
+
+
             const result = {};
+
 
             data.forEach(item => {
 
@@ -484,8 +885,7 @@ function Reports() {
 
 
                 result[department] =
-                    (result[department] || 0) +
-                    1;
+                    (result[department] || 0) + 1;
 
             });
 
@@ -499,7 +899,7 @@ function Reports() {
                 )
                 .slice(0, 8);
 
-        }, [data]);
+        }, [data, isPurchaseReport]);
 
 
     // =====================================================
@@ -514,6 +914,51 @@ function Reports() {
 
         }
 
+
+        // -------------------------------------------------
+        // PURCHASE INSIGHT
+        // -------------------------------------------------
+
+        if (isPurchaseReport) {
+
+            if (
+                analysis.pending >
+                0
+            ) {
+
+                return `${analysis.pending} purchase(s) have pending or partially paid payment status.`;
+
+            }
+
+
+            if (
+                analysis.paid ===
+                analysis.total
+            ) {
+
+                return "All selected purchases are fully paid.";
+
+            }
+
+
+            if (
+                analysis.totalCost >
+                0
+            ) {
+
+                return `Total purchase value for the selected report is ${formatCost(analysis.totalCost)}.`;
+
+            }
+
+
+            return "The selected purchase report data is available for analysis.";
+
+        }
+
+
+        // -------------------------------------------------
+        // ASSET INSIGHT
+        // -------------------------------------------------
 
         if (
             analysis.assigned >
@@ -572,8 +1017,103 @@ function Reports() {
             );
 
             return;
+
         }
 
+
+        // =================================================
+        // PURCHASE CSV
+        // =================================================
+
+        if (isPurchaseReport) {
+
+            const headers = [
+
+                "Purchase ID",
+
+                "PO Number",
+
+                "Invoice Number",
+
+                "Vendor ID",
+
+                "Vendor Code",
+
+                "Vendor Name",
+
+                "Purchase Date",
+
+                "Amount",
+
+                "Payment Status",
+
+                "Warranty Expiry",
+
+                "Remarks"
+
+            ];
+
+
+            const rows =
+                data.map(item => [
+
+                    item.purchase_id ??
+                    "",
+
+                    item.po_number ??
+                    "",
+
+                    item.invoice_number ??
+                    "",
+
+                    item.vendor_id ??
+                    "",
+
+                    item.vendor_code ??
+                    "",
+
+                    item.vendor_name ??
+                    "",
+
+                    formatDate(
+                        item.purchase_date
+                    ),
+
+                    Number(
+                        item.amount ??
+                        item.purchase_amount ??
+                        item.total_amount ??
+                        0
+                    ),
+
+                    item.payment_status ??
+                    "",
+
+                    formatDate(
+                        item.warranty_expiry
+                    ),
+
+                    item.remarks ??
+                    ""
+
+                ]);
+
+
+            downloadCSV(
+                headers,
+                rows,
+                `${getReportTitle().replaceAll(" ", "_")}.csv`
+            );
+
+
+            return;
+
+        }
+
+
+        // =================================================
+        // ASSET CSV
+        // =================================================
 
         const headers = [
 
@@ -654,6 +1194,25 @@ function Reports() {
             ]);
 
 
+        downloadCSV(
+            headers,
+            rows,
+            `${getReportTitle().replaceAll(" ", "_")}.csv`
+        );
+
+    };
+
+
+    // =====================================================
+    // DOWNLOAD CSV
+    // =====================================================
+
+    const downloadCSV = (
+        headers,
+        rows,
+        filename
+    ) => {
+
         const csv = [
 
             headers,
@@ -697,12 +1256,12 @@ function Reports() {
             document.createElement("a");
 
 
-        link.href = url;
+        link.href =
+            url;
 
 
         link.download =
-            `${getReportTitle()
-                .replaceAll(" ", "_")}.csv`;
+            filename;
 
 
         document.body.appendChild(
@@ -721,6 +1280,7 @@ function Reports() {
         URL.revokeObjectURL(
             url
         );
+
     };
 
 
@@ -737,10 +1297,12 @@ function Reports() {
             );
 
             return;
+
         }
 
 
         window.print();
+
     };
 
 
@@ -758,27 +1320,47 @@ function Reports() {
             }}
         >
 
+            {/* =================================================
+                SIDEBAR
+            ================================================= */}
+
             <div className="no-print">
+
                 <Sidebar />
+
             </div>
 
 
             <div
                 style={{
                     flex: 1,
-                    minWidth: 0
+                    minWidth: 0,
+                    width: "calc(100vw - 180px)",
+                    maxWidth: "calc(100vw - 180px)",
+                    boxSizing: "border-box",
+                    overflowX: "auto",
+                    overflowY: "visible"
                 }}
             >
 
+                {/* =================================================
+                    NAVBAR
+                ================================================= */}
+
                 <div className="no-print">
+
                     <Navbar />
+
                 </div>
 
 
                 <main
                     style={{
-                        padding: "28px",
-                        maxWidth: "1600px",
+                        padding: "20px 24px",
+                        width: "100%",
+                        maxWidth: "none",
+                        minWidth: "0",
+                        boxSizing: "border-box",
                         margin: "0 auto"
                     }}
                 >
@@ -828,7 +1410,9 @@ function Reports() {
 
 
                         <button
-                            onClick={loadReport}
+                            onClick={
+                                loadReport
+                            }
                             className="no-print"
                             style={{
                                 border: "none",
@@ -855,76 +1439,135 @@ function Reports() {
                         SUMMARY CARDS
                     ================================================= */}
 
-                    <div
-                        style={{
-                            display: "grid",
-                            gridTemplateColumns:
-                                "repeat(3, minmax(0, 1fr))",
-                            gap: "15px",
-                            marginBottom: "22px"
-                        }}
-                    >
+                    {isPurchaseReport ? (
 
-                        <SummaryCard
-                            title="Total Assets"
-                            value={
-                                summary?.total_assets ??
-                                analysis.total
-                            }
-                            color="#2563eb"
-                        />
+                        <div
+                            style={{
+                                display: "grid",
+                                gridTemplateColumns:
+                                    "repeat(auto-fit, minmax(220px, 1fr))",
+                                gap: "15px",
+                                marginBottom: "22px"
+                            }}
+                        >
 
-
-                        <SummaryCard
-                            title="Assigned"
-                            value={
-                                summary?.assigned_assets ??
-                                analysis.assigned
-                            }
-                            color="#16a34a"
-                        />
+                            <SummaryCard
+                                title="Total Purchases"
+                                value={
+                                    summary?.total_purchases ??
+                                    analysis.total
+                                }
+                                color="#2563eb"
+                            />
 
 
-                        <SummaryCard
-                            title="In Stock"
-                            value={
-                                summary?.in_stock_assets ??
-                                analysis.stock
-                            }
-                            color="#0891b2"
-                        />
+                            <SummaryCard
+                                title="Total Purchase Amount"
+                                value={
+                                    formatCost(
+                                        summary?.total_purchase_amount ??
+                                        analysis.totalCost
+                                    )
+                                }
+                                color="#16a34a"
+                            />
 
 
-                        <SummaryCard
-                            title="Repair"
-                            value={
-                                summary?.repair_assets ??
-                                analysis.repair
-                            }
-                            color="#f59e0b"
-                        />
+                            <SummaryCard
+                                title="Pending Payments"
+                                value={
+                                    summary?.pending_payments ??
+                                    analysis.pending
+                                }
+                                color="#f59e0b"
+                            />
 
 
-                        <SummaryCard
-                            title="Scrap"
-                            value={
-                                summary?.scrap_assets ??
-                                analysis.scrap
-                            }
-                            color="#6b7280"
-                        />
+                            <SummaryCard
+                                title="Paid Purchases"
+                                value={
+                                    summary?.paid_purchases ??
+                                    analysis.paid
+                                }
+                                color="#0891b2"
+                            />
+
+                        </div>
+
+                    ) : (
+
+                        <div
+                            style={{
+                                display: "grid",
+                                gridTemplateColumns:
+                                    "repeat(auto-fit, minmax(220px, 1fr))",
+                                gap: "15px",
+                                marginBottom: "22px"
+                            }}
+                        >
+
+                            <SummaryCard
+                                title="Total Assets"
+                                value={
+                                    summary?.total_assets ??
+                                    analysis.total
+                                }
+                                color="#2563eb"
+                            />
 
 
-                        <SummaryCard
-                            title="Lost"
-                            value={
-                                summary?.lost_assets ??
-                                analysis.lost
-                            }
-                            color="#dc2626"
-                        />
+                            <SummaryCard
+                                title="Assigned"
+                                value={
+                                    summary?.assigned_assets ??
+                                    analysis.assigned
+                                }
+                                color="#16a34a"
+                            />
 
-                    </div>
+
+                            <SummaryCard
+                                title="In Stock"
+                                value={
+                                    summary?.in_stock_assets ??
+                                    analysis.stock
+                                }
+                                color="#0891b2"
+                            />
+
+
+                            <SummaryCard
+                                title="Repair"
+                                value={
+                                    summary?.repair_assets ??
+                                    analysis.repair
+                                }
+                                color="#f59e0b"
+                            />
+
+
+                            <SummaryCard
+                                title="Scrap"
+                                value={
+                                    summary?.scrap_assets ??
+                                    analysis.scrap
+                                }
+                                color="#6b7280"
+                            />
+
+
+                            <SummaryCard
+                                title="Lost"
+                                value={
+                                    summary?.lost_assets ??
+                                    analysis.lost
+                                }
+                                color="#dc2626"
+                            />
+
+                        </div>
+
+                    )}
 
 
                     {/* =================================================
@@ -970,6 +1613,7 @@ function Reports() {
                                     Report Filters
                                 </h3>
 
+
                                 <p
                                     style={{
                                         margin:
@@ -980,9 +1624,9 @@ function Reports() {
                                             "13px"
                                     }}
                                 >
-                                    Select filters
-                                    and generate
-                                    the report
+                                    {isPurchaseReport
+                                        ? "Filter purchase reports by vendor, PO, invoice and date"
+                                        : "Select filters and generate the report"}
                                 </p>
 
                             </div>
@@ -1047,386 +1691,775 @@ function Reports() {
                         </div>
 
 
-                        <div
-                            style={{
-                                display:
-                                    "grid",
-                                gridTemplateColumns:
-                                    "repeat(3, minmax(0, 1fr))",
-                                gap:
-                                    "12px"
-                            }}
-                        >
+                        {/* =================================================
+                            PURCHASE FILTERS
+                        ================================================= */}
 
-                            <div>
-
-                                <label
-                                    style={
-                                        labelStyle
-                                    }
-                                >
-                                    Report Type
-                                </label>
-
-                                <select
-                                    value={
-                                        reportType
-                                    }
-                                    onChange={
-                                        e =>
-                                            setReportType(
-                                                e.target.value
-                                            )
-                                    }
-                                    style={
-                                        inputStyle
-                                    }
-                                >
-
-                                    <option value="all">
-                                        All Assets
-                                    </option>
-
-                                    <option value="assigned">
-                                        Assigned Assets
-                                    </option>
-
-                                    <option value="repair">
-                                        Repair Assets
-                                    </option>
-
-                                    <option value="scrap">
-                                        Scrap Assets
-                                    </option>
-
-                                    <option value="lost">
-                                        Lost Assets
-                                    </option>
-
-                                    <option value="employee">
-                                        Employee Assets
-                                    </option>
-
-                                </select>
-
-                            </div>
-
-
-                            <div>
-
-                                <label
-                                    style={
-                                        labelStyle
-                                    }
-                                >
-                                    From Date
-                                </label>
-
-                                <input
-                                    type="date"
-                                    value={
-                                        filters.from_date
-                                    }
-                                    onChange={
-                                        e =>
-                                            setFilters({
-                                                ...filters,
-                                                from_date:
-                                                    e.target.value
-                                            })
-                                    }
-                                    style={
-                                        inputStyle
-                                    }
-                                />
-
-                            </div>
-
-
-                            <div>
-
-                                <label
-                                    style={
-                                        labelStyle
-                                    }
-                                >
-                                    To Date
-                                </label>
-
-                                <input
-                                    type="date"
-                                    value={
-                                        filters.to_date
-                                    }
-                                    onChange={
-                                        e =>
-                                            setFilters({
-                                                ...filters,
-                                                to_date:
-                                                    e.target.value
-                                            })
-                                    }
-                                    style={
-                                        inputStyle
-                                    }
-                                />
-
-                            </div>
-
-
-                            <div>
-
-                                <label
-                                    style={
-                                        labelStyle
-                                    }
-                                >
-                                    Status
-                                </label>
-
-                                <select
-                                    value={
-                                        filters.status
-                                    }
-                                    onChange={
-                                        e =>
-                                            setFilters({
-                                                ...filters,
-                                                status:
-                                                    e.target.value
-                                            })
-                                    }
-                                    style={
-                                        inputStyle
-                                    }
-                                >
-
-                                    <option value="">
-                                        All Status
-                                    </option>
-
-                                    <option value="Assigned">
-                                        Assigned
-                                    </option>
-
-                                    <option value="In Stock">
-                                        In Stock
-                                    </option>
-
-                                    <option value="Repair">
-                                        Repair
-                                    </option>
-
-                                    <option value="Scrap">
-                                        Scrap
-                                    </option>
-
-                                    <option value="Lost">
-                                        Lost
-                                    </option>
-
-                                </select>
-
-                            </div>
-
-
-                            <div>
-
-                                <label
-                                    style={
-                                        labelStyle
-                                    }
-                                >
-                                    Category ID
-                                </label>
-
-                                <input
-                                    type="number"
-                                    placeholder="Category ID"
-                                    value={
-                                        filters.category_id
-                                    }
-                                    onChange={
-                                        e =>
-                                            setFilters({
-                                                ...filters,
-                                                category_id:
-                                                    e.target.value
-                                            })
-                                    }
-                                    style={
-                                        inputStyle
-                                    }
-                                />
-
-                            </div>
-
-
-                            <div>
-
-                                <label
-                                    style={
-                                        labelStyle
-                                    }
-                                >
-                                    Employee ID
-                                </label>
-
-                                <input
-                                    type="number"
-                                    placeholder="Employee ID"
-                                    value={
-                                        filters.employee_id
-                                    }
-                                    onChange={
-                                        e =>
-                                            setFilters({
-                                                ...filters,
-                                                employee_id:
-                                                    e.target.value
-                                            })
-                                    }
-                                    style={
-                                        inputStyle
-                                    }
-                                />
-
-                            </div>
-
-
-                            <div>
-
-                                <label
-                                    style={
-                                        labelStyle
-                                    }
-                                >
-                                    Department ID
-                                </label>
-
-                                <input
-                                    type="number"
-                                    placeholder="Department ID"
-                                    value={
-                                        filters.department_id
-                                    }
-                                    onChange={
-                                        e =>
-                                            setFilters({
-                                                ...filters,
-                                                department_id:
-                                                    e.target.value
-                                            })
-                                    }
-                                    style={
-                                        inputStyle
-                                    }
-                                />
-
-                            </div>
-
-
-                            <div>
-
-                                <label
-                                    style={
-                                        labelStyle
-                                    }
-                                >
-                                    Location ID
-                                </label>
-
-                                <input
-                                    type="number"
-                                    placeholder="Location ID"
-                                    value={
-                                        filters.location_id
-                                    }
-                                    onChange={
-                                        e =>
-                                            setFilters({
-                                                ...filters,
-                                                location_id:
-                                                    e.target.value
-                                            })
-                                    }
-                                    style={
-                                        inputStyle
-                                    }
-                                />
-
-                            </div>
-
-
-                            <div>
-
-                                <label
-                                    style={
-                                        labelStyle
-                                    }
-                                >
-                                    Vendor ID
-                                </label>
-
-                                <input
-                                    type="number"
-                                    placeholder="Vendor ID"
-                                    value={
-                                        filters.vendor_id
-                                    }
-                                    onChange={
-                                        e =>
-                                            setFilters({
-                                                ...filters,
-                                                vendor_id:
-                                                    e.target.value
-                                            })
-                                    }
-                                    style={
-                                        inputStyle
-                                    }
-                                />
-
-                            </div>
-
+                        {isPurchaseReport ? (
 
                             <div
                                 style={{
-                                    gridColumn:
-                                        "1 / -1"
+                                    display:
+                                        "grid",
+                                    gridTemplateColumns:
+                                        "repeat(3, minmax(0, 1fr))",
+                                    gap:
+                                        "12px"
                                 }}
                             >
 
-                                <label
-                                    style={
-                                        labelStyle
-                                    }
-                                >
-                                    Search
-                                </label>
+                                {/* REPORT TYPE */}
 
-                                <input
-                                    type="text"
-                                    placeholder="Search asset, employee, vendor, category..."
-                                    value={
-                                        search
-                                    }
-                                    onChange={
-                                        e =>
-                                            setSearch(
-                                                e.target.value
-                                            )
-                                    }
+                                <div>
+
+                                    <label
+                                        style={
+                                            labelStyle
+                                        }
+                                    >
+                                        Report Type
+                                    </label>
+
+
+                                    <select
+                                        value={
+                                            reportType
+                                        }
+                                        onChange={
+                                            e =>
+                                                setReportType(
+                                                    e.target.value
+                                                )
+                                        }
+                                        style={
+                                            inputStyle
+                                        }
+                                    >
+
+                                        <option value="all">
+                                            All Assets
+                                        </option>
+
+                                        <option value="assigned">
+                                            Assigned Assets
+                                        </option>
+
+                                        <option value="repair">
+                                            Repair Assets
+                                        </option>
+
+                                        <option value="scrap">
+                                            Scrap Assets
+                                        </option>
+
+                                        <option value="lost">
+                                            Lost Assets
+                                        </option>
+
+                                        <option value="employee">
+                                            Employee Assets
+                                        </option>
+
+                                        <option value="purchase">
+                                            Purchase Report
+                                        </option>
+
+                                    </select>
+
+                                </div>
+
+
+                                {/* FROM DATE */}
+
+                                <div>
+
+                                    <label
+                                        style={
+                                            labelStyle
+                                        }
+                                    >
+                                        From Date
+                                    </label>
+
+
+                                    <input
+                                        type="date"
+                                        value={
+                                            filters.from_date
+                                        }
+                                        onChange={
+                                            e =>
+                                                setFilters({
+                                                    ...filters,
+                                                    from_date:
+                                                        e.target.value
+                                                })
+                                        }
+                                        style={
+                                            inputStyle
+                                        }
+                                    />
+
+                                </div>
+
+
+                                {/* TO DATE */}
+
+                                <div>
+
+                                    <label
+                                        style={
+                                            labelStyle
+                                        }
+                                    >
+                                        To Date
+                                    </label>
+
+
+                                    <input
+                                        type="date"
+                                        value={
+                                            filters.to_date
+                                        }
+                                        onChange={
+                                            e =>
+                                                setFilters({
+                                                    ...filters,
+                                                    to_date:
+                                                        e.target.value
+                                                })
+                                        }
+                                        style={
+                                            inputStyle
+                                        }
+                                    />
+
+                                </div>
+
+
+                                {/* VENDOR ID */}
+
+                                <div>
+
+                                    <label
+                                        style={
+                                            labelStyle
+                                        }
+                                    >
+                                        Vendor ID
+                                    </label>
+
+
+                                    <input
+                                        type="number"
+                                        placeholder="Enter Vendor ID"
+                                        value={
+                                            filters.vendor_id
+                                        }
+                                        onChange={
+                                            e =>
+                                                setFilters({
+                                                    ...filters,
+                                                    vendor_id:
+                                                        e.target.value
+                                                })
+                                        }
+                                        style={
+                                            inputStyle
+                                        }
+                                    />
+
+                                </div>
+
+
+                                {/* PO NUMBER */}
+
+                                <div>
+
+                                    <label
+                                        style={
+                                            labelStyle
+                                        }
+                                    >
+                                        PO Number
+                                    </label>
+
+
+                                    <input
+                                        type="text"
+                                        placeholder="Enter PO Number"
+                                        value={
+                                            filters.po_number
+                                        }
+                                        onChange={
+                                            e =>
+                                                setFilters({
+                                                    ...filters,
+                                                    po_number:
+                                                        e.target.value
+                                                })
+                                        }
+                                        style={
+                                            inputStyle
+                                        }
+                                    />
+
+                                </div>
+
+
+                                {/* INVOICE NUMBER */}
+
+                                <div>
+
+                                    <label
+                                        style={
+                                            labelStyle
+                                        }
+                                    >
+                                        Invoice Number
+                                    </label>
+
+
+                                    <input
+                                        type="text"
+                                        placeholder="Enter Invoice Number"
+                                        value={
+                                            filters.invoice_number
+                                        }
+                                        onChange={
+                                            e =>
+                                                setFilters({
+                                                    ...filters,
+                                                    invoice_number:
+                                                        e.target.value
+                                                })
+                                        }
+                                        style={
+                                            inputStyle
+                                        }
+                                    />
+
+                                </div>
+
+
+                                {/* PAYMENT STATUS */}
+
+                                <div>
+
+                                    <label
+                                        style={
+                                            labelStyle
+                                        }
+                                    >
+                                        Payment Status
+                                    </label>
+
+
+                                    <select
+                                        value={
+                                            filters.payment_status
+                                        }
+                                        onChange={
+                                            e =>
+                                                setFilters({
+                                                    ...filters,
+                                                    payment_status:
+                                                        e.target.value
+                                                })
+                                        }
+                                        style={
+                                            inputStyle
+                                        }
+                                    >
+
+                                        <option value="">
+                                            All Payment Status
+                                        </option>
+
+                                        <option value="Pending">
+                                            Pending
+                                        </option>
+
+                                        <option value="Partially Paid">
+                                            Partially Paid
+                                        </option>
+
+                                        <option value="Paid">
+                                            Paid
+                                        </option>
+
+                                        <option value="Cancelled">
+                                            Cancelled
+                                        </option>
+
+                                    </select>
+
+                                </div>
+
+
+                                {/* SEARCH */}
+
+                                <div
                                     style={{
-                                        ...inputStyle,
-                                        width:
-                                            "100%"
+                                        gridColumn:
+                                            "1 / -1"
                                     }}
-                                />
+                                >
+
+                                    <label
+                                        style={
+                                            labelStyle
+                                        }
+                                    >
+                                        Search
+                                    </label>
+
+
+                                    <input
+                                        type="text"
+                                        placeholder="Search PO, invoice, vendor, remarks..."
+                                        value={
+                                            search
+                                        }
+                                        onChange={
+                                            e =>
+                                                setSearch(
+                                                    e.target.value
+                                                )
+                                        }
+                                        style={{
+                                            ...inputStyle,
+                                            width:
+                                                "100%"
+                                        }}
+                                    />
+
+                                </div>
 
                             </div>
 
-                        </div>
+                        ) : (
+
+                            /* =================================================
+                                ASSET FILTERS
+                            ================================================= */
+
+                            <div
+                                style={{
+                                    display:
+                                        "grid",
+                                    gridTemplateColumns:
+                                        "repeat(3, minmax(0, 1fr))",
+                                    gap:
+                                        "12px"
+                                }}
+                            >
+
+                                {/* REPORT TYPE */}
+
+                                <div>
+
+                                    <label
+                                        style={
+                                            labelStyle
+                                        }
+                                    >
+                                        Report Type
+                                    </label>
+
+
+                                    <select
+                                        value={
+                                            reportType
+                                        }
+                                        onChange={
+                                            e =>
+                                                setReportType(
+                                                    e.target.value
+                                                )
+                                        }
+                                        style={
+                                            inputStyle
+                                        }
+                                    >
+
+                                        <option value="all">
+                                            All Assets
+                                        </option>
+
+                                        <option value="assigned">
+                                            Assigned Assets
+                                        </option>
+
+                                        <option value="repair">
+                                            Repair Assets
+                                        </option>
+
+                                        <option value="scrap">
+                                            Scrap Assets
+                                        </option>
+
+                                        <option value="lost">
+                                            Lost Assets
+                                        </option>
+
+                                        <option value="employee">
+                                            Employee Assets
+                                        </option>
+
+                                        <option value="purchase">
+                                            Purchase Report
+                                        </option>
+
+                                    </select>
+
+                                </div>
+
+
+                                {/* FROM DATE */}
+
+                                <div>
+
+                                    <label
+                                        style={
+                                            labelStyle
+                                        }
+                                    >
+                                        From Date
+                                    </label>
+
+
+                                    <input
+                                        type="date"
+                                        value={
+                                            filters.from_date
+                                        }
+                                        onChange={
+                                            e =>
+                                                setFilters({
+                                                    ...filters,
+                                                    from_date:
+                                                        e.target.value
+                                                })
+                                        }
+                                        style={
+                                            inputStyle
+                                        }
+                                    />
+
+                                </div>
+
+
+                                {/* TO DATE */}
+
+                                <div>
+
+                                    <label
+                                        style={
+                                            labelStyle
+                                        }
+                                    >
+                                        To Date
+                                    </label>
+
+
+                                    <input
+                                        type="date"
+                                        value={
+                                            filters.to_date
+                                        }
+                                        onChange={
+                                            e =>
+                                                setFilters({
+                                                    ...filters,
+                                                    to_date:
+                                                        e.target.value
+                                                })
+                                        }
+                                        style={
+                                            inputStyle
+                                        }
+                                    />
+
+                                </div>
+
+
+                                {/* STATUS */}
+
+                                <div>
+
+                                    <label
+                                        style={
+                                            labelStyle
+                                        }
+                                    >
+                                        Status
+                                    </label>
+
+
+                                    <select
+                                        value={
+                                            filters.status
+                                        }
+                                        onChange={
+                                            e =>
+                                                setFilters({
+                                                    ...filters,
+                                                    status:
+                                                        e.target.value
+                                                })
+                                        }
+                                        style={
+                                            inputStyle
+                                        }
+                                    >
+
+                                        <option value="">
+                                            All Status
+                                        </option>
+
+                                        <option value="Assigned">
+                                            Assigned
+                                        </option>
+
+                                        <option value="In Stock">
+                                            In Stock
+                                        </option>
+
+                                        <option value="Repair">
+                                            Repair
+                                        </option>
+
+                                        <option value="Scrap">
+                                            Scrap
+                                        </option>
+
+                                        <option value="Lost">
+                                            Lost
+                                        </option>
+
+                                    </select>
+
+                                </div>
+
+
+                                {/* CATEGORY */}
+
+                                <div>
+
+                                    <label
+                                        style={
+                                            labelStyle
+                                        }
+                                    >
+                                        Category ID
+                                    </label>
+
+
+                                    <input
+                                        type="number"
+                                        placeholder="Category ID"
+                                        value={
+                                            filters.category_id
+                                        }
+                                        onChange={
+                                            e =>
+                                                setFilters({
+                                                    ...filters,
+                                                    category_id:
+                                                        e.target.value
+                                                })
+                                        }
+                                        style={
+                                            inputStyle
+                                        }
+                                    />
+
+                                </div>
+
+
+                                {/* EMPLOYEE */}
+
+                                <div>
+
+                                    <label
+                                        style={
+                                            labelStyle
+                                        }
+                                    >
+                                        Employee ID
+                                    </label>
+
+
+                                    <input
+                                        type="number"
+                                        placeholder="Employee ID"
+                                        value={
+                                            filters.employee_id
+                                        }
+                                        onChange={
+                                            e =>
+                                                setFilters({
+                                                    ...filters,
+                                                    employee_id:
+                                                        e.target.value
+                                                })
+                                        }
+                                        style={
+                                            inputStyle
+                                        }
+                                    />
+
+                                </div>
+
+
+                                {/* DEPARTMENT */}
+
+                                <div>
+
+                                    <label
+                                        style={
+                                            labelStyle
+                                        }
+                                    >
+                                        Department ID
+                                    </label>
+
+
+                                    <input
+                                        type="number"
+                                        placeholder="Department ID"
+                                        value={
+                                            filters.department_id
+                                        }
+                                        onChange={
+                                            e =>
+                                                setFilters({
+                                                    ...filters,
+                                                    department_id:
+                                                        e.target.value
+                                                })
+                                        }
+                                        style={
+                                            inputStyle
+                                        }
+                                    />
+
+                                </div>
+
+
+                                {/* LOCATION */}
+
+                                <div>
+
+                                    <label
+                                        style={
+                                            labelStyle
+                                        }
+                                    >
+                                        Location ID
+                                    </label>
+
+
+                                    <input
+                                        type="number"
+                                        placeholder="Location ID"
+                                        value={
+                                            filters.location_id
+                                        }
+                                        onChange={
+                                            e =>
+                                                setFilters({
+                                                    ...filters,
+                                                    location_id:
+                                                        e.target.value
+                                                })
+                                        }
+                                        style={
+                                            inputStyle
+                                        }
+                                    />
+
+                                </div>
+
+
+                                {/* VENDOR */}
+
+                                <div>
+
+                                    <label
+                                        style={
+                                            labelStyle
+                                        }
+                                    >
+                                        Vendor ID
+                                    </label>
+
+
+                                    <input
+                                        type="number"
+                                        placeholder="Vendor ID"
+                                        value={
+                                            filters.vendor_id
+                                        }
+                                        onChange={
+                                            e =>
+                                                setFilters({
+                                                    ...filters,
+                                                    vendor_id:
+                                                        e.target.value
+                                                })
+                                        }
+                                        style={
+                                            inputStyle
+                                        }
+                                    />
+
+                                </div>
+
+
+                                {/* SEARCH */}
+
+                                <div
+                                    style={{
+                                        gridColumn:
+                                            "1 / -1"
+                                    }}
+                                >
+
+                                    <label
+                                        style={
+                                            labelStyle
+                                        }
+                                    >
+                                        Search
+                                    </label>
+
+
+                                    <input
+                                        type="text"
+                                        placeholder="Search asset, employee, vendor, category..."
+                                        value={
+                                            search
+                                        }
+                                        onChange={
+                                            e =>
+                                                setSearch(
+                                                    e.target.value
+                                                )
+                                        }
+                                        style={{
+                                            ...inputStyle,
+                                            width:
+                                                "100%"
+                                        }}
+                                    />
+
+                                </div>
+
+                            </div>
+
+                        )}
 
                     </section>
 
@@ -1469,6 +2502,7 @@ function Reports() {
                                     Report Analysis
                                 </h2>
 
+
                                 <p
                                     style={{
                                         color:
@@ -1499,20 +2533,30 @@ function Reports() {
                         >
 
                             <AnalysisCard
-                                title="Total Records"
+                                title={
+                                    isPurchaseReport
+                                        ? "Total Purchases"
+                                        : "Total Records"
+                                }
                                 value={
                                     analysis.total
                                 }
                             />
 
+
                             <AnalysisCard
-                                title="Total Asset Value"
+                                title={
+                                    isPurchaseReport
+                                        ? "Total Purchase Value"
+                                        : "Total Asset Value"
+                                }
                                 value={
                                     formatCost(
                                         analysis.totalCost
                                     )
                                 }
                             />
+
 
                             <AnalysisCard
                                 title="Average Cost"
@@ -1523,12 +2567,24 @@ function Reports() {
                                 }
                             />
 
+
                             <AnalysisCard
-                                title="Highest Cost"
+                                title={
+                                    isPurchaseReport
+                                        ? "Highest Purchase"
+                                        : "Highest Cost"
+                                }
                                 value={
                                     formatCost(
-                                        summary?.highest_asset_cost ||
-                                        0
+                                        isPurchaseReport
+                                            ? (
+                                                summary?.highest_purchase_amount ||
+                                                0
+                                            )
+                                            : (
+                                                summary?.highest_asset_cost ||
+                                                0
+                                            )
                                     )
                                 }
                             />
@@ -1550,10 +2606,13 @@ function Reports() {
                                     "#1e40af"
                             }}
                         >
+
                             <strong>
                                 Management Insight:
                             </strong>{" "}
+
                             {getInsight()}
+
                         </div>
 
                     </section>
@@ -1568,7 +2627,9 @@ function Reports() {
                             display:
                                 "grid",
                             gridTemplateColumns:
-                                "repeat(3, minmax(0, 1fr))",
+                                isPurchaseReport
+                                    ? "minmax(0, 1fr)"
+                                    : "repeat(auto-fit, minmax(260px, 1fr))",
                             gap:
                                 "20px",
                             marginBottom:
@@ -1577,27 +2638,39 @@ function Reports() {
                     >
 
                         <BreakdownCard
-                            title="Status Distribution"
+                            title={
+                                isPurchaseReport
+                                    ? "Payment Status Distribution"
+                                    : "Status Distribution"
+                            }
                             data={
                                 statusAnalysis
                             }
                         />
 
 
-                        <BreakdownCard
-                            title="Category Distribution"
-                            data={
-                                categoryAnalysis
-                            }
-                        />
+                        {!isPurchaseReport && (
+
+                            <>
+
+                                <BreakdownCard
+                                    title="Category Distribution"
+                                    data={
+                                        categoryAnalysis
+                                    }
+                                />
 
 
-                        <BreakdownCard
-                            title="Department Distribution"
-                            data={
-                                departmentAnalysis
-                            }
-                        />
+                                <BreakdownCard
+                                    title="Department Distribution"
+                                    data={
+                                        departmentAnalysis
+                                    }
+                                />
+
+                            </>
+
+                        )}
 
                     </div>
 
@@ -1641,6 +2714,7 @@ function Reports() {
                                     getReportTitle()
                                 }
                             </h2>
+
 
                             <span
                                 style={{
@@ -1738,11 +2812,13 @@ function Reports() {
                                 AssetSphere
                             </h1>
 
+
                             <h2>
                                 {
                                     getReportTitle()
                                 }
                             </h2>
+
 
                             <p>
                                 Generated:{" "}
@@ -1765,6 +2841,7 @@ function Reports() {
                                         "center"
                                 }}
                             >
+
                                 <div
                                     style={{
                                         fontSize:
@@ -1778,6 +2855,7 @@ function Reports() {
                                     Loading report...
                                 </div>
 
+
                                 <p
                                     style={{
                                         color:
@@ -1786,6 +2864,7 @@ function Reports() {
                                 >
                                     Please wait
                                 </p>
+
                             </div>
 
                         ) : error ? (
@@ -1806,9 +2885,11 @@ function Reports() {
                                     report
                                 </h3>
 
+
                                 <p>
                                     {error}
                                 </p>
+
 
                                 <button
                                     className="no-print"
@@ -1853,6 +2934,7 @@ function Reports() {
                                     No records found
                                 </h3>
 
+
                                 <p
                                     style={{
                                         color:
@@ -1876,280 +2958,616 @@ function Reports() {
                                 }}
                             >
 
-                                <table
-                                    style={{
-                                        width:
-                                            "100%",
-                                        borderCollapse:
-                                            "collapse",
-                                        minWidth:
-                                            "1200px"
-                                    }}
-                                >
+                                {/* =================================================
+                                    PURCHASE TABLE
+                                ================================================= */}
 
-                                    <thead>
+                                {isPurchaseReport ? (
 
-                                        <tr>
+                                    <table
+                                        style={{
+                                            width:
+                                                "100%",
+                                            borderCollapse:
+                                                "collapse",
+                                            minWidth:
+                                                "1300px"
+                                        }}
+                                    >
 
-                                            <th
-                                                style={
-                                                    thStyle
-                                                }
-                                            >
-                                                ID
-                                            </th>
+                                        <thead>
 
-                                            <th
-                                                style={
-                                                    thStyle
-                                                }
-                                            >
-                                                Asset Code
-                                            </th>
+                                            <tr>
 
-                                            <th
-                                                style={
-                                                    thStyle
-                                                }
-                                            >
-                                                Asset Name
-                                            </th>
-
-                                            <th
-                                                style={
-                                                    thStyle
-                                                }
-                                            >
-                                                Category
-                                            </th>
-
-                                            <th
-                                                style={
-                                                    thStyle
-                                                }
-                                            >
-                                                Employee
-                                            </th>
-
-                                            <th
-                                                style={
-                                                    thStyle
-                                                }
-                                            >
-                                                Department
-                                            </th>
-
-                                            <th
-                                                style={
-                                                    thStyle
-                                                }
-                                            >
-                                                Vendor
-                                            </th>
-
-                                            <th
-                                                style={
-                                                    thStyle
-                                                }
-                                            >
-                                                Location
-                                            </th>
-
-                                            <th
-                                                style={
-                                                    thStyle
-                                                }
-                                            >
-                                                Purchase Date
-                                            </th>
-
-                                            <th
-                                                style={
-                                                    thStyle
-                                                }
-                                            >
-                                                Cost
-                                            </th>
-
-                                            <th
-                                                style={
-                                                    thStyle
-                                                }
-                                            >
-                                                Status
-                                            </th>
-
-                                        </tr>
-
-                                    </thead>
-
-
-                                    <tbody>
-
-                                        {data.map(
-                                            (
-                                                item,
-                                                index
-                                            ) => (
-
-                                                <tr
-                                                    key={
-                                                        item.asset_id ||
-                                                        `${item.employee_id}-${index}`
+                                                <th
+                                                    style={
+                                                        thStyle
                                                     }
                                                 >
-
-                                                    <td
-                                                        style={
-                                                            tdStyle
-                                                        }
-                                                    >
-                                                        {
-                                                            item.asset_id ??
-                                                            "-"
-                                                        }
-                                                    </td>
+                                                    Purchase ID
+                                                </th>
 
 
-                                                    <td
-                                                        style={
-                                                            tdStyle
-                                                        }
-                                                    >
-                                                        {
-                                                            item.asset_code ||
-                                                            "-"
-                                                        }
-                                                    </td>
+                                                <th
+                                                    style={
+                                                        thStyle
+                                                    }
+                                                >
+                                                    PO Number
+                                                </th>
 
 
-                                                    <td
-                                                        style={
-                                                            tdStyle
-                                                        }
-                                                    >
-                                                        {
-                                                            item.asset_name ||
-                                                            "-"
-                                                        }
-                                                    </td>
+                                                <th
+                                                    style={
+                                                        thStyle
+                                                    }
+                                                >
+                                                    Invoice Number
+                                                </th>
 
 
-                                                    <td
-                                                        style={
-                                                            tdStyle
-                                                        }
-                                                    >
-                                                        {
-                                                            item.category_name ||
-                                                            "-"
-                                                        }
-                                                    </td>
+                                                <th
+                                                    style={
+                                                        thStyle
+                                                    }
+                                                >
+                                                    Vendor
+                                                </th>
 
 
-                                                    <td
-                                                        style={
-                                                            tdStyle
-                                                        }
-                                                    >
-                                                        {
-                                                            item.employee_name ||
-                                                            "-"
-                                                        }
-                                                    </td>
+                                                <th
+                                                    style={
+                                                        thStyle
+                                                    }
+                                                >
+                                                    Purchase Date
+                                                </th>
 
 
-                                                    <td
-                                                        style={
-                                                            tdStyle
-                                                        }
-                                                    >
-                                                        {
-                                                            item.department_name ||
-                                                            "-"
-                                                        }
-                                                    </td>
+                                                <th
+                                                    style={
+                                                        thStyle
+                                                    }
+                                                >
+                                                    Amount
+                                                </th>
 
 
-                                                    <td
-                                                        style={
-                                                            tdStyle
-                                                        }
-                                                    >
-                                                        {
-                                                            item.vendor_name ||
-                                                            "-"
-                                                        }
-                                                    </td>
+                                                <th
+                                                    style={
+                                                        thStyle
+                                                    }
+                                                >
+                                                    Payment
+                                                </th>
 
 
-                                                    <td
-                                                        style={
-                                                            tdStyle
-                                                        }
-                                                    >
-                                                        {
-                                                            item.location_name ||
-                                                            "-"
-                                                        }
-                                                    </td>
+                                                <th
+                                                    style={
+                                                        thStyle
+                                                    }
+                                                >
+                                                    Warranty Expiry
+                                                </th>
 
 
-                                                    <td
-                                                        style={
-                                                            tdStyle
-                                                        }
-                                                    >
-                                                        {
-                                                            formatDate(
-                                                                item.purchase_date
-                                                            )
-                                                        }
-                                                    </td>
+                                                <th
+                                                    style={
+                                                        thStyle
+                                                    }
+                                                >
+                                                    Remarks
+                                                </th>
+
+                                            </tr>
+
+                                        </thead>
 
 
-                                                    <td
-                                                        style={
-                                                            tdStyle
-                                                        }
-                                                    >
-                                                        {
-                                                            formatCost(
-                                                                item.purchase_cost
-                                                            )
-                                                        }
-                                                    </td>
+                                        <tbody>
 
+                                            {data.map(
+                                                (
+                                                    item,
+                                                    index
+                                                ) => (
 
-                                                    <td
-                                                        style={
-                                                            tdStyle
+                                                    <tr
+                                                        key={
+                                                            item.purchase_id ||
+                                                            `${item.po_number}-${index}`
                                                         }
                                                     >
 
-                                                        <span
+                                                        {/* PURCHASE ID */}
+
+                                                        <td
                                                             style={
-                                                                statusStyle(
-                                                                    item.asset_status
-                                                                )
+                                                                tdStyle
                                                             }
                                                         >
                                                             {
-                                                                item.asset_status ||
+                                                                item.purchase_id ??
                                                                 "-"
                                                             }
-                                                        </span>
+                                                        </td>
 
-                                                    </td>
 
-                                                </tr>
+                                                        {/* PO NUMBER */}
 
-                                            )
-                                        )}
+                                                        <td
+                                                            style={
+                                                                tdStyle
+                                                            }
+                                                        >
 
-                                    </tbody>
+                                                            <span
+                                                                style={{
+                                                                    color:
+                                                                        "#2563eb",
+                                                                    fontWeight:
+                                                                        600
+                                                                }}
+                                                            >
+                                                                {
+                                                                    item.po_number ||
+                                                                    "-"
+                                                                }
+                                                            </span>
 
-                                </table>
+                                                        </td>
+
+
+                                                        {/* INVOICE */}
+
+                                                        <td
+                                                            style={
+                                                                tdStyle
+                                                            }
+                                                        >
+                                                            {
+                                                                item.invoice_number ||
+                                                                "-"
+                                                            }
+                                                        </td>
+
+
+                                                        {/* VENDOR */}
+
+                                                        <td
+                                                            style={
+                                                                tdStyle
+                                                            }
+                                                        >
+
+                                                            <div>
+
+                                                                <div
+                                                                    style={{
+                                                                        fontWeight:
+                                                                            600,
+                                                                        color:
+                                                                            "#334155"
+                                                                    }}
+                                                                >
+                                                                    {
+                                                                        item.vendor_name ||
+                                                                        "-"
+                                                                    }
+                                                                </div>
+
+
+                                                                <div
+                                                                    style={{
+                                                                        fontSize:
+                                                                            "11px",
+                                                                        color:
+                                                                            "#64748b",
+                                                                        marginTop:
+                                                                            "2px"
+                                                                    }}
+                                                                >
+
+                                                                    {item.vendor_id
+                                                                        ? `ID: ${item.vendor_id}`
+                                                                        : ""}
+
+                                                                    {item.vendor_code
+                                                                        ? ` ${item.vendor_code}`
+                                                                        : ""}
+
+                                                                </div>
+
+                                                            </div>
+
+                                                        </td>
+
+
+                                                        {/* PURCHASE DATE */}
+
+                                                        <td
+                                                            style={
+                                                                tdStyle
+                                                            }
+                                                        >
+                                                            {
+                                                                formatDate(
+                                                                    item.purchase_date
+                                                                )
+                                                            }
+                                                        </td>
+
+
+                                                        {/* AMOUNT */}
+
+                                                        <td
+                                                            style={
+                                                                tdStyle
+                                                            }
+                                                        >
+                                                            {
+                                                                formatCost(
+                                                                    item.amount ??
+                                                                    item.purchase_amount ??
+                                                                    item.total_amount
+                                                                )
+                                                            }
+                                                        </td>
+
+
+                                                        {/* PAYMENT STATUS */}
+
+                                                        <td
+                                                            style={
+                                                                tdStyle
+                                                            }
+                                                        >
+
+                                                            <span
+                                                                style={
+                                                                    purchasePaymentStyle(
+                                                                        item.payment_status
+                                                                    )
+                                                                }
+                                                            >
+                                                                {
+                                                                    item.payment_status ||
+                                                                    "-"
+                                                                }
+                                                            </span>
+
+                                                        </td>
+
+
+                                                        {/* WARRANTY */}
+
+                                                        <td
+                                                            style={
+                                                                tdStyle
+                                                            }
+                                                        >
+                                                            {
+                                                                formatDate(
+                                                                    item.warranty_expiry
+                                                                )
+                                                            }
+                                                        </td>
+
+
+                                                        {/* REMARKS */}
+
+                                                        <td
+                                                            style={
+                                                                tdStyle
+                                                            }
+                                                        >
+                                                            {
+                                                                item.remarks ||
+                                                                "-"
+                                                            }
+                                                        </td>
+
+                                                    </tr>
+
+                                                )
+                                            )}
+
+                                        </tbody>
+
+                                    </table>
+
+                                ) : (
+
+                                    /* =================================================
+                                        ASSET TABLE
+                                    ================================================= */
+
+                                    <table
+                                        style={{
+                                            width:
+                                                "100%",
+                                            borderCollapse:
+                                                "collapse",
+                                            minWidth:
+                                                "1200px"
+                                        }}
+                                    >
+
+                                        <thead>
+
+                                            <tr>
+
+                                                <th
+                                                    style={
+                                                        thStyle
+                                                    }
+                                                >
+                                                    ID
+                                                </th>
+
+
+                                                <th
+                                                    style={
+                                                        thStyle
+                                                    }
+                                                >
+                                                    Asset Code
+                                                </th>
+
+
+                                                <th
+                                                    style={
+                                                        thStyle
+                                                    }
+                                                >
+                                                    Asset Name
+                                                </th>
+
+
+                                                <th
+                                                    style={
+                                                        thStyle
+                                                    }
+                                                >
+                                                    Category
+                                                </th>
+
+
+                                                <th
+                                                    style={
+                                                        thStyle
+                                                    }
+                                                >
+                                                    Employee
+                                                </th>
+
+
+                                                <th
+                                                    style={
+                                                        thStyle
+                                                    }
+                                                >
+                                                    Department
+                                                </th>
+
+
+                                                <th
+                                                    style={
+                                                        thStyle
+                                                    }
+                                                >
+                                                    Vendor
+                                                </th>
+
+
+                                                <th
+                                                    style={
+                                                        thStyle
+                                                    }
+                                                >
+                                                    Location
+                                                </th>
+
+
+                                                <th
+                                                    style={
+                                                        thStyle
+                                                    }
+                                                >
+                                                    Purchase Date
+                                                </th>
+
+
+                                                <th
+                                                    style={
+                                                        thStyle
+                                                    }
+                                                >
+                                                    Cost
+                                                </th>
+
+
+                                                <th
+                                                    style={
+                                                        thStyle
+                                                    }
+                                                >
+                                                    Status
+                                                </th>
+
+                                            </tr>
+
+                                        </thead>
+
+
+                                        <tbody>
+
+                                            {data.map(
+                                                (
+                                                    item,
+                                                    index
+                                                ) => (
+
+                                                    <tr
+                                                        key={
+                                                            item.asset_id ||
+                                                            `${item.employee_id}-${index}`
+                                                        }
+                                                    >
+
+                                                        <td
+                                                            style={
+                                                                tdStyle
+                                                            }
+                                                        >
+                                                            {
+                                                                item.asset_id ??
+                                                                "-"
+                                                            }
+                                                        </td>
+
+
+                                                        <td
+                                                            style={
+                                                                tdStyle
+                                                            }
+                                                        >
+                                                            {
+                                                                item.asset_code ||
+                                                                "-"
+                                                            }
+                                                        </td>
+
+
+                                                        <td
+                                                            style={
+                                                                tdStyle
+                                                            }
+                                                        >
+                                                            {
+                                                                item.asset_name ||
+                                                                "-"
+                                                            }
+                                                        </td>
+
+
+                                                        <td
+                                                            style={
+                                                                tdStyle
+                                                            }
+                                                        >
+                                                            {
+                                                                item.category_name ||
+                                                                "-"
+                                                            }
+                                                        </td>
+
+
+                                                        <td
+                                                            style={
+                                                                tdStyle
+                                                            }
+                                                        >
+                                                            {
+                                                                item.employee_name ||
+                                                                "-"
+                                                            }
+                                                        </td>
+
+
+                                                        <td
+                                                            style={
+                                                                tdStyle
+                                                            }
+                                                        >
+                                                            {
+                                                                item.department_name ||
+                                                                "-"
+                                                            }
+                                                        </td>
+
+
+                                                        <td
+                                                            style={
+                                                                tdStyle
+                                                            }
+                                                        >
+                                                            {
+                                                                item.vendor_name ||
+                                                                "-"
+                                                            }
+                                                        </td>
+
+
+                                                        <td
+                                                            style={
+                                                                tdStyle
+                                                            }
+                                                        >
+                                                            {
+                                                                item.location_name ||
+                                                                "-"
+                                                            }
+                                                        </td>
+
+
+                                                        <td
+                                                            style={
+                                                                tdStyle
+                                                            }
+                                                        >
+                                                            {
+                                                                formatDate(
+                                                                    item.purchase_date
+                                                                )
+                                                            }
+                                                        </td>
+
+
+                                                        <td
+                                                            style={
+                                                                tdStyle
+                                                            }
+                                                        >
+                                                            {
+                                                                formatCost(
+                                                                    item.purchase_cost
+                                                                )
+                                                            }
+                                                        </td>
+
+
+                                                        <td
+                                                            style={
+                                                                tdStyle
+                                                            }
+                                                        >
+
+                                                            <span
+                                                                style={
+                                                                    statusStyle(
+                                                                        item.asset_status
+                                                                    )
+                                                                }
+                                                            >
+                                                                {
+                                                                    item.asset_status ||
+                                                                    "-"
+                                                                }
+                                                            </span>
+
+                                                        </td>
+
+                                                    </tr>
+
+                                                )
+                                            )}
+
+                                        </tbody>
+
+                                    </table>
+
+                                )}
 
                             </div>
 
@@ -2168,9 +3586,11 @@ function Reports() {
 
             <style>
                 {`
+
                     .print-only {
                         display: none;
                     }
+
 
                     @media print {
 
@@ -2179,32 +3599,40 @@ function Reports() {
                             margin: 12mm;
                         }
 
+
                         body {
                             background: #fff !important;
                         }
+
 
                         .no-print {
                             display: none !important;
                         }
 
+
                         .print-only {
                             display: block !important;
                         }
+
 
                         #report-print-area {
                             border: none !important;
                             border-radius: 0 !important;
                         }
 
+
                         table {
                             font-size: 10px !important;
                         }
+
 
                         th {
                             background: #f3f4f6 !important;
                             color: #111827 !important;
                         }
+
                     }
+
 
                     @media (max-width: 1100px) {
 
@@ -2214,19 +3642,31 @@ function Reports() {
 
                     }
 
+
                     @media (max-width: 900px) {
 
-                        .report-grid {
-                            grid-template-columns:
-                                1fr !important;
+                        main {
+                            padding: 15px !important;
                         }
 
                     }
+
+
+                    @media (max-width: 700px) {
+
+                        main {
+                            padding: 12px !important;
+                        }
+
+                    }
+
                 `}
             </style>
 
         </div>
+
     );
+
 }
 
 
@@ -2296,7 +3736,9 @@ function SummaryCard({
             </div>
 
         </div>
+
     );
+
 }
 
 
@@ -2330,6 +3772,7 @@ function AnalysisCard({
                 {title}
             </div>
 
+
             <div
                 style={{
                     fontWeight: 700,
@@ -2342,7 +3785,9 @@ function AnalysisCard({
             </div>
 
         </div>
+
     );
+
 }
 
 
@@ -2437,6 +3882,7 @@ function BreakdownCard({
                                         {name}
                                     </span>
 
+
                                     <strong>
                                         {count}
                                     </strong>
@@ -2475,13 +3921,16 @@ function BreakdownCard({
                             </div>
 
                         );
+
                     }
                 )
 
             )}
 
         </div>
+
     );
+
 }
 
 
@@ -2564,6 +4013,10 @@ const tdStyle = {
 };
 
 
+// =====================================================
+// ASSET STATUS STYLE
+// =====================================================
+
 const statusStyle = (status) => {
 
     let background = "#f3f4f6";
@@ -2633,8 +4086,106 @@ const statusStyle = (status) => {
         fontWeight: 600
 
     };
+
 };
 
+
+// =====================================================
+// PURCHASE PAYMENT STYLE
+// =====================================================
+
+const purchasePaymentStyle = (
+    status
+) => {
+
+    let background =
+        "#f3f4f6";
+
+    let color =
+        "#374151";
+
+
+    if (
+        status === "Paid"
+    ) {
+
+        background =
+            "#dcfce7";
+
+        color =
+            "#166534";
+
+    }
+
+
+    if (
+        status === "Pending"
+    ) {
+
+        background =
+            "#fff7ed";
+
+        color =
+            "#9a3412";
+
+    }
+
+
+    if (
+        status === "Partially Paid"
+    ) {
+
+        background =
+            "#fef3c7";
+
+        color =
+            "#92400e";
+
+    }
+
+
+    if (
+        status === "Cancelled"
+    ) {
+
+        background =
+            "#fee2e2";
+
+        color =
+            "#991b1b";
+
+    }
+
+
+    return {
+
+        display:
+            "inline-block",
+
+        padding:
+            "4px 9px",
+
+        borderRadius:
+            "20px",
+
+        background,
+
+        color,
+
+        fontSize:
+            "12px",
+
+        fontWeight:
+            600
+
+    };
+
+};
+
+
+// =====================================================
+// ACTION BUTTON
+// =====================================================
 
 const actionButton = (
     color,

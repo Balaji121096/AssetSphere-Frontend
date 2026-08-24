@@ -786,7 +786,7 @@ function Assets() {
                                 borderCollapse:
                                     "collapse",
                                 minWidth:
-                                    "1350px"
+                                    "1150px"
                             }}
                         >
 
@@ -827,7 +827,13 @@ function Assets() {
                                         Status
                                     </th>
 
-                                    <th style={thStyle}>
+                                    <th
+                                        style={{
+                                            ...thStyle,
+                                            textAlign:
+                                                "center"
+                                        }}
+                                    >
                                         Action
                                     </th>
 
@@ -969,17 +975,30 @@ function Assets() {
                                                 </td>
 
 
-                                                {/* ACTIONS */}
+                                                {/* =================================================
+                                                    ACTIONS - ICON VERSION
+                                                ================================================= */}
 
-                                                <td style={tdStyle}>
+                                                <td
+                                                    style={{
+                                                        ...tdStyle,
+                                                        textAlign:
+                                                            "center"
+                                                    }}
+                                                >
 
                                                     <div
                                                         style={{
                                                             display:
                                                                 "flex",
-                                                            gap: "6px",
+                                                            gap:
+                                                                "5px",
+                                                            alignItems:
+                                                                "center",
+                                                            justifyContent:
+                                                                "center",
                                                             flexWrap:
-                                                                "wrap"
+                                                                "nowrap"
                                                         }}
                                                     >
 
@@ -987,16 +1006,18 @@ function Assets() {
 
                                                         <button
                                                             type="button"
+                                                            title="View Asset"
+                                                            aria-label="View Asset"
                                                             onClick={() =>
                                                                 setViewAsset(
                                                                     asset
                                                                 )
                                                             }
                                                             style={
-                                                                viewButtonStyle
+                                                                iconViewButtonStyle
                                                             }
                                                         >
-                                                            View
+                                                            👁
                                                         </button>
 
 
@@ -1004,6 +1025,8 @@ function Assets() {
 
                                                         <button
                                                             type="button"
+                                                            title="Edit Asset"
+                                                            aria-label="Edit Asset"
                                                             onClick={() =>
                                                                 setEditAsset(
                                                                     {
@@ -1012,10 +1035,10 @@ function Assets() {
                                                                 )
                                                             }
                                                             style={
-                                                                editButtonStyle
+                                                                iconEditButtonStyle
                                                             }
                                                         >
-                                                            Edit
+                                                            ✏
                                                         </button>
 
 
@@ -1023,16 +1046,18 @@ function Assets() {
 
                                                         <button
                                                             type="button"
+                                                            title="Delete Asset"
+                                                            aria-label="Delete Asset"
                                                             onClick={() =>
                                                                 handleDelete(
                                                                     asset.asset_id
                                                                 )
                                                             }
                                                             style={
-                                                                deleteButtonStyle
+                                                                iconDeleteButtonStyle
                                                             }
                                                         >
-                                                            Delete
+                                                            🗑
                                                         </button>
 
 
@@ -1048,16 +1073,18 @@ function Assets() {
 
                                                                 <button
                                                                     type="button"
+                                                                    title="Assign Asset"
+                                                                    aria-label="Assign Asset"
                                                                     onClick={() =>
                                                                         navigate(
                                                                             `/assets/assign/${asset.asset_id}`
                                                                         )
                                                                     }
                                                                     style={
-                                                                        assignButtonStyle
+                                                                        iconAssignButtonStyle
                                                                     }
                                                                 >
-                                                                    Assign
+                                                                    ➜
                                                                 </button>
 
                                                             )
@@ -1072,16 +1099,18 @@ function Assets() {
 
                                                                 <button
                                                                     type="button"
+                                                                    title="Return Asset"
+                                                                    aria-label="Return Asset"
                                                                     onClick={() =>
                                                                         handleReturn(
                                                                             asset.asset_id
                                                                         )
                                                                     }
                                                                     style={
-                                                                        returnButtonStyle
+                                                                        iconReturnButtonStyle
                                                                     }
                                                                 >
-                                                                    Return
+                                                                    ↩
                                                                 </button>
 
                                                             )
@@ -1096,16 +1125,18 @@ function Assets() {
 
                                                                 <button
                                                                     type="button"
+                                                                    title="Scrap Asset"
+                                                                    aria-label="Scrap Asset"
                                                                     onClick={() =>
                                                                         handleScrap(
                                                                             asset.asset_id
                                                                         )
                                                                     }
                                                                     style={
-                                                                        scrapButtonStyle
+                                                                        iconScrapButtonStyle
                                                                     }
                                                                 >
-                                                                    Scrap
+                                                                    ♻
                                                                 </button>
 
                                                             )
@@ -1147,7 +1178,9 @@ function Assets() {
                             style={{
                                 display: "flex",
                                 justifyContent:
-                                    "space-between"
+                                    "space-between",
+                                alignItems:
+                                    "center"
                             }}
                         >
 
@@ -1156,6 +1189,7 @@ function Assets() {
                             </h2>
 
                             <button
+                                type="button"
                                 onClick={() =>
                                     setViewAsset(null)
                                 }
@@ -1525,6 +1559,7 @@ function Detail({
                 display: "flex",
                 justifyContent:
                     "space-between",
+                gap: "20px",
                 padding: "10px 0",
                 borderBottom:
                     "1px solid #e2e8f0"
@@ -1547,7 +1582,7 @@ function Detail({
 
 
 // =====================================================
-// STYLES
+// TABLE STYLES
 // =====================================================
 
 const thStyle = {
@@ -1595,6 +1630,10 @@ const emptyStyle = {
 };
 
 
+// =====================================================
+// HEADER BUTTONS
+// =====================================================
+
 const primaryButtonStyle = {
 
     padding: "10px 16px",
@@ -1631,6 +1670,10 @@ const refreshButtonStyle = {
 };
 
 
+// =====================================================
+// SEARCH / FILTER
+// =====================================================
+
 const searchStyle = {
 
     padding: "10px 12px",
@@ -1661,6 +1704,10 @@ const selectStyle = {
 };
 
 
+// =====================================================
+// STATUS
+// =====================================================
+
 const statusSelectStyle = {
 
     padding: "5px 8px",
@@ -1680,119 +1727,118 @@ const statusSelectStyle = {
 };
 
 
-const viewButtonStyle = {
+// =====================================================
+// ICON ACTION BUTTONS
+// =====================================================
 
-    padding: "6px 10px",
+const iconBaseStyle = {
+
+    width: "32px",
+
+    height: "32px",
+
+    padding: 0,
+
+    display: "inline-flex",
+
+    alignItems: "center",
+
+    justifyContent: "center",
+
+    borderRadius: "6px",
+
+    cursor: "pointer",
+
+    fontSize: "15px",
+
+    lineHeight: 1,
+
+    flexShrink: 0
+
+};
+
+
+const iconViewButtonStyle = {
+
+    ...iconBaseStyle,
 
     border: "1px solid #64748b",
 
     background: "#fff",
 
-    color: "#475569",
-
-    borderRadius: "6px",
-
-    cursor: "pointer",
-
-    fontSize: "12px"
+    color: "#475569"
 
 };
 
 
-const editButtonStyle = {
+const iconEditButtonStyle = {
 
-    padding: "6px 10px",
+    ...iconBaseStyle,
 
     border: "1px solid #2563eb",
 
     background: "#eff6ff",
 
-    color: "#1d4ed8",
-
-    borderRadius: "6px",
-
-    cursor: "pointer",
-
-    fontSize: "12px"
+    color: "#1d4ed8"
 
 };
 
 
-const deleteButtonStyle = {
+const iconDeleteButtonStyle = {
 
-    padding: "6px 10px",
+    ...iconBaseStyle,
 
     border: "1px solid #dc2626",
 
     background: "#fef2f2",
 
-    color: "#b91c1c",
-
-    borderRadius: "6px",
-
-    cursor: "pointer",
-
-    fontSize: "12px"
+    color: "#b91c1c"
 
 };
 
 
-const assignButtonStyle = {
+const iconAssignButtonStyle = {
 
-    padding: "6px 10px",
+    ...iconBaseStyle,
 
     border: "1px solid #2563eb",
 
     background: "#eff6ff",
 
-    color: "#1d4ed8",
-
-    borderRadius: "6px",
-
-    cursor: "pointer",
-
-    fontSize: "12px"
+    color: "#1d4ed8"
 
 };
 
 
-const returnButtonStyle = {
+const iconReturnButtonStyle = {
 
-    padding: "6px 10px",
+    ...iconBaseStyle,
 
     border: "1px solid #16a34a",
 
     background: "#f0fdf4",
 
-    color: "#15803d",
-
-    borderRadius: "6px",
-
-    cursor: "pointer",
-
-    fontSize: "12px"
+    color: "#15803d"
 
 };
 
 
-const scrapButtonStyle = {
+const iconScrapButtonStyle = {
 
-    padding: "6px 10px",
+    ...iconBaseStyle,
 
     border: "1px solid #dc2626",
 
     background: "#fef2f2",
 
-    color: "#b91c1c",
-
-    borderRadius: "6px",
-
-    cursor: "pointer",
-
-    fontSize: "12px"
+    color: "#b91c1c"
 
 };
 
+
+// =====================================================
+// MODAL
+// =====================================================
 
 const overlayStyle = {
 
@@ -1852,6 +1898,10 @@ const closeButtonStyle = {
 
 };
 
+
+// =====================================================
+// FORM
+// =====================================================
 
 const labelStyle = {
 
