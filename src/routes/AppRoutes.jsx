@@ -25,6 +25,11 @@ import SoftwareEdit from "../pages/SoftwareEdit";
 
 import Reports from "../pages/Reports";
 
+import Settings from "../pages/Settings";
+import SettingsProfile from "../pages/SettingsProfile";
+import SettingSecurity from "../pages/SettingSecurity";
+import ChangePassword from "../pages/ChangePassword";
+
 import Purchase from "../pages/Purchase";
 import AddPurchase from "../pages/AddPurchase";
 import EditPurchase from "../pages/EditPurchase";
@@ -125,8 +130,6 @@ function AppRoutes() {
                 }
             />
 
-            {/* ADD EMPLOYEE */}
-
             <Route
                 path="/employees/add"
                 element={
@@ -135,8 +138,6 @@ function AppRoutes() {
                     </ProtectedRoute>
                 }
             />
-
-            {/* EDIT EMPLOYEE */}
 
             <Route
                 path="/employees/edit/:id"
@@ -245,10 +246,64 @@ function AppRoutes() {
 
 
             {/* =====================================================
-                PURCHASES
+                SETTINGS
             ===================================================== */}
 
-            {/* EDIT PURCHASE */}
+            <Route
+                path="/settings"
+                element={
+                    <ProtectedRoute>
+                        <Settings />
+                    </ProtectedRoute>
+                }
+            />
+
+
+            {/* =====================================================
+                SETTINGS - PROFILE
+            ===================================================== */}
+
+            <Route
+                path="/settings/profile"
+                element={
+                    <ProtectedRoute>
+                        <SettingsProfile />
+                    </ProtectedRoute>
+                }
+            />
+
+
+            {/* =====================================================
+                SETTINGS - SECURITY
+                ===================================================== */}
+
+            <Route
+                path="/settings/security"
+                element={
+                    <ProtectedRoute>
+                        <SettingSecurity />
+                    </ProtectedRoute>
+                }
+            />
+
+
+            {/* =====================================================
+                SETTINGS - CHANGE PASSWORD
+            ===================================================== */}
+
+            <Route
+                path="/settings/change-password"
+                element={
+                    <ProtectedRoute>
+                        <ChangePassword />
+                    </ProtectedRoute>
+                }
+            />
+
+
+            {/* =====================================================
+                PURCHASES
+            ===================================================== */}
 
             <Route
                 path="/purchases/edit/:id"
@@ -259,8 +314,6 @@ function AppRoutes() {
                 }
             />
 
-            {/* ADD PURCHASE */}
-
             <Route
                 path="/purchases/add"
                 element={
@@ -269,8 +322,6 @@ function AppRoutes() {
                     </ProtectedRoute>
                 }
             />
-
-            {/* PURCHASE LIST */}
 
             <Route
                 path="/purchases"
@@ -286,5 +337,6 @@ function AppRoutes() {
     );
 
 }
+
 
 export default AppRoutes;

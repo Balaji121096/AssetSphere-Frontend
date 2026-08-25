@@ -12,7 +12,11 @@ function AddSoftware() {
 
     const [vendors, setVendors] = useState([]);
 
+    const [loading, setLoading] = useState(false);
+    const [vendorLoading, setVendorLoading] = useState(true);
+
     const [form, setForm] = useState({
+
         software_code: "",
         software_name: "",
         publisher: "",
@@ -25,17 +29,24 @@ function AddSoftware() {
         vendor_id: "",
         status: "Active",
         description: ""
+
     });
 
 
-    // Load Vendors
+    // =====================================================
+    // LOAD VENDORS
+    // =====================================================
+
     useEffect(() => {
 
         const loadVendors = async () => {
 
             try {
 
-                const response = await API.get("/vendors");
+                setVendorLoading(true);
+
+                const response =
+                    await API.get("/vendors");
 
                 setVendors(
                     response.data.data || []
@@ -43,13 +54,22 @@ function AddSoftware() {
 
             } catch (error) {
 
-                console.error(error);
+                console.error(
+                    "Vendor Load Error:",
+                    error
+                );
 
                 alert(
                     error.response?.data?.message ||
                     "Failed to load vendors"
                 );
+
+            } finally {
+
+                setVendorLoading(false);
+
             }
+
         };
 
         loadVendors();
@@ -57,7 +77,10 @@ function AddSoftware() {
     }, []);
 
 
-    // Handle Input
+    // =====================================================
+    // HANDLE INPUT
+    // =====================================================
+
     const handleChange = (e) => {
 
         const {
@@ -65,35 +88,119 @@ function AddSoftware() {
             value
         } = e.target;
 
-        setForm({
-            ...form,
+        setForm((previous) => ({
+            ...previous,
             [name]: value
-        });
+        }));
+
     };
 
 
-    // Submit
+    // =====================================================
+    // VALIDATION
+    // =====================================================
+
+    const validateForm = () => {
+
+        if (!form.software_code.trim()) {
+
+            alert("Software Code is required");
+            return false;
+
+        }
+
+
+        if (!form.software_name.trim()) {
+
+            alert("Software Name is required");
+            return false;
+
+        }
+
+
+        if (!form.license_type) {
+
+            alert("Please select a license type");
+            return false;
+
+        }
+
+
+        if (
+            form.total_licenses === "" ||
+            Number(form.total_licenses) < 1
+        ) {
+
+            alert("Please enter a valid license quantity");
+            return false;
+
+        }
+
+
+        return true;
+
+    };
+
+
+    // =====================================================
+    // SUBMIT
+    // =====================================================
+
     const handleSubmit = async (e) => {
 
         e.preventDefault();
 
+
+        if (!validateForm()) {
+            return;
+        }
+
+
         try {
 
+            setLoading(true);
+
+
             const payload = {
-                software_code: form.software_code,
-                software_name: form.software_name,
-                publisher: form.publisher,
-                version: form.version,
-                license_type: form.license_type,
-                total_licenses: Number(form.total_licenses),
-                purchase_date: form.purchase_date || null,
-                expiry_date: form.expiry_date || null,
-                cost: Number(form.cost || 0),
-                vendor_id: form.vendor_id
-                    ? Number(form.vendor_id)
-                    : null,
-                status: form.status,
-                description: form.description
+
+                software_code:
+                    form.software_code.trim(),
+
+                software_name:
+                    form.software_name.trim(),
+
+                publisher:
+                    form.publisher.trim(),
+
+                version:
+                    form.version.trim(),
+
+                license_type:
+                    form.license_type,
+
+                total_licenses:
+                    Number(form.total_licenses),
+
+                purchase_date:
+                    form.purchase_date || null,
+
+                expiry_date:
+                    form.expiry_date || null,
+
+                cost:
+                    Number(form.cost || 0),
+
+                vendor_id:
+                    form.vendor_id
+                        ? Number(form.vendor_id)
+                        : null,
+
+                status:
+                    form.status,
+
+                description:
+                    form.description.trim()
+
             };
 
 
@@ -108,504 +215,694 @@ function AddSoftware() {
             );
 
 
-            navigate("/software");
+            navigate(
+                "/software"
+            );
+
 
         } catch (error) {
 
-            console.error(error);
+            console.error(
+                "Add Software Error:",
+                error
+            );
 
             alert(
                 error.response?.data?.message ||
                 "Failed to add software"
             );
+
+        } finally {
+
+            setLoading(false);
+
         }
+
+    };
+
+
+    // =====================================================
+    // CANCEL
+    // =====================================================
+
+    const handleCancel = () => {
+
+        if (loading) {
+            return;
+        }
+
+        navigate("/software");
+
     };
 
 
     return (
 
-        <div
-            style={{
-                display: "flex",
-                minHeight: "100vh",
-                background: "#f5f5f5"
-            }}
-        >
+        <div style={pageStyle}>
 
             <Sidebar />
 
 
-            <div
-                style={{
-                    flex: 1
-                }}
-            >
+            <div style={contentStyle}>
 
                 <Navbar />
 
 
-                <div
-                    style={{
-                        padding: "25px"
-                    }}
-                >
+                <main style={mainStyle}>
 
-                    <h1>
-                        Add Software
-                    </h1>
+                    {/* =================================================
+                        HEADER
+                    ================================================= */}
 
-                    <p>
-                        Add company software and license details
-                    </p>
+                    <div style={headerStyle}>
 
+                        <div>
+
+                            <div style={breadcrumbStyle}>
+                                Software / Add Software
+                            </div>
+
+                            <h1 style={titleStyle}>
+                                Add Software
+                            </h1>
+
+                            <p style={subtitleStyle}>
+                                Add company software and license details
+                            </p>
+
+                        </div>
+
+
+                        <button
+                            type="button"
+                            onClick={handleCancel}
+                            disabled={loading}
+                            style={backButtonStyle}
+                        >
+                            ← Back to Software
+                        </button>
+
+                    </div>
+
+
+                    {/* =================================================
+                        FORM
+                    ================================================= */}
 
                     <form
                         onSubmit={handleSubmit}
-                        style={{
-                            background: "#fff",
-                            padding: "25px",
-                            borderRadius: "10px",
-                            maxWidth: "700px"
-                        }}
+                        style={formCardStyle}
                     >
 
+                        {/* =================================================
+                            SOFTWARE INFORMATION
+                        ================================================= */}
 
-                        {/* SOFTWARE CODE */}
+                        <div style={sectionHeaderStyle}>
 
-                        <div
-                            style={{
-                                marginBottom: "15px"
-                            }}
-                        >
+                            <div style={sectionIconStyle}>
+                                💻
+                            </div>
 
-                            <label>
-                                Software Code
-                            </label>
+                            <div>
 
-                            <br />
+                                <h2 style={sectionTitleStyle}>
+                                    Software Information
+                                </h2>
 
-                            <input
-                                type="text"
-                                name="software_code"
-                                value={form.software_code}
-                                onChange={handleChange}
-                                placeholder="SW-002"
+                                <p style={sectionSubtitleStyle}>
+                                    Enter software and licensing details
+                                </p>
+
+                            </div>
+
+                        </div>
+
+
+                        <div style={gridStyle}>
+
+                            {/* Software Code */}
+
+                            <FormField
+                                label="Software Code"
                                 required
-                                style={{
-                                    padding: "10px",
-                                    width: "100%"
-                                }}
-                            />
-
-                        </div>
-
-
-                        {/* SOFTWARE NAME */}
-
-                        <div
-                            style={{
-                                marginBottom: "15px"
-                            }}
-                        >
-
-                            <label>
-                                Software Name
-                            </label>
-
-                            <br />
-
-                            <input
-                                type="text"
-                                name="software_name"
-                                value={form.software_name}
-                                onChange={handleChange}
-                                placeholder="AutoCAD"
-                                required
-                                style={{
-                                    padding: "10px",
-                                    width: "100%"
-                                }}
-                            />
-
-                        </div>
-
-
-                        {/* PUBLISHER */}
-
-                        <div
-                            style={{
-                                marginBottom: "15px"
-                            }}
-                        >
-
-                            <label>
-                                Publisher
-                            </label>
-
-                            <br />
-
-                            <input
-                                type="text"
-                                name="publisher"
-                                value={form.publisher}
-                                onChange={handleChange}
-                                placeholder="Autodesk"
-                                style={{
-                                    padding: "10px",
-                                    width: "100%"
-                                }}
-                            />
-
-                        </div>
-
-
-                        {/* VERSION */}
-
-                        <div
-                            style={{
-                                marginBottom: "15px"
-                            }}
-                        >
-
-                            <label>
-                                Version
-                            </label>
-
-                            <br />
-
-                            <input
-                                type="text"
-                                name="version"
-                                value={form.version}
-                                onChange={handleChange}
-                                placeholder="2026"
-                                style={{
-                                    padding: "10px",
-                                    width: "100%"
-                                }}
-                            />
-
-                        </div>
-
-
-                        {/* LICENSE TYPE */}
-
-                        <div
-                            style={{
-                                marginBottom: "15px"
-                            }}
-                        >
-
-                            <label>
-                                License Type
-                            </label>
-
-                            <br />
-
-                            <select
-                                name="license_type"
-                                value={form.license_type}
-                                onChange={handleChange}
-                                required
-                                style={{
-                                    padding: "10px",
-                                    width: "100%"
-                                }}
                             >
 
-                                <option value="">
-                                    Select License Type
-                                </option>
+                                <input
+                                    type="text"
+                                    name="software_code"
+                                    value={form.software_code}
+                                    onChange={handleChange}
+                                    placeholder="SW-001"
+                                    required
+                                    style={inputStyle}
+                                />
 
-                                <option value="Subscription">
-                                    Subscription
-                                </option>
-
-                                <option value="Perpetual">
-                                    Perpetual
-                                </option>
-
-                                <option value="Trial">
-                                    Trial
-                                </option>
-
-                            </select>
-
-                        </div>
+                            </FormField>
 
 
-                        {/* TOTAL LICENSES */}
+                            {/* Software Name */}
 
-                        <div
-                            style={{
-                                marginBottom: "15px"
-                            }}
-                        >
-
-                            <label>
-                                Total Licenses
-                            </label>
-
-                            <br />
-
-                            <input
-                                type="number"
-                                name="total_licenses"
-                                value={form.total_licenses}
-                                onChange={handleChange}
-                                min="1"
+                            <FormField
+                                label="Software Name"
                                 required
-                                style={{
-                                    padding: "10px",
-                                    width: "100%"
-                                }}
-                            />
-
-                        </div>
-
-
-                        {/* PURCHASE DATE */}
-
-                        <div
-                            style={{
-                                marginBottom: "15px"
-                            }}
-                        >
-
-                            <label>
-                                Purchase Date
-                            </label>
-
-                            <br />
-
-                            <input
-                                type="date"
-                                name="purchase_date"
-                                value={form.purchase_date}
-                                onChange={handleChange}
-                                style={{
-                                    padding: "10px",
-                                    width: "100%"
-                                }}
-                            />
-
-                        </div>
-
-
-                        {/* EXPIRY DATE */}
-
-                        <div
-                            style={{
-                                marginBottom: "15px"
-                            }}
-                        >
-
-                            <label>
-                                Expiry Date
-                            </label>
-
-                            <br />
-
-                            <input
-                                type="date"
-                                name="expiry_date"
-                                value={form.expiry_date}
-                                onChange={handleChange}
-                                style={{
-                                    padding: "10px",
-                                    width: "100%"
-                                }}
-                            />
-
-                        </div>
-
-
-                        {/* COST */}
-
-                        <div
-                            style={{
-                                marginBottom: "15px"
-                            }}
-                        >
-
-                            <label>
-                                Cost
-                            </label>
-
-                            <br />
-
-                            <input
-                                type="number"
-                                name="cost"
-                                value={form.cost}
-                                onChange={handleChange}
-                                min="0"
-                                step="0.01"
-                                placeholder="250000"
-                                style={{
-                                    padding: "10px",
-                                    width: "100%"
-                                }}
-                            />
-
-                        </div>
-
-
-                        {/* VENDOR */}
-
-                        <div
-                            style={{
-                                marginBottom: "15px"
-                            }}
-                        >
-
-                            <label>
-                                Vendor
-                            </label>
-
-                            <br />
-
-                            <select
-                                name="vendor_id"
-                                value={form.vendor_id}
-                                onChange={handleChange}
-                                style={{
-                                    padding: "10px",
-                                    width: "100%"
-                                }}
                             >
 
-                                <option value="">
-                                    Select Vendor
-                                </option>
+                                <input
+                                    type="text"
+                                    name="software_name"
+                                    value={form.software_name}
+                                    onChange={handleChange}
+                                    placeholder="Microsoft Office"
+                                    required
+                                    style={inputStyle}
+                                />
+
+                            </FormField>
 
 
-                                {vendors.map(
-                                    (vendor) => (
+                            {/* Publisher */}
 
-                                        <option
-                                            key={
-                                                vendor.vendor_id
-                                            }
-                                            value={
-                                                vendor.vendor_id
-                                            }
-                                        >
-                                            {
-                                                vendor.vendor_name
-                                            }
-                                        </option>
-
-                                    )
-                                )}
-
-                            </select>
-
-                        </div>
-
-
-                        {/* STATUS */}
-
-                        <div
-                            style={{
-                                marginBottom: "15px"
-                            }}
-                        >
-
-                            <label>
-                                Status
-                            </label>
-
-                            <br />
-
-                            <select
-                                name="status"
-                                value={form.status}
-                                onChange={handleChange}
-                                style={{
-                                    padding: "10px",
-                                    width: "100%"
-                                }}
+                            <FormField
+                                label="Publisher"
                             >
 
-                                <option value="Active">
-                                    Active
-                                </option>
+                                <input
+                                    type="text"
+                                    name="publisher"
+                                    value={form.publisher}
+                                    onChange={handleChange}
+                                    placeholder="Microsoft"
+                                    style={inputStyle}
+                                />
 
-                                <option value="Inactive">
-                                    Inactive
-                                </option>
+                            </FormField>
 
-                            </select>
+
+                            {/* Version */}
+
+                            <FormField
+                                label="Version"
+                            >
+
+                                <input
+                                    type="text"
+                                    name="version"
+                                    value={form.version}
+                                    onChange={handleChange}
+                                    placeholder="2026"
+                                    style={inputStyle}
+                                />
+
+                            </FormField>
+
+
+                            {/* License Type */}
+
+                            <FormField
+                                label="License Type"
+                                required
+                            >
+
+                                <select
+                                    name="license_type"
+                                    value={form.license_type}
+                                    onChange={handleChange}
+                                    required
+                                    style={inputStyle}
+                                >
+
+                                    <option value="">
+                                        Select License Type
+                                    </option>
+
+                                    <option value="Subscription">
+                                        Subscription
+                                    </option>
+
+                                    <option value="Perpetual">
+                                        Perpetual
+                                    </option>
+
+                                    <option value="Trial">
+                                        Trial
+                                    </option>
+
+                                </select>
+
+                            </FormField>
+
+
+                            {/* Total Licenses */}
+
+                            <FormField
+                                label="Total Licenses"
+                                required
+                            >
+
+                                <input
+                                    type="number"
+                                    name="total_licenses"
+                                    value={form.total_licenses}
+                                    onChange={handleChange}
+                                    min="1"
+                                    placeholder="10"
+                                    required
+                                    style={inputStyle}
+                                />
+
+                            </FormField>
+
+
+                            {/* Purchase Date */}
+
+                            <FormField
+                                label="Purchase Date"
+                            >
+
+                                <input
+                                    type="date"
+                                    name="purchase_date"
+                                    value={form.purchase_date}
+                                    onChange={handleChange}
+                                    style={inputStyle}
+                                />
+
+                            </FormField>
+
+
+                            {/* Expiry Date */}
+
+                            <FormField
+                                label="Expiry Date"
+                            >
+
+                                <input
+                                    type="date"
+                                    name="expiry_date"
+                                    value={form.expiry_date}
+                                    onChange={handleChange}
+                                    style={inputStyle}
+                                />
+
+                            </FormField>
+
+
+                            {/* Cost */}
+
+                            <FormField
+                                label="Cost"
+                            >
+
+                                <input
+                                    type="number"
+                                    name="cost"
+                                    value={form.cost}
+                                    onChange={handleChange}
+                                    min="0"
+                                    step="0.01"
+                                    placeholder="250000"
+                                    style={inputStyle}
+                                />
+
+                            </FormField>
+
+
+                            {/* Vendor */}
+
+                            <FormField
+                                label="Vendor"
+                            >
+
+                                <select
+                                    name="vendor_id"
+                                    value={form.vendor_id}
+                                    onChange={handleChange}
+                                    disabled={vendorLoading}
+                                    style={inputStyle}
+                                >
+
+                                    <option value="">
+                                        {vendorLoading
+                                            ? "Loading vendors..."
+                                            : "Select Vendor"}
+                                    </option>
+
+                                    {vendors.map(
+                                        (vendor) => (
+
+                                            <option
+                                                key={
+                                                    vendor.vendor_id
+                                                }
+                                                value={
+                                                    vendor.vendor_id
+                                                }
+                                            >
+                                                {
+                                                    vendor.vendor_name
+                                                }
+                                            </option>
+
+                                        )
+                                    )}
+
+                                </select>
+
+                            </FormField>
+
+
+                            {/* Status */}
+
+                            <FormField
+                                label="Status"
+                                required
+                            >
+
+                                <select
+                                    name="status"
+                                    value={form.status}
+                                    onChange={handleChange}
+                                    style={inputStyle}
+                                >
+
+                                    <option value="Active">
+                                        Active
+                                    </option>
+
+                                    <option value="Inactive">
+                                        Inactive
+                                    </option>
+
+                                </select>
+
+                            </FormField>
 
                         </div>
 
 
-                        {/* DESCRIPTION */}
+                        {/* =================================================
+                            DESCRIPTION
+                        ================================================= */}
 
                         <div
                             style={{
-                                marginBottom: "20px"
+                                marginTop: "22px"
                             }}
                         >
 
-                            <label>
+                            <label style={labelStyle}>
                                 Description
                             </label>
-
-                            <br />
 
                             <textarea
                                 name="description"
                                 value={form.description}
                                 onChange={handleChange}
-                                placeholder="Software license details"
-                                rows="4"
+                                placeholder="Enter software license details..."
+                                rows="5"
                                 style={{
-                                    padding: "10px",
-                                    width: "100%"
+                                    ...inputStyle,
+                                    height: "auto",
+                                    padding: "12px",
+                                    resize: "vertical"
                                 }}
                             />
 
                         </div>
 
 
-                        {/* BUTTONS */}
+                        {/* =================================================
+                            BUTTONS
+                        ================================================= */}
 
-                        <div
-                            style={{
-                                display: "flex",
-                                gap: "10px"
-                            }}
-                        >
+                        <div style={buttonContainerStyle}>
 
                             <button
-                                type="submit"
+                                type="button"
+                                onClick={handleCancel}
+                                disabled={loading}
+                                style={cancelButtonStyle}
                             >
-                                Add Software
+                                Cancel
                             </button>
 
 
                             <button
-                                type="button"
-                                onClick={() =>
-                                    navigate("/software")
+                                type="submit"
+                                disabled={
+                                    loading ||
+                                    vendorLoading
                                 }
+                                style={{
+                                    ...submitButtonStyle,
+                                    opacity:
+                                        loading ||
+                                        vendorLoading
+                                            ? 0.7
+                                            : 1
+                                }}
                             >
-                                Cancel
+                                {loading
+                                    ? "Adding Software..."
+                                    : "Add Software"}
                             </button>
 
                         </div>
 
                     </form>
 
-                </div>
+                </main>
 
             </div>
 
         </div>
+
     );
+
 }
+
+
+// =====================================================
+// REUSABLE FORM FIELD
+// =====================================================
+
+function FormField({
+    label,
+    required,
+    children
+}) {
+
+    return (
+
+        <div style={fieldStyle}>
+
+            <label style={labelStyle}>
+
+                {label}
+
+                {required && (
+                    <span style={requiredStyle}>
+                        *
+                    </span>
+                )}
+
+            </label>
+
+            {children}
+
+        </div>
+
+    );
+
+}
+
+
+// =====================================================
+// STYLES
+// =====================================================
+
+const pageStyle = {
+    display: "flex",
+    minHeight: "100vh",
+    background: "#f8fafc"
+};
+
+
+const contentStyle = {
+    flex: 1,
+    minWidth: 0
+};
+
+
+const mainStyle = {
+    padding: "30px",
+    maxWidth: "1200px",
+    margin: "0 auto"
+};
+
+
+const headerStyle = {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "flex-end",
+    gap: "20px",
+    marginBottom: "25px"
+};
+
+
+const breadcrumbStyle = {
+    color: "#64748b",
+    fontSize: "13px",
+    marginBottom: "8px"
+};
+
+
+const titleStyle = {
+    margin: 0,
+    fontSize: "28px",
+    fontWeight: "700",
+    color: "#0f172a"
+};
+
+
+const subtitleStyle = {
+    margin: "7px 0 0",
+    color: "#64748b",
+    fontSize: "14px"
+};
+
+
+const backButtonStyle = {
+    padding: "9px 14px",
+    border: "1px solid #cbd5e1",
+    borderRadius: "7px",
+    background: "#ffffff",
+    color: "#334155",
+    cursor: "pointer",
+    fontSize: "13px"
+};
+
+
+const formCardStyle = {
+    background: "#ffffff",
+    border: "1px solid #e2e8f0",
+    borderRadius: "12px",
+    padding: "28px",
+    boxShadow: "0 2px 8px rgba(15, 23, 42, 0.05)"
+};
+
+
+const sectionHeaderStyle = {
+    display: "flex",
+    alignItems: "center",
+    gap: "12px",
+    paddingBottom: "20px",
+    marginBottom: "25px",
+    borderBottom: "1px solid #e2e8f0"
+};
+
+
+const sectionIconStyle = {
+    width: "40px",
+    height: "40px",
+    borderRadius: "9px",
+    background: "#eff6ff",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    fontSize: "19px"
+};
+
+
+const sectionTitleStyle = {
+    margin: 0,
+    fontSize: "17px",
+    color: "#0f172a"
+};
+
+
+const sectionSubtitleStyle = {
+    margin: "3px 0 0",
+    color: "#64748b",
+    fontSize: "12px"
+};
+
+
+const gridStyle = {
+    display: "grid",
+    gridTemplateColumns:
+        "repeat(auto-fit, minmax(280px, 1fr))",
+    gap: "20px"
+};
+
+
+const fieldStyle = {
+    display: "flex",
+    flexDirection: "column"
+};
+
+
+const labelStyle = {
+    display: "block",
+    marginBottom: "7px",
+    fontSize: "13px",
+    fontWeight: "600",
+    color: "#334155"
+};
+
+
+const requiredStyle = {
+    color: "#dc2626",
+    marginLeft: "3px"
+};
+
+
+const inputStyle = {
+    width: "100%",
+    height: "42px",
+    padding: "0 12px",
+    boxSizing: "border-box",
+    border: "1px solid #cbd5e1",
+    borderRadius: "7px",
+    background: "#ffffff",
+    color: "#0f172a",
+    fontSize: "13px",
+    outline: "none"
+};
+
+
+const buttonContainerStyle = {
+    display: "flex",
+    justifyContent: "flex-end",
+    gap: "10px",
+    marginTop: "28px",
+    paddingTop: "20px",
+    borderTop: "1px solid #e2e8f0"
+};
+
+
+const cancelButtonStyle = {
+    padding: "10px 18px",
+    border: "1px solid #cbd5e1",
+    borderRadius: "7px",
+    background: "#ffffff",
+    color: "#334155",
+    cursor: "pointer",
+    fontSize: "13px"
+};
+
+
+const submitButtonStyle = {
+    padding: "10px 20px",
+    border: "none",
+    borderRadius: "7px",
+    background: "#2563eb",
+    color: "#ffffff",
+    cursor: "pointer",
+    fontSize: "13px",
+    fontWeight: "600"
+};
 
 
 export default AddSoftware;
