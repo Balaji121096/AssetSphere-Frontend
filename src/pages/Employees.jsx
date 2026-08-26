@@ -228,7 +228,11 @@ function Employees() {
 
                     <div style={headerStyle}>
 
-                        <div>
+                        {/* Decorative background */}
+                        <div style={headerGlowOne}></div>
+                        <div style={headerGlowTwo}></div>
+
+                        <div style={headerContentStyle}>
 
                             <div style={eyebrowStyle}>
                                 PEOPLE MANAGEMENT
@@ -239,17 +243,20 @@ function Employees() {
                             </h1>
 
                             <p style={subtitleStyle}>
-                                Manage company employees
-                                and their information
+                                Manage company employees and
+                                their information
                             </p>
 
                         </div>
 
+
+                        {/* =================================================
+                            HEADER ACTIONS
+                        ================================================= */}
+
                         <div style={headerButtonsStyle}>
 
-                            {/* =================================================
-                                REFRESH
-                            ================================================= */}
+                            {/* REFRESH */}
 
                             <button
                                 type="button"
@@ -268,9 +275,7 @@ function Employees() {
                             </button>
 
 
-                            {/* =================================================
-                                ADD EMPLOYEE
-                            ================================================= */}
+                            {/* ADD EMPLOYEE */}
 
                             <button
                                 type="button"
@@ -363,17 +368,22 @@ function Employees() {
                                         tableSubtitleStyle
                                     }
                                 >
+
                                     {
                                         filteredEmployees.length
                                     }{" "}
+
                                     employee
+
                                     {
                                         filteredEmployees.length !==
                                         1
                                             ? "s"
                                             : ""
                                     }{" "}
+
                                     found
+
                                 </p>
 
                             </div>
@@ -412,6 +422,7 @@ function Employees() {
                                 />
 
                                 {search && (
+
                                     <button
                                         type="button"
                                         onClick={() =>
@@ -423,6 +434,7 @@ function Employees() {
                                     >
                                         ×
                                     </button>
+
                                 )}
 
                             </div>
@@ -543,11 +555,13 @@ function Employees() {
                                                         loaderStyle
                                                     }
                                                 >
+
                                                     <div
                                                         style={
                                                             spinnerStyle
                                                         }
                                                     />
+
                                                 </div>
 
                                                 Loading employees...
@@ -614,14 +628,18 @@ function Employees() {
                                                     onMouseEnter={(
                                                         e
                                                     ) => {
+
                                                         e.currentTarget.style.background =
                                                             "#f8fafc";
+
                                                     }}
                                                     onMouseLeave={(
                                                         e
                                                     ) => {
+
                                                         e.currentTarget.style.background =
                                                             "#ffffff";
+
                                                     }}
                                                 >
 
@@ -636,10 +654,12 @@ function Employees() {
                                                                 "#64748b"
                                                         }}
                                                     >
+
                                                         #
                                                         {
                                                             employee.employee_id
                                                         }
+
                                                     </td>
 
 
@@ -664,6 +684,7 @@ function Employees() {
                                                                     avatarStyle
                                                                 }
                                                             >
+
                                                                 {(
                                                                     employee.display_name ||
                                                                     "E"
@@ -672,6 +693,7 @@ function Employees() {
                                                                         0
                                                                     )
                                                                     .toUpperCase()}
+
                                                             </div>
 
                                                             <div>
@@ -681,10 +703,12 @@ function Employees() {
                                                                         employeeNameStyle
                                                                     }
                                                                 >
+
                                                                     {
                                                                         employee.display_name ||
                                                                         "-"
                                                                     }
+
                                                                 </div>
 
                                                                 <div
@@ -692,10 +716,12 @@ function Employees() {
                                                                         employeeCodeStyle
                                                                     }
                                                                 >
+
                                                                     {
                                                                         employee.employee_code ||
                                                                         "No code"
                                                                     }
+
                                                                 </div>
 
                                                             </div>
@@ -777,10 +803,12 @@ function Employees() {
                                                             tdStyle
                                                         }
                                                     >
+
                                                         {
                                                             employee.designation_name ||
                                                             "-"
                                                         }
+
                                                     </td>
 
 
@@ -799,11 +827,14 @@ function Employees() {
                                                                 locationBadgeStyle
                                                             }
                                                         >
+
                                                             📍{" "}
+
                                                             {
                                                                 employee.work_location ||
                                                                 "-"
                                                             }
+
                                                         </span>
 
                                                     </td>
@@ -822,11 +853,13 @@ function Employees() {
                                                         <span
                                                             style={{
                                                                 ...statusBadgeStyle,
+
                                                                 background:
                                                                     employee.status ===
                                                                     "Active"
                                                                         ? "#dcfce7"
                                                                         : "#fee2e2",
+
                                                                 color:
                                                                     employee.status ===
                                                                     "Active"
@@ -839,10 +872,13 @@ function Employees() {
                                                                 style={{
                                                                     width:
                                                                         "6px",
+
                                                                     height:
                                                                         "6px",
+
                                                                     borderRadius:
                                                                         "50%",
+
                                                                     background:
                                                                         "currentColor"
                                                                 }}
@@ -992,6 +1028,7 @@ function Employees() {
                                             }
                                             style={{
                                                 ...pageButtonStyle,
+
                                                 opacity:
                                                     currentPage ===
                                                     1
@@ -1008,13 +1045,17 @@ function Employees() {
                                                 currentPageStyle
                                             }
                                         >
+
                                             {
                                                 currentPage
                                             }{" "}
+
                                             /{" "}
+
                                             {
                                                 totalPages
                                             }
+
                                         </span>
 
 
@@ -1032,6 +1073,7 @@ function Employees() {
                                             }
                                             style={{
                                                 ...pageButtonStyle,
+
                                                 opacity:
                                                     currentPage ===
                                                     totalPages
@@ -1068,6 +1110,18 @@ function Employees() {
 
                         to {
                             transform: rotate(360deg);
+                        }
+                    }
+
+                    @media (max-width: 900px) {
+                        .employees-summary-grid {
+                            grid-template-columns: 1fr !important;
+                        }
+                    }
+
+                    @media (max-width: 650px) {
+                        .employees-content {
+                            padding: 18px !important;
                         }
                     }
                 `}
@@ -1132,410 +1186,813 @@ function SummaryCard({
 
 
 /* =====================================================
-   STYLES
+   PAGE STYLES
 ===================================================== */
 
 const pageStyle = {
     display: "flex",
+
     minHeight: "100vh",
+
     background: "#f8fafc",
+
     color: "#0f172a"
 };
+
 
 const mainStyle = {
     flex: 1,
+
     minWidth: 0
 };
 
+
 const contentStyle = {
     width: "100%",
+
     maxWidth: "1500px",
+
     margin: "0 auto",
+
     padding: "30px",
+
     boxSizing: "border-box"
 };
 
+
+/* =====================================================
+   HEADER
+===================================================== */
+
 const headerStyle = {
+    width: "100%",
+
+    minHeight: "190px",
+
+    padding: "30px 32px",
+
+    boxSizing: "border-box",
+
     display: "flex",
+
     justifyContent: "space-between",
+
     alignItems: "center",
-    gap: "20px",
+
+    gap: "25px",
+
     flexWrap: "wrap",
-    marginBottom: "28px"
-};
 
-const eyebrowStyle = {
-    color: "#2563eb",
-    fontSize: "11px",
-    fontWeight: "700",
-    letterSpacing: "1.5px",
-    marginBottom: "7px"
-};
+    marginBottom: "26px",
 
-const titleStyle = {
-    margin: 0,
-    fontSize: "32px",
-    fontWeight: "750",
-    letterSpacing: "-0.8px"
-};
+    borderRadius: "18px",
 
-const subtitleStyle = {
-    margin: "7px 0 0",
-    color: "#64748b",
-    fontSize: "14px"
-};
+    background:
+        "linear-gradient(135deg, #0f172a 0%, #172554 45%, #2563eb 100%)",
 
-const headerButtonsStyle = {
-    display: "flex",
-    gap: "10px",
-    flexWrap: "wrap"
-};
-
-const refreshButtonStyle = {
-    height: "42px",
-    padding: "0 16px",
-    border: "1px solid #dbe2ea",
-    borderRadius: "9px",
-    background: "#ffffff",
-    color: "#334155",
-    fontSize: "13px",
-    fontWeight: "600",
-    cursor: "pointer"
-};
-
-const buttonIconStyle = {
-    fontSize: "18px",
-    marginRight: "6px"
-};
-
-const addButtonStyle = {
-    height: "42px",
-    padding: "0 18px",
-    border: "none",
-    borderRadius: "9px",
-    background: "#2563eb",
-    color: "#ffffff",
-    fontSize: "13px",
-    fontWeight: "600",
-    cursor: "pointer",
     boxShadow:
-        "0 4px 10px rgba(37,99,235,0.18)"
-};
+        "0 12px 30px rgba(15, 23, 42, 0.16)",
 
-const plusStyle = {
-    fontSize: "18px",
-    marginRight: "6px"
-};
+    position: "relative",
 
-const summaryGridStyle = {
-    display: "grid",
-    gridTemplateColumns:
-        "repeat(3, minmax(0, 1fr))",
-    gap: "16px",
-    marginBottom: "22px"
-};
-
-const summaryCardStyle = {
-    background: "#ffffff",
-    border: "1px solid #e8edf3",
-    borderRadius: "12px",
-    padding: "18px 20px",
-    display: "flex",
-    alignItems: "center",
-    gap: "14px",
-    boxShadow:
-        "0 2px 8px rgba(15,23,42,0.035)"
-};
-
-const summaryIconStyle = {
-    width: "44px",
-    height: "44px",
-    borderRadius: "11px",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    fontSize: "19px",
-    fontWeight: "700"
-};
-
-const summaryTitleStyle = {
-    color: "#64748b",
-    fontSize: "12px",
-    marginBottom: "4px"
-};
-
-const summaryValueStyle = {
-    fontSize: "24px",
-    fontWeight: "750",
-    color: "#0f172a"
-};
-
-const tableCardStyle = {
-    background: "#ffffff",
-    border: "1px solid #e5eaf0",
-    borderRadius: "14px",
-    boxShadow:
-        "0 4px 14px rgba(15,23,42,0.04)",
     overflow: "hidden"
 };
 
+
+const headerContentStyle = {
+    position: "relative",
+
+    zIndex: 2
+};
+
+
+const headerGlowOne = {
+    position: "absolute",
+
+    width: "300px",
+
+    height: "300px",
+
+    borderRadius: "50%",
+
+    background:
+        "rgba(59,130,246,0.16)",
+
+    right: "-90px",
+
+    top: "-150px",
+
+    filter: "blur(5px)"
+};
+
+
+const headerGlowTwo = {
+    position: "absolute",
+
+    width: "220px",
+
+    height: "220px",
+
+    borderRadius: "50%",
+
+    background:
+        "rgba(96,165,250,0.10)",
+
+    right: "230px",
+
+    bottom: "-150px",
+
+    filter: "blur(4px)"
+};
+
+
+const eyebrowStyle = {
+    color: "#93c5fd",
+
+    fontSize: "11px",
+
+    fontWeight: "700",
+
+    letterSpacing: "1.6px",
+
+    marginBottom: "8px"
+};
+
+
+const titleStyle = {
+    margin: 0,
+
+    fontSize: "32px",
+
+    lineHeight: "1.15",
+
+    fontWeight: "750",
+
+    letterSpacing: "-0.8px",
+
+    color: "#ffffff"
+};
+
+
+const subtitleStyle = {
+    margin: "9px 0 0",
+
+    color: "#dbeafe",
+
+    fontSize: "14px",
+
+    lineHeight: "1.5"
+};
+
+
+/* =====================================================
+   HEADER BUTTONS
+===================================================== */
+
+const headerButtonsStyle = {
+    display: "flex",
+
+    alignItems: "center",
+
+    gap: "10px",
+
+    flexWrap: "wrap",
+
+    position: "relative",
+
+    zIndex: 2
+};
+
+
+const refreshButtonStyle = {
+    height: "42px",
+
+    padding: "0 16px",
+
+    border:
+        "1px solid rgba(255,255,255,0.25)",
+
+    borderRadius: "9px",
+
+    background:
+        "rgba(255,255,255,0.10)",
+
+    backdropFilter: "blur(8px)",
+
+    color: "#ffffff",
+
+    fontSize: "13px",
+
+    fontWeight: "600",
+
+    cursor: "pointer",
+
+    transition:
+        "all 0.2s ease"
+};
+
+
+const buttonIconStyle = {
+    fontSize: "18px",
+
+    marginRight: "6px",
+
+    verticalAlign: "middle"
+};
+
+
+const addButtonStyle = {
+    height: "42px",
+
+    padding: "0 18px",
+
+    border: "none",
+
+    borderRadius: "9px",
+
+    background: "#ffffff",
+
+    color: "#1d4ed8",
+
+    fontSize: "13px",
+
+    fontWeight: "700",
+
+    cursor: "pointer",
+
+    boxShadow:
+        "0 5px 14px rgba(0,0,0,0.18)",
+
+    transition:
+        "all 0.2s ease"
+};
+
+
+const plusStyle = {
+    fontSize: "18px",
+
+    marginRight: "6px",
+
+    verticalAlign: "middle"
+};
+
+
+/* =====================================================
+   SUMMARY
+===================================================== */
+
+const summaryGridStyle = {
+    display: "grid",
+
+    gridTemplateColumns:
+        "repeat(3, minmax(0, 1fr))",
+
+    gap: "16px",
+
+    marginBottom: "22px"
+};
+
+
+const summaryCardStyle = {
+    background: "#ffffff",
+
+    border:
+        "1px solid #e8edf3",
+
+    borderRadius: "12px",
+
+    padding: "18px 20px",
+
+    display: "flex",
+
+    alignItems: "center",
+
+    gap: "14px",
+
+    boxShadow:
+        "0 2px 8px rgba(15,23,42,0.035)",
+
+    transition:
+        "transform 0.2s ease, box-shadow 0.2s ease"
+};
+
+
+const summaryIconStyle = {
+    width: "44px",
+
+    height: "44px",
+
+    borderRadius: "11px",
+
+    display: "flex",
+
+    alignItems: "center",
+
+    justifyContent: "center",
+
+    fontSize: "19px",
+
+    fontWeight: "700",
+
+    flexShrink: 0
+};
+
+
+const summaryTitleStyle = {
+    color: "#64748b",
+
+    fontSize: "12px",
+
+    marginBottom: "4px"
+};
+
+
+const summaryValueStyle = {
+    fontSize: "24px",
+
+    fontWeight: "750",
+
+    color: "#0f172a"
+};
+
+
+/* =====================================================
+   TABLE CARD
+===================================================== */
+
+const tableCardStyle = {
+    background: "#ffffff",
+
+    border:
+        "1px solid #e5eaf0",
+
+    borderRadius: "14px",
+
+    boxShadow:
+        "0 4px 14px rgba(15,23,42,0.04)",
+
+    overflow: "hidden"
+};
+
+
 const tableTopStyle = {
     padding: "20px 22px",
+
     display: "flex",
+
     justifyContent: "space-between",
+
     alignItems: "center",
+
     gap: "20px",
+
     flexWrap: "wrap",
+
     borderBottom:
         "1px solid #edf1f5"
 };
 
+
 const tableTitleStyle = {
     margin: 0,
+
     fontSize: "17px",
-    fontWeight: "700"
-};
 
-const tableSubtitleStyle = {
-    margin: "5px 0 0",
-    color: "#94a3b8",
-    fontSize: "12px"
-};
+    fontWeight: "700",
 
-const searchWrapperStyle = {
-    width: "320px",
-    maxWidth: "100%",
-    height: "42px",
-    display: "flex",
-    alignItems: "center",
-    background: "#f8fafc",
-    border: "1px solid #dbe2ea",
-    borderRadius: "9px",
-    padding: "0 11px",
-    boxSizing: "border-box"
-};
-
-const searchIconStyle = {
-    color: "#94a3b8",
-    fontSize: "20px",
-    marginRight: "7px"
-};
-
-const searchInputStyle = {
-    flex: 1,
-    minWidth: 0,
-    height: "100%",
-    border: "none",
-    outline: "none",
-    background: "transparent",
-    fontSize: "13px",
     color: "#0f172a"
 };
 
+
+const tableSubtitleStyle = {
+    margin: "5px 0 0",
+
+    color: "#94a3b8",
+
+    fontSize: "12px"
+};
+
+
+/* =====================================================
+   SEARCH
+===================================================== */
+
+const searchWrapperStyle = {
+    width: "320px",
+
+    maxWidth: "100%",
+
+    height: "42px",
+
+    display: "flex",
+
+    alignItems: "center",
+
+    background: "#f8fafc",
+
+    border:
+        "1px solid #dbe2ea",
+
+    borderRadius: "9px",
+
+    padding: "0 11px",
+
+    boxSizing: "border-box"
+};
+
+
+const searchIconStyle = {
+    color: "#94a3b8",
+
+    fontSize: "20px",
+
+    marginRight: "7px"
+};
+
+
+const searchInputStyle = {
+    flex: 1,
+
+    minWidth: 0,
+
+    height: "100%",
+
+    border: "none",
+
+    outline: "none",
+
+    background: "transparent",
+
+    fontSize: "13px",
+
+    color: "#0f172a"
+};
+
+
 const clearButtonStyle = {
     border: "none",
+
     background: "transparent",
+
     color: "#94a3b8",
+
     fontSize: "19px",
+
     cursor: "pointer"
 };
 
+
+/* =====================================================
+   TABLE
+===================================================== */
+
 const tableWrapperStyle = {
     width: "100%",
+
     overflowX: "auto"
 };
 
+
 const tableStyle = {
     width: "100%",
+
     minWidth: "1100px",
+
     borderCollapse: "collapse"
 };
 
+
 const thStyle = {
     padding: "13px 16px",
+
     textAlign: "left",
+
     background: "#f8fafc",
+
     color: "#64748b",
+
     fontSize: "11px",
+
     fontWeight: "700",
+
     textTransform: "uppercase",
+
     letterSpacing: "0.5px",
+
     borderBottom:
         "1px solid #e8edf3",
+
     whiteSpace: "nowrap"
 };
 
+
 const tdStyle = {
     padding: "14px 16px",
+
     color: "#475569",
+
     fontSize: "13px",
+
     borderBottom:
         "1px solid #f0f2f5",
+
     verticalAlign: "middle"
 };
 
+
 const rowStyle = {
     background: "#ffffff",
+
     transition:
         "background 0.15s"
 };
 
+
+/* =====================================================
+   EMPLOYEE
+===================================================== */
+
 const employeeCellStyle = {
     display: "flex",
+
     alignItems: "center",
+
     gap: "10px"
 };
 
+
 const avatarStyle = {
     width: "36px",
+
     height: "36px",
+
     borderRadius: "10px",
+
     background: "#eff6ff",
+
     color: "#2563eb",
+
     display: "flex",
+
     alignItems: "center",
+
     justifyContent: "center",
+
     fontSize: "13px",
+
     fontWeight: "700",
+
     flexShrink: 0
 };
 
+
 const employeeNameStyle = {
     color: "#1e293b",
+
     fontSize: "13px",
+
     fontWeight: "650"
 };
+
 
 const employeeCodeStyle = {
     color: "#94a3b8",
+
     fontSize: "11px",
+
     marginTop: "3px"
 };
 
+
+/* =====================================================
+   CONTACT
+===================================================== */
+
 const contactStyle = {
     display: "flex",
+
     flexDirection: "column",
+
     gap: "3px"
 };
 
+
 const mobileStyle = {
     color: "#94a3b8",
+
     fontSize: "11px"
 };
 
+
 const normalTextStyle = {
     color: "#334155",
+
     fontWeight: "500"
 };
 
+
+/* =====================================================
+   LOCATION
+===================================================== */
+
 const locationBadgeStyle = {
     color: "#475569",
+
     fontSize: "12px"
 };
+
+
+/* =====================================================
+   STATUS
+===================================================== */
 
 const statusBadgeStyle = {
     display: "inline-flex",
+
     alignItems: "center",
+
     gap: "6px",
+
     padding: "5px 9px",
+
     borderRadius: "20px",
+
     fontSize: "11px",
+
     fontWeight: "650"
 };
 
+
+/* =====================================================
+   ACTIONS
+===================================================== */
+
 const actionStyle = {
     display: "flex",
+
     justifyContent: "center",
+
     gap: "7px"
 };
+
 
 const editButtonStyle = {
     padding: "7px 11px",
-    border: "1px solid #dbe2ea",
+
+    border:
+        "1px solid #dbe2ea",
+
     borderRadius: "7px",
+
     background: "#ffffff",
+
     color: "#2563eb",
+
     fontSize: "11px",
+
     fontWeight: "600",
+
     cursor: "pointer"
 };
+
 
 const deleteButtonStyle = {
     padding: "7px 11px",
-    border: "1px solid #fecaca",
+
+    border:
+        "1px solid #fecaca",
+
     borderRadius: "7px",
+
     background: "#fff5f5",
+
     color: "#dc2626",
+
     fontSize: "11px",
+
     fontWeight: "600",
+
     cursor: "pointer"
 };
+
+
+/* =====================================================
+   EMPTY / LOADING
+===================================================== */
 
 const emptyStyle = {
     padding: "55px 20px",
+
     textAlign: "center",
+
     color: "#64748b",
+
     fontSize: "13px"
 };
 
+
 const emptyIconStyle = {
     fontSize: "32px",
+
     marginBottom: "10px",
+
     opacity: 0.6
 };
 
+
 const loaderStyle = {
     display: "flex",
+
     justifyContent: "center",
+
     marginBottom: "12px"
 };
 
+
 const spinnerStyle = {
     width: "22px",
+
     height: "22px",
-    border: "3px solid #dbeafe",
+
+    border:
+        "3px solid #dbeafe",
+
     borderTop:
         "3px solid #2563eb",
-    borderRadius: "50%"
+
+    borderRadius: "50%",
+
+    animation:
+        "spin 0.8s linear infinite"
 };
+
+
+/* =====================================================
+   PAGINATION
+===================================================== */
 
 const paginationStyle = {
     padding: "16px 22px",
+
     display: "flex",
+
     justifyContent: "space-between",
+
     alignItems: "center",
+
     gap: "15px",
+
     flexWrap: "wrap"
 };
 
+
 const showingStyle = {
     color: "#64748b",
+
     fontSize: "12px"
 };
 
+
 const paginationButtonsStyle = {
     display: "flex",
+
     alignItems: "center",
+
     gap: "7px"
 };
 
+
 const pageButtonStyle = {
     padding: "7px 11px",
-    border: "1px solid #dbe2ea",
+
+    border:
+        "1px solid #dbe2ea",
+
     borderRadius: "7px",
+
     background: "#ffffff",
+
     color: "#475569",
+
     fontSize: "12px",
+
     cursor: "pointer"
 };
 
+
 const currentPageStyle = {
     padding: "7px 11px",
+
     borderRadius: "7px",
+
     background: "#2563eb",
+
     color: "#ffffff",
+
     fontSize: "12px",
+
     fontWeight: "600"
 };
+
 
 export default Employees;

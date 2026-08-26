@@ -18,7 +18,6 @@ function Purchase() {
     const [summary, setSummary] = useState(null);
     const [search, setSearch] = useState("");
     const [selectedMonth, setSelectedMonth] = useState("all");
-
     const [loading, setLoading] = useState(true);
 
     // =====================================================
@@ -31,19 +30,11 @@ function Purchase() {
 
             const response = await API.get("/purchases");
 
-            console.log(
-                "Purchases API Response:",
-                response.data
-            );
+            console.log("Purchases API Response:", response.data);
 
-            setPurchases(
-                response.data?.data || []
-            );
+            setPurchases(response.data?.data || []);
         } catch (error) {
-            console.error(
-                "Load Purchases Error:",
-                error
-            );
+            console.error("Load Purchases Error:", error);
 
             alert(
                 error.response?.data?.message ||
@@ -60,24 +51,16 @@ function Purchase() {
 
     const loadSummary = async () => {
         try {
-            const response =
-                await API.get(
-                    "/purchases/summary"
-                );
+            const response = await API.get("/purchases/summary");
 
             console.log(
                 "Purchase Summary Response:",
                 response.data
             );
 
-            setSummary(
-                response.data?.data || null
-            );
+            setSummary(response.data?.data || null);
         } catch (error) {
-            console.error(
-                "Purchase Summary Error:",
-                error
-            );
+            console.error("Purchase Summary Error:", error);
         }
     };
 
@@ -109,45 +92,26 @@ function Purchase() {
         const months = [];
 
         purchases.forEach((purchase) => {
-            if (!purchase.purchase_date) {
-                return;
-            }
+            if (!purchase.purchase_date) return;
 
-            const date =
-                new Date(
-                    purchase.purchase_date
-                );
+            const date = new Date(purchase.purchase_date);
 
-            if (Number.isNaN(date.getTime())) {
-                return;
-            }
+            if (Number.isNaN(date.getTime())) return;
 
-            const year =
-                date.getFullYear();
+            const year = date.getFullYear();
+            const month = date.getMonth();
 
-            const month =
-                date.getMonth();
+            const value = `${year}-${String(month + 1).padStart(
+                2,
+                "0"
+            )}`;
 
-            const value =
-                `${year}-${String(
-                    month + 1
-                ).padStart(2, "0")}`;
+            const label = date.toLocaleDateString("en-IN", {
+                month: "long",
+                year: "numeric"
+            });
 
-            const label =
-                date.toLocaleDateString(
-                    "en-IN",
-                    {
-                        month: "long",
-                        year: "numeric"
-                    }
-                );
-
-            if (
-                !months.some(
-                    (item) =>
-                        item.value === value
-                )
-            ) {
+            if (!months.some((item) => item.value === value)) {
                 months.push({
                     value,
                     label,
@@ -159,14 +123,8 @@ function Purchase() {
 
         months.sort(
             (a, b) =>
-                new Date(
-                    b.year,
-                    b.month
-                ) -
-                new Date(
-                    a.year,
-                    a.month
-                )
+                new Date(b.year, b.month) -
+                new Date(a.year, a.month)
         );
 
         return months;
@@ -177,194 +135,114 @@ function Purchase() {
     // =====================================================
 
     const filteredPurchases = useMemo(() => {
-        return purchases.filter(
-            (purchase) => {
+        return purchases.filter((purchase) => {
+            if (selectedMonth !== "all") {
+                if (!purchase.purchase_date) return false;
 
-                // -----------------------------
-                // MONTH FILTER
-                // -----------------------------
+                const date = new Date(purchase.purchase_date);
 
-                if (
-                    selectedMonth !==
-                    "all"
-                ) {
-                    if (
-                        !purchase.purchase_date
-                    ) {
-                        return false;
-                    }
+                if (Number.isNaN(date.getTime())) return false;
 
-                    const date =
-                        new Date(
-                            purchase.purchase_date
-                        );
+                const year = date.getFullYear();
 
-                    if (
-                        Number.isNaN(
-                            date.getTime()
-                        )
-                    ) {
-                        return false;
-                    }
+                const month = String(
+                    date.getMonth() + 1
+                ).padStart(2, "0");
 
-                    const year =
-                        date.getFullYear();
+                const purchaseMonth = `${year}-${month}`;
 
-                    const month =
-                        String(
-                            date.getMonth() + 1
-                        ).padStart(2, "0");
-
-                    const purchaseMonth =
-                        `${year}-${month}`;
-
-                    if (
-                        purchaseMonth !==
-                        selectedMonth
-                    ) {
-                        return false;
-                    }
+                if (purchaseMonth !== selectedMonth) {
+                    return false;
                 }
-
-                // -----------------------------
-                // SEARCH FILTER
-                // -----------------------------
-
-                const text = `
-                    ${purchase.purchase_id || ""}
-                    ${purchase.po_number || ""}
-                    ${purchase.invoice_number || ""}
-                    ${purchase.vendor_code || ""}
-                    ${purchase.vendor_name || ""}
-                    ${purchase.product_category || ""}
-                    ${purchase.product_name || ""}
-                    ${purchase.product_description || ""}
-                    ${purchase.payment_status || ""}
-                    ${purchase.remarks || ""}
-                `.toLowerCase();
-
-                return text.includes(
-                    search.toLowerCase().trim()
-                );
             }
-        );
-    }, [
-        purchases,
-        search,
-        selectedMonth
-    ]);
+
+            const text = `
+                ${purchase.purchase_id || ""}
+                ${purchase.po_number || ""}
+                ${purchase.invoice_number || ""}
+                ${purchase.vendor_code || ""}
+                ${purchase.vendor_name || ""}
+                ${purchase.product_category || ""}
+                ${purchase.product_name || ""}
+                ${purchase.product_description || ""}
+                ${purchase.payment_status || ""}
+                ${purchase.remarks || ""}
+            `.toLowerCase();
+
+            return text.includes(
+                search.toLowerCase().trim()
+            );
+        });
+    }, [purchases, search, selectedMonth]);
 
     // =====================================================
     // SELECTED MONTH SUMMARY
     // =====================================================
 
     const filteredSummary = useMemo(() => {
-
-        // ALL MONTHS
-        if (
-            selectedMonth === "all"
-        ) {
+        if (selectedMonth === "all") {
             return {
-                total_purchases:
-                    Number(
-                        summary?.total_purchases ||
-                        0
-                    ),
+                total_purchases: Number(
+                    summary?.total_purchases || 0
+                ),
 
-                total_purchase_amount:
-                    Number(
-                        summary?.total_purchase_amount ||
-                        0
-                    ),
+                total_purchase_amount: Number(
+                    summary?.total_purchase_amount || 0
+                ),
 
-                pending_payments:
-                    Number(
-                        summary?.pending_payments ||
-                        0
-                    ),
+                pending_payments: Number(
+                    summary?.pending_payments || 0
+                ),
 
-                paid_purchases:
-                    Number(
-                        summary?.paid_purchases ||
-                        0
-                    )
+                paid_purchases: Number(
+                    summary?.paid_purchases || 0
+                )
             };
         }
 
-        // SELECTED MONTH
         let totalPurchases = 0;
         let totalAmount = 0;
         let pendingPayments = 0;
         let paidPurchases = 0;
 
-        filteredPurchases.forEach(
-            (purchase) => {
+        filteredPurchases.forEach((purchase) => {
+            totalPurchases += 1;
 
-                totalPurchases += 1;
+            totalAmount += Number(
+                purchase.amount || 0
+            );
 
-                totalAmount += Number(
-                    purchase.amount || 0
-                );
-
-                if (
-                    purchase.payment_status ===
-                    "Pending"
-                ) {
-                    pendingPayments += 1;
-                }
-
-                if (
-                    purchase.payment_status ===
-                    "Paid"
-                ) {
-                    paidPurchases += 1;
-                }
+            if (purchase.payment_status === "Pending") {
+                pendingPayments += 1;
             }
-        );
+
+            if (purchase.payment_status === "Paid") {
+                paidPurchases += 1;
+            }
+        });
 
         return {
-            total_purchases:
-                totalPurchases,
-
-            total_purchase_amount:
-                totalAmount,
-
-            pending_payments:
-                pendingPayments,
-
-            paid_purchases:
-                paidPurchases
+            total_purchases: totalPurchases,
+            total_purchase_amount: totalAmount,
+            pending_payments: pendingPayments,
+            paid_purchases: paidPurchases
         };
-
-    }, [
-        filteredPurchases,
-        selectedMonth,
-        summary
-    ]);
+    }, [filteredPurchases, selectedMonth, summary]);
 
     // =====================================================
     // FORMAT DATE
     // =====================================================
 
     const formatDate = (date) => {
-        if (!date) {
+        if (!date) return "-";
+
+        const parsedDate = new Date(date);
+
+        if (Number.isNaN(parsedDate.getTime())) {
             return "-";
         }
 
-        const parsedDate =
-            new Date(date);
-
-        if (
-            Number.isNaN(
-                parsedDate.getTime()
-            )
-        ) {
-            return "-";
-        }
-
-        return parsedDate.toLocaleDateString(
-            "en-IN"
-        );
+        return parsedDate.toLocaleDateString("en-IN");
     };
 
     // =====================================================
@@ -372,16 +250,11 @@ function Purchase() {
     // =====================================================
 
     const formatAmount = (amount) => {
-        return Number(
-            amount || 0
-        ).toLocaleString(
-            "en-IN",
-            {
-                style: "currency",
-                currency: "INR",
-                maximumFractionDigits: 2
-            }
-        );
+        return Number(amount || 0).toLocaleString("en-IN", {
+            style: "currency",
+            currency: "INR",
+            maximumFractionDigits: 2
+        });
     };
 
     // =====================================================
@@ -396,43 +269,28 @@ function Purchase() {
     // EDIT PURCHASE
     // =====================================================
 
-    const handleEditPurchase = (
-        purchaseId
-    ) => {
-        navigate(
-            `/purchases/edit/${purchaseId}`
-        );
+    const handleEditPurchase = (purchaseId) => {
+        navigate(`/purchases/edit/${purchaseId}`);
     };
 
     // =====================================================
     // DELETE PURCHASE
     // =====================================================
 
-    const handleDeletePurchase = async (
-        purchaseId
-    ) => {
+    const handleDeletePurchase = async (purchaseId) => {
+        const confirmed = window.confirm(
+            "Are you sure you want to delete this purchase?"
+        );
 
-        const confirmed =
-            window.confirm(
-                "Are you sure you want to delete this purchase?"
-            );
-
-        if (!confirmed) {
-            return;
-        }
+        if (!confirmed) return;
 
         try {
-            const response =
-                await API.delete(
-                    `/purchases/${purchaseId}`
-                );
+            const response = await API.delete(
+                `/purchases/${purchaseId}`
+            );
 
-            if (
-                response.data?.success
-            ) {
-                alert(
-                    "Purchase deleted successfully"
-                );
+            if (response.data?.success) {
+                alert("Purchase deleted successfully");
 
                 await Promise.all([
                     loadPurchases(),
@@ -444,7 +302,6 @@ function Purchase() {
                     "Failed to delete purchase"
                 );
             }
-
         } catch (error) {
             console.error(
                 "Delete Purchase Error:",
@@ -466,72 +323,43 @@ function Purchase() {
         purchaseId,
         documentType
     ) => {
-
-        const input =
-            document.createElement(
-                "input"
-            );
+        const input = document.createElement("input");
 
         input.type = "file";
-
         input.accept =
             ".pdf,.jpg,.jpeg,.png,.doc,.docx";
 
-        input.onchange = async (
-            event
-        ) => {
+        input.onchange = async (event) => {
+            const file = event.target.files?.[0];
 
-            const file =
-                event.target.files?.[0];
+            if (!file) return;
 
-            if (!file) {
-                return;
-            }
+            const maxSize = 10 * 1024 * 1024;
 
-            // ---------------------------------
-            // FILE SIZE VALIDATION
-            // ---------------------------------
-
-            const maxSize =
-                10 * 1024 * 1024;
-
-            if (
-                file.size >
-                maxSize
-            ) {
+            if (file.size > maxSize) {
                 alert(
                     "File size must be 10 MB or less."
                 );
-
                 return;
             }
 
-            const formData =
-                new FormData();
+            const formData = new FormData();
 
-            formData.append(
-                "file",
-                file
-            );
+            formData.append("file", file);
 
             try {
-
-                const response =
-                    await API.post(
-                        `/purchases/${purchaseId}/document/${documentType}`,
-                        formData,
-                        {
-                            headers: {
-                                "Content-Type":
-                                    "multipart/form-data"
-                            }
+                const response = await API.post(
+                    `/purchases/${purchaseId}/document/${documentType}`,
+                    formData,
+                    {
+                        headers: {
+                            "Content-Type":
+                                "multipart/form-data"
                         }
-                    );
+                    }
+                );
 
-                if (
-                    response.data?.success
-                ) {
-
+                if (response.data?.success) {
                     alert(
                         documentType === "po"
                             ? "PO document uploaded successfully"
@@ -539,17 +367,13 @@ function Purchase() {
                     );
 
                     await loadPurchases();
-
                 } else {
-
                     alert(
                         response.data?.message ||
                         "Failed to upload document"
                     );
                 }
-
             } catch (error) {
-
                 console.error(
                     "Upload Document Error:",
                     error
@@ -566,36 +390,28 @@ function Purchase() {
     };
 
     // =====================================================
-    // VIEW / DOWNLOAD DOCUMENT
+    // VIEW DOCUMENT
     // =====================================================
 
     const handleViewDocument = async (
         purchaseId,
         documentType
     ) => {
-
         try {
-
-            const response =
-                await API.get(
-                    `/purchases/${purchaseId}/document/${documentType}`,
-                    {
-                        responseType: "blob"
-                    }
-                );
+            const response = await API.get(
+                `/purchases/${purchaseId}/document/${documentType}`,
+                {
+                    responseType: "blob"
+                }
+            );
 
             const fileUrl =
                 window.URL.createObjectURL(
                     response.data
                 );
 
-            window.open(
-                fileUrl,
-                "_blank"
-            );
-
+            window.open(fileUrl, "_blank");
         } catch (error) {
-
             console.error(
                 "View Document Error:",
                 error
@@ -616,48 +432,35 @@ function Purchase() {
         purchaseId,
         documentType
     ) => {
-
         const documentName =
             documentType === "po"
                 ? "PO"
                 : "Invoice";
 
-        const confirmed =
-            window.confirm(
-                `Are you sure you want to delete ${documentName} document?`
-            );
+        const confirmed = window.confirm(
+            `Are you sure you want to delete ${documentName} document?`
+        );
 
-        if (!confirmed) {
-            return;
-        }
+        if (!confirmed) return;
 
         try {
+            const response = await API.delete(
+                `/purchases/${purchaseId}/document/${documentType}`
+            );
 
-            const response =
-                await API.delete(
-                    `/purchases/${purchaseId}/document/${documentType}`
-                );
-
-            if (
-                response.data?.success
-            ) {
-
+            if (response.data?.success) {
                 alert(
                     `${documentName} document deleted successfully`
                 );
 
                 await loadPurchases();
-
             } else {
-
                 alert(
                     response.data?.message ||
                     "Failed to delete document"
                 );
             }
-
         } catch (error) {
-
             console.error(
                 "Delete Document Error:",
                 error
@@ -688,10 +491,8 @@ function Purchase() {
             ? "All Months"
             : monthOptions.find(
                   (month) =>
-                      month.value ===
-                      selectedMonth
-              )?.label ||
-              "Selected Month";
+                      month.value === selectedMonth
+              )?.label || "Selected Month";
 
     // =====================================================
     // RENDER
@@ -699,22 +500,20 @@ function Purchase() {
 
     return (
         <div style={pageStyle}>
-
             <Sidebar />
 
             <div style={mainStyle}>
-
                 <Navbar />
 
                 <main style={contentStyle}>
 
                     {/* =================================================
-                        HEADER
+                        HEADER - SCREENSHOT STYLE
                     ================================================= */}
 
                     <div style={headerStyle}>
 
-                        <div>
+                        <div style={headerContentStyle}>
 
                             <div style={eyebrowStyle}>
                                 PURCHASE MANAGEMENT
@@ -726,56 +525,55 @@ function Purchase() {
 
                             <p style={subtitleStyle}>
                                 Manage company purchases
-                                and track purchase
-                                documents.
+                                and track purchase documents.
                             </p>
 
                         </div>
 
-                        <div
-                            style={
-                                headerButtonsStyle
-                            }
-                        >
+                        <div style={headerButtonsStyle}>
 
                             {/* REFRESH */}
 
                             <button
                                 type="button"
-                                onClick={
-                                    handleRefresh
-                                }
-                                style={
-                                    refreshButtonStyle
-                                }
+                                onClick={handleRefresh}
+                                style={refreshButtonStyle}
+                                onMouseEnter={(e) => {
+                                    e.currentTarget.style.background =
+                                        "rgba(255,255,255,0.18)";
+                                }}
+                                onMouseLeave={(e) => {
+                                    e.currentTarget.style.background =
+                                        "rgba(255,255,255,0.10)";
+                                }}
                             >
-                                <span
-                                    style={
-                                        buttonIconStyle
-                                    }
-                                >
+                                <span style={buttonIconStyle}>
                                     ↻
                                 </span>
 
                                 Refresh
                             </button>
 
-                            {/* ADD */}
+                            {/* ADD PURCHASE */}
 
                             <button
                                 type="button"
-                                onClick={
-                                    handleAddPurchase
-                                }
-                                style={
-                                    addButtonStyle
-                                }
+                                onClick={handleAddPurchase}
+                                style={addButtonStyle}
+                                onMouseEnter={(e) => {
+                                    e.currentTarget.style.transform =
+                                        "translateY(-1px)";
+                                    e.currentTarget.style.boxShadow =
+                                        "0 7px 18px rgba(0,0,0,0.18)";
+                                }}
+                                onMouseLeave={(e) => {
+                                    e.currentTarget.style.transform =
+                                        "translateY(0)";
+                                    e.currentTarget.style.boxShadow =
+                                        "0 4px 12px rgba(0,0,0,0.12)";
+                                }}
                             >
-                                <span
-                                    style={
-                                        plusStyle
-                                    }
-                                >
+                                <span style={plusStyle}>
                                     +
                                 </span>
 
@@ -783,110 +581,59 @@ function Purchase() {
                             </button>
 
                         </div>
-
                     </div>
 
-
                     {/* =================================================
-                        MONTH FILTER BANNER
+                        MONTH FILTER
                     ================================================= */}
 
-                    <div
-                        style={
-                            filterBarStyle
-                        }
-                    >
+                    <div style={filterBarStyle}>
 
-                        <div
-                            style={
-                                filterLeftStyle
-                            }
-                        >
+                        <div style={filterLeftStyle}>
 
-                            <div
-                                style={
-                                    filterIconStyle
-                                }
-                            >
+                            <div style={filterIconStyle}>
                                 ◷
                             </div>
 
                             <div>
-
-                                <div
-                                    style={
-                                        filterTitleStyle
-                                    }
-                                >
+                                <div style={filterTitleStyle}>
                                     Purchase Period
                                 </div>
 
-                                <div
-                                    style={
-                                        filterSubtitleStyle
-                                    }
-                                >
-                                    View purchases
-                                    month-wise
+                                <div style={filterSubtitleStyle}>
+                                    View purchases month-wise
                                 </div>
-
                             </div>
 
                         </div>
 
-
-                        <div
-                            style={
-                                filterRightStyle
-                            }
-                        >
+                        <div style={filterRightStyle}>
 
                             <select
-                                value={
-                                    selectedMonth
-                                }
-                                onChange={(
-                                    e
-                                ) =>
+                                value={selectedMonth}
+                                onChange={(e) =>
                                     setSelectedMonth(
                                         e.target.value
                                     )
                                 }
-                                style={
-                                    monthSelectStyle
-                                }
+                                style={monthSelectStyle}
                             >
-
                                 <option value="all">
                                     All Months
                                 </option>
 
-                                {monthOptions.map(
-                                    (
-                                        month
-                                    ) => (
-                                        <option
-                                            key={
-                                                month.value
-                                            }
-                                            value={
-                                                month.value
-                                            }
-                                        >
-                                            {
-                                                month.label
-                                            }
-                                        </option>
-                                    )
-                                )}
-
+                                {monthOptions.map((month) => (
+                                    <option
+                                        key={month.value}
+                                        value={month.value}
+                                    >
+                                        {month.label}
+                                    </option>
+                                ))}
                             </select>
 
-
                             {(search ||
-                                selectedMonth !==
-                                    "all") && (
-
+                                selectedMonth !== "all") && (
                                 <button
                                     type="button"
                                     onClick={
@@ -898,28 +645,23 @@ function Purchase() {
                                 >
                                     Clear Filters
                                 </button>
-
                             )}
 
                         </div>
-
                     </div>
-
 
                     {/* =================================================
                         SUMMARY CARDS
                     ================================================= */}
 
                     <div
-                        style={
-                            summaryGridStyle
-                        }
+                        style={summaryGridStyle}
+                        className="purchase-summary-grid"
                     >
 
                         <SummaryCard
                             title={
-                                selectedMonth ===
-                                "all"
+                                selectedMonth === "all"
                                     ? "Total Purchases"
                                     : `${selectedMonthLabel} Purchases`
                             }
@@ -933,11 +675,9 @@ function Purchase() {
 
                         <SummaryCard
                             title="Total Amount"
-                            value={
-                                formatAmount(
-                                    filteredSummary.total_purchase_amount
-                                )
-                            }
+                            value={formatAmount(
+                                filteredSummary.total_purchase_amount
+                            )}
                             icon="₹"
                             color="#7c3aed"
                             background="#f5f3ff"
@@ -965,61 +705,36 @@ function Purchase() {
 
                     </div>
 
-
                     {/* =================================================
                         TABLE CARD
                     ================================================= */}
 
                     <div style={tableCardStyle}>
 
-                        {/* TABLE TOP */}
-
-                        <div
-                            style={
-                                tableTopStyle
-                            }
-                        >
+                        <div style={tableTopStyle}>
 
                             <div>
-
-                                <h2
-                                    style={
-                                        tableTitleStyle
-                                    }
-                                >
+                                <h2 style={tableTitleStyle}>
                                     Purchase Directory
                                 </h2>
 
-                                <p
-                                    style={
-                                        tableSubtitleStyle
-                                    }
-                                >
+                                <p style={tableSubtitleStyle}>
                                     {filteredPurchases.length}{" "}
                                     purchase
-                                    {
-                                        filteredPurchases.length !==
-                                        1
-                                            ? "s"
-                                            : ""
-                                    }{" "}
+                                    {filteredPurchases.length !==
+                                    1
+                                        ? "s"
+                                        : ""}{" "}
                                     found
 
-                                    {selectedMonth !==
-                                        "all" &&
+                                    {selectedMonth !== "all" &&
                                         ` for ${selectedMonthLabel}`}
                                 </p>
-
                             </div>
-
 
                             {/* SEARCH */}
 
-                            <div
-                                style={
-                                    searchAreaStyle
-                                }
-                            >
+                            <div style={searchAreaStyle}>
 
                                 <div
                                     style={
@@ -1038,12 +753,8 @@ function Purchase() {
                                     <input
                                         type="text"
                                         placeholder="Search PO, invoice, vendor..."
-                                        value={
-                                            search
-                                        }
-                                        onChange={(
-                                            e
-                                        ) =>
+                                        value={search}
+                                        onChange={(e) =>
                                             setSearch(
                                                 e.target.value
                                             )
@@ -1057,9 +768,7 @@ function Purchase() {
                                         <button
                                             type="button"
                                             onClick={() =>
-                                                setSearch(
-                                                    ""
-                                                )
+                                                setSearch("")
                                             }
                                             style={
                                                 clearButtonStyle
@@ -1070,98 +779,66 @@ function Purchase() {
                                     )}
 
                                 </div>
-
                             </div>
-
                         </div>
 
+                        {/* =================================================
+                            TABLE
+                        ================================================= */}
 
-                        {/* TABLE */}
+                        <div style={tableWrapperStyle}>
 
-                        <div
-                            style={
-                                tableWrapperStyle
-                            }
-                        >
-
-                            <table
-                                style={
-                                    tableStyle
-                                }
-                            >
+                            <table style={tableStyle}>
 
                                 <thead>
-
                                     <tr>
-
-                                        <th style={thStyle}>
-                                            ID
-                                        </th>
-
+                                        <th style={thStyle}>ID</th>
                                         <th style={thStyle}>
                                             PO Number
                                         </th>
-
                                         <th style={thStyle}>
                                             Invoice
                                         </th>
-
                                         <th style={thStyle}>
                                             Vendor
                                         </th>
-
                                         <th style={thStyle}>
                                             Product
                                         </th>
-
                                         <th style={thStyle}>
                                             Purchase Date
                                         </th>
-
                                         <th style={thStyle}>
                                             Amount
                                         </th>
-
                                         <th style={thStyle}>
                                             Payment
                                         </th>
-
                                         <th style={thStyle}>
                                             Warranty
                                         </th>
-
                                         <th style={thStyle}>
                                             Remarks
                                         </th>
-
                                         <th style={thStyle}>
                                             Documents
                                         </th>
-
                                         <th style={thStyle}>
                                             Actions
                                         </th>
-
                                     </tr>
-
                                 </thead>
-
 
                                 <tbody>
 
                                     {/* LOADING */}
 
                                     {loading ? (
-
                                         <tr>
-
                                             <td
                                                 colSpan="12"
-                                                style={
-                                                    emptyStyle
-                                                }
+                                                style={emptyStyle}
                                             >
-
                                                 <div
                                                     style={
                                                         loaderStyle
@@ -1175,22 +852,17 @@ function Purchase() {
                                                 </div>
 
                                                 Loading purchases...
-
                                             </td>
-
                                         </tr>
 
-                                    ) : filteredPurchases.length === 0 ? (
+                                    ) : filteredPurchases.length ===
+                                      0 ? (
 
                                         <tr>
-
                                             <td
                                                 colSpan="12"
-                                                style={
-                                                    emptyStyle
-                                                }
+                                                style={emptyStyle}
                                             >
-
                                                 <div
                                                     style={
                                                         emptyIconStyle
@@ -1218,18 +890,13 @@ function Purchase() {
                                                         ? "Try changing your search"
                                                         : "Add your first purchase to get started"}
                                                 </p>
-
                                             </td>
-
                                         </tr>
 
                                     ) : (
 
                                         filteredPurchases.map(
-                                            (
-                                                purchase
-                                            ) => (
-
+                                            (purchase) => (
                                                 <tr
                                                     key={
                                                         purchase.purchase_id
@@ -1266,15 +933,13 @@ function Purchase() {
                                                         }
                                                     </td>
 
-
-                                                    {/* PO NUMBER */}
+                                                    {/* PO */}
 
                                                     <td
                                                         style={
                                                             tdStyle
                                                         }
                                                     >
-
                                                         <span
                                                             style={
                                                                 poNumberStyle
@@ -1285,9 +950,7 @@ function Purchase() {
                                                                 "-"
                                                             }
                                                         </span>
-
                                                     </td>
-
 
                                                     {/* INVOICE */}
 
@@ -1302,7 +965,6 @@ function Purchase() {
                                                         }
                                                     </td>
 
-
                                                     {/* VENDOR */}
 
                                                     <td
@@ -1310,9 +972,7 @@ function Purchase() {
                                                             tdStyle
                                                         }
                                                     >
-
                                                         <div>
-
                                                             <div
                                                                 style={
                                                                     vendorNameStyle
@@ -1335,11 +995,8 @@ function Purchase() {
                                                                     }
                                                                 </div>
                                                             )}
-
                                                         </div>
-
                                                     </td>
-
 
                                                     {/* PRODUCT */}
 
@@ -1348,13 +1005,11 @@ function Purchase() {
                                                             tdStyle
                                                         }
                                                     >
-
                                                         <div
                                                             style={
                                                                 productCellStyle
                                                             }
                                                         >
-
                                                             {purchase.product_category && (
                                                                 <span
                                                                     style={
@@ -1377,26 +1032,20 @@ function Purchase() {
                                                                     "-"
                                                                 }
                                                             </span>
-
                                                         </div>
-
                                                     </td>
 
-
-                                                    {/* PURCHASE DATE */}
+                                                    {/* DATE */}
 
                                                     <td
                                                         style={
                                                             tdStyle
                                                         }
                                                     >
-                                                        {
-                                                            formatDate(
-                                                                purchase.purchase_date
-                                                            )
-                                                        }
+                                                        {formatDate(
+                                                            purchase.purchase_date
+                                                        )}
                                                     </td>
-
 
                                                     {/* AMOUNT */}
 
@@ -1405,13 +1054,10 @@ function Purchase() {
                                                             amountStyle
                                                         }
                                                     >
-                                                        {
-                                                            formatAmount(
-                                                                purchase.amount
-                                                            )
-                                                        }
+                                                        {formatAmount(
+                                                            purchase.amount
+                                                        )}
                                                     </td>
-
 
                                                     {/* PAYMENT */}
 
@@ -1420,7 +1066,6 @@ function Purchase() {
                                                             tdStyle
                                                         }
                                                     >
-
                                                         <span
                                                             style={{
                                                                 ...paymentBadgeStyle,
@@ -1450,7 +1095,6 @@ function Purchase() {
                                                                         : "#9a3412"
                                                             }}
                                                         >
-
                                                             <span
                                                                 style={{
                                                                     width:
@@ -1468,11 +1112,8 @@ function Purchase() {
                                                                 purchase.payment_status ||
                                                                 "-"
                                                             }
-
                                                         </span>
-
                                                     </td>
-
 
                                                     {/* WARRANTY */}
 
@@ -1481,13 +1122,10 @@ function Purchase() {
                                                             tdStyle
                                                         }
                                                     >
-                                                        {
-                                                            formatDate(
-                                                                purchase.warranty_expiry
-                                                            )
-                                                        }
+                                                        {formatDate(
+                                                            purchase.warranty_expiry
+                                                        )}
                                                     </td>
-
 
                                                     {/* REMARKS */}
 
@@ -1496,7 +1134,6 @@ function Purchase() {
                                                             tdStyle
                                                         }
                                                     >
-
                                                         <span
                                                             style={
                                                                 remarksStyle
@@ -1511,9 +1148,7 @@ function Purchase() {
                                                                 "-"
                                                             }
                                                         </span>
-
                                                     </td>
-
 
                                                     {/* DOCUMENTS */}
 
@@ -1522,7 +1157,6 @@ function Purchase() {
                                                             tdStyle
                                                         }
                                                     >
-
                                                         <div
                                                             style={
                                                                 documentContainerStyle
@@ -1536,7 +1170,6 @@ function Purchase() {
                                                                     documentRowStyle
                                                                 }
                                                             >
-
                                                                 <span
                                                                     style={
                                                                         documentLabelStyle
@@ -1546,9 +1179,7 @@ function Purchase() {
                                                                 </span>
 
                                                                 {purchase.po_document ? (
-
                                                                     <>
-
                                                                         <button
                                                                             type="button"
                                                                             onClick={() =>
@@ -1593,11 +1224,8 @@ function Purchase() {
                                                                         >
                                                                             Delete
                                                                         </button>
-
                                                                     </>
-
                                                                 ) : (
-
                                                                     <button
                                                                         type="button"
                                                                         onClick={() =>
@@ -1612,11 +1240,8 @@ function Purchase() {
                                                                     >
                                                                         Upload PO
                                                                     </button>
-
                                                                 )}
-
                                                             </div>
-
 
                                                             {/* INVOICE */}
 
@@ -1625,7 +1250,6 @@ function Purchase() {
                                                                     documentRowStyle
                                                                 }
                                                             >
-
                                                                 <span
                                                                     style={
                                                                         documentLabelStyle
@@ -1635,9 +1259,7 @@ function Purchase() {
                                                                 </span>
 
                                                                 {purchase.invoice_document ? (
-
                                                                     <>
-
                                                                         <button
                                                                             type="button"
                                                                             onClick={() =>
@@ -1682,11 +1304,8 @@ function Purchase() {
                                                                         >
                                                                             Delete
                                                                         </button>
-
                                                                     </>
-
                                                                 ) : (
-
                                                                     <button
                                                                         type="button"
                                                                         onClick={() =>
@@ -1701,15 +1320,11 @@ function Purchase() {
                                                                     >
                                                                         Upload Invoice
                                                                     </button>
-
                                                                 )}
-
                                                             </div>
 
                                                         </div>
-
                                                     </td>
-
 
                                                     {/* ACTIONS */}
 
@@ -1718,13 +1333,11 @@ function Purchase() {
                                                             tdStyle
                                                         }
                                                     >
-
                                                         <div
                                                             style={
                                                                 actionStyle
                                                             }
                                                         >
-
                                                             <button
                                                                 type="button"
                                                                 onClick={() =>
@@ -1752,33 +1365,25 @@ function Purchase() {
                                                             >
                                                                 Delete
                                                             </button>
-
                                                         </div>
-
                                                     </td>
 
                                                 </tr>
-
                                             )
                                         )
-
                                     )}
 
                                 </tbody>
 
                             </table>
-
                         </div>
-
                     </div>
 
                 </main>
-
             </div>
 
-
             {/* =====================================================
-                SPINNER ANIMATION
+                ANIMATIONS + RESPONSIVE
             ===================================================== */}
 
             <style>
@@ -1793,9 +1398,23 @@ function Purchase() {
                         }
                     }
 
+                    @media (max-width: 1100px) {
+                        .purchase-header {
+                            align-items: flex-start !important;
+                        }
+
+                        .purchase-header-buttons {
+                            width: 100%;
+                            justify-content: flex-start !important;
+                        }
+                    }
+
                     @media (max-width: 900px) {
                         .purchase-summary-grid {
-                            grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+                            grid-template-columns: repeat(
+                                2,
+                                minmax(0, 1fr)
+                            ) !important;
                         }
                     }
 
@@ -1803,10 +1422,21 @@ function Purchase() {
                         .purchase-summary-grid {
                             grid-template-columns: 1fr !important;
                         }
+
+                        .purchase-header {
+                            padding: 24px 20px !important;
+                        }
+
+                        .purchase-header-buttons {
+                            gap: 8px !important;
+                        }
+
+                        .purchase-header-buttons button {
+                            flex: 1;
+                        }
                     }
                 `}
             </style>
-
         </div>
     );
 }
@@ -1836,30 +1466,17 @@ function SummaryCard({
                 {icon}
             </div>
 
-            <div
-                style={{
-                    minWidth: 0
-                }}
-            >
+            <div style={{ minWidth: 0 }}>
 
-                <div
-                    style={
-                        summaryTitleStyle
-                    }
-                >
+                <div style={summaryTitleStyle}>
                     {title}
                 </div>
 
-                <div
-                    style={
-                        summaryValueStyle
-                    }
-                >
+                <div style={summaryValueStyle}>
                     {value}
                 </div>
 
             </div>
-
         </div>
     );
 }
@@ -1872,7 +1489,7 @@ function SummaryCard({
 const pageStyle = {
     display: "flex",
     minHeight: "100vh",
-    background: "#f8fafc",
+    background: "#f5f7fb",
     color: "#0f172a"
 };
 
@@ -1885,85 +1502,134 @@ const contentStyle = {
     width: "100%",
     maxWidth: "1600px",
     margin: "0 auto",
-    padding: "30px",
+    padding: "26px 30px 30px",
     boxSizing: "border-box"
 };
 
 
 // =====================================================
-// HEADER
+// HEADER - SCREENSHOT STYLE
 // =====================================================
 
 const headerStyle = {
+    position: "relative",
+    minHeight: "152px",
+    boxSizing: "border-box",
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
-    gap: "20px",
-    flexWrap: "wrap",
-    marginBottom: "22px"
+    gap: "24px",
+    padding: "28px 25px",
+    marginBottom: "22px",
+    overflow: "hidden",
+
+    background: `
+        radial-gradient(
+            circle at 76% 115%,
+            rgba(67, 122, 255, 0.35) 0,
+            rgba(67, 122, 255, 0.16) 95px,
+            transparent 96px
+        ),
+        radial-gradient(
+            circle at 86% 85%,
+            rgba(79, 132, 255, 0.18) 0,
+            rgba(79, 132, 255, 0.06) 130px,
+            transparent 131px
+        ),
+        linear-gradient(
+            110deg,
+            #101a35 0%,
+            #14234a 38%,
+            #1e4fb5 72%,
+            #2864e8 100%
+        )
+    `,
+
+    borderRadius: "15px",
+    boxShadow:
+        "0 10px 28px rgba(15, 23, 42, 0.16)"
+};
+
+const headerContentStyle = {
+    position: "relative",
+    zIndex: 2
 };
 
 const eyebrowStyle = {
-    color: "#2563eb",
-    fontSize: "11px",
-    fontWeight: "700",
-    letterSpacing: "1.5px",
-    marginBottom: "7px"
+    color: "#73baff",
+    fontSize: "10px",
+    fontWeight: "800",
+    letterSpacing: "1.2px",
+    marginBottom: "8px"
 };
 
 const titleStyle = {
     margin: 0,
-    fontSize: "32px",
-    fontWeight: "750",
-    letterSpacing: "-0.8px"
+    color: "#ffffff",
+    fontSize: "25px",
+    lineHeight: "1.1",
+    fontWeight: "800",
+    letterSpacing: "-0.6px"
 };
 
 const subtitleStyle = {
-    margin: "7px 0 0",
-    color: "#64748b",
-    fontSize: "14px"
+    margin: "8px 0 0",
+    color: "rgba(255,255,255,0.92)",
+    fontSize: "12px",
+    lineHeight: "1.5"
 };
 
 const headerButtonsStyle = {
+    position: "relative",
+    zIndex: 2,
     display: "flex",
-    gap: "10px",
+    alignItems: "center",
+    justifyContent: "flex-end",
+    gap: "8px",
     flexWrap: "wrap"
 };
 
 const refreshButtonStyle = {
-    height: "42px",
-    padding: "0 16px",
-    border: "1px solid #dbe2ea",
-    borderRadius: "9px",
-    background: "#ffffff",
-    color: "#334155",
-    fontSize: "13px",
-    fontWeight: "600",
-    cursor: "pointer"
+    height: "35px",
+    padding: "0 13px",
+    border: "1px solid rgba(255,255,255,0.28)",
+    borderRadius: "7px",
+    background: "rgba(255,255,255,0.10)",
+    color: "#ffffff",
+    fontSize: "10px",
+    fontWeight: "700",
+    cursor: "pointer",
+    transition:
+        "background 0.18s ease, transform 0.18s ease",
+    backdropFilter: "blur(5px)"
 };
 
 const buttonIconStyle = {
-    fontSize: "18px",
-    marginRight: "6px"
+    fontSize: "14px",
+    fontWeight: "800",
+    marginRight: "5px"
 };
 
 const addButtonStyle = {
-    height: "42px",
-    padding: "0 18px",
+    height: "35px",
+    padding: "0 15px",
     border: "none",
-    borderRadius: "9px",
-    background: "#2563eb",
-    color: "#ffffff",
-    fontSize: "13px",
-    fontWeight: "600",
+    borderRadius: "7px",
+    background: "#ffffff",
+    color: "#1851b5",
+    fontSize: "10px",
+    fontWeight: "800",
     cursor: "pointer",
     boxShadow:
-        "0 4px 10px rgba(37,99,235,0.18)"
+        "0 4px 12px rgba(0,0,0,0.12)",
+    transition:
+        "transform 0.18s ease, box-shadow 0.18s ease"
 };
 
 const plusStyle = {
-    fontSize: "18px",
-    marginRight: "6px"
+    fontSize: "14px",
+    fontWeight: "800",
+    marginRight: "5px"
 };
 
 

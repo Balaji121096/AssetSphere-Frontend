@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import Sidebar from "../components/Sidebar";
@@ -6,145 +6,84 @@ import Navbar from "../components/Navbar";
 import API from "../api/axios";
 
 function Vendors() {
-
     const navigate = useNavigate();
 
     const [vendors, setVendors] = useState([]);
     const [search, setSearch] = useState("");
     const [loading, setLoading] = useState(true);
-    const [refreshing, setRefreshing] = useState(false);
-
+    const [deletingId, setDeletingId] = useState(null);
 
     // =====================================================
     // LOAD VENDORS
     // =====================================================
 
     const loadVendors = async () => {
-
         try {
-
             setLoading(true);
 
-            const response =
-                await API.get("/vendors");
+            const response = await API.get("/vendors");
 
-            console.log(
-                "Vendors API Response:",
-                response.data
-            );
-
-            setVendors(
-                response.data.data || []
-            );
-
+            setVendors(response.data?.data || []);
         } catch (error) {
-
-            console.error(
-                "Load Vendors Error:",
-                error
-            );
+            console.error("Load Vendors Error:", error);
 
             alert(
                 error.response?.data?.message ||
                 "Failed to load vendors"
             );
-
         } finally {
-
             setLoading(false);
-
         }
-
     };
-
 
     useEffect(() => {
-
         loadVendors();
-
     }, []);
-
-
-    // =====================================================
-    // FULL PAGE REFRESH
-    // =====================================================
-
-    const handleRefresh = () => {
-
-        if (refreshing) {
-            return;
-        }
-
-        setRefreshing(true);
-
-        /*
-         * Small delay so user can see
-         * the refresh animation before
-         * the entire page reloads.
-         */
-
-        setTimeout(() => {
-
-            window.location.reload();
-
-        }, 400);
-
-    };
-
 
     // =====================================================
     // DELETE VENDOR
     // =====================================================
 
     const handleDelete = async (vendor) => {
+        const confirmed = window.confirm(
+            `Are you sure you want to delete "${vendor.vendor_name}"?`
+        );
 
-        const confirmed =
-            window.confirm(
-                `Are you sure you want to delete "${vendor.vendor_name}"?`
-            );
-
-        if (!confirmed) {
-            return;
-        }
-
+        if (!confirmed) return;
 
         try {
+            setDeletingId(vendor.vendor_id);
 
-            await API.delete(
-                `/vendors/${vendor.vendor_id}`
-            );
+            await API.delete(`/vendors/${vendor.vendor_id}`);
 
-            alert(
-                "Vendor deleted successfully"
-            );
+            alert("Vendor deleted successfully");
 
             await loadVendors();
-
         } catch (error) {
-
-            console.error(
-                "Delete Vendor Error:",
-                error
-            );
+            console.error("Delete Vendor Error:", error);
 
             alert(
                 error.response?.data?.message ||
                 "Failed to delete vendor"
             );
-
+        } finally {
+            setDeletingId(null);
         }
-
     };
-
 
     // =====================================================
     // SEARCH
     // =====================================================
 
-    const filteredVendors =
-        vendors.filter((vendor) => {
+    const filteredVendors = useMemo(() => {
+        const keyword = search.trim().toLowerCase();
 
-            const text = `
+        if (!keyword) {
+            return vendors;
+        }
+
+        return vendors.filter((vendor) => {
+            const searchableText = `
                 ${vendor.vendor_id || ""}
                 ${vendor.vendor_code || ""}
                 ${vendor.vendor_name || ""}
@@ -157,126 +96,124 @@ function Vendors() {
                 ${vendor.status || ""}
             `.toLowerCase();
 
-            return text.includes(
-                search.toLowerCase()
-            );
-
+            return searchableText.includes(keyword);
         });
+    }, [vendors, search]);
 
+    // =====================================================
+    // STATS
+    // =====================================================
+
+    const stats = useMemo(() => {
+        const active = vendors.filter(
+            (vendor) => vendor.status === "Active"
+        ).length;
+
+        const inactive = vendors.filter(
+            (vendor) =>
+                vendor.status &&
+                vendor.status !== "Active"
+        ).length;
+
+        return {
+            total: vendors.length,
+            active,
+            inactive,
+            showing: filteredVendors.length
+        };
+    }, [vendors, filteredVendors]);
 
     // =====================================================
     // UI
     // =====================================================
 
     return (
-
         <div style={pageStyle}>
-
             <Sidebar />
 
-
-            <div style={mainStyle}>
-
+            <div style={contentStyle}>
                 <Navbar />
 
+                <main style={mainStyle}>
 
-                <main style={contentStyle}>
+                    {/* =================================================
+                        PAGE HEADER - DARK NAVY / BLUE GRADIENT
+                    ================================================= */}
 
+                    <div style={heroHeader}>
 
-                    {/* =====================================
-                        HEADER
-                    ===================================== */}
+                        {/* LEFT */}
 
-                    <div style={headerStyle}>
+                        <div style={heroLeft}>
 
-                        <div>
-
-                            <div style={eyebrowStyle}>
-                                VENDOR MANAGEMENT
+                            <div style={heroIcon}>
+                                ▣
                             </div>
 
-                            <h1 style={titleStyle}>
-                                Vendors
-                            </h1>
+                            <div>
+                                <div style={heroBreadcrumb}>
+                                    Dashboard
+                                    <span style={heroSlash}>/</span>
+                                    Vendors
+                                </div>
 
-                            <p style={subtitleStyle}>
-                                Manage company vendors
-                            </p>
+                                <h1 style={heroTitle}>
+                                    Vendors
+                                </h1>
+
+                                <p style={heroDescription}>
+                                    Manage company vendors and their information.
+                                </p>
+                            </div>
 
                         </div>
 
 
-                        <div style={headerButtonsStyle}>
+                        {/* RIGHT ACTIONS */}
 
-
-                            {/* =================================
-                                REFRESH
-                            ================================= */}
+                        <div style={heroActions}>
 
                             <button
                                 type="button"
-                                onClick={handleRefresh}
-                                disabled={refreshing}
+                                onClick={loadVendors}
+                                disabled={loading}
                                 style={{
-                                    ...refreshButtonStyle,
-                                    opacity:
-                                        refreshing
-                                            ? 0.65
-                                            : 1,
-                                    cursor:
-                                        refreshing
-                                            ? "not-allowed"
-                                            : "pointer"
+                                    ...heroSecondaryButton,
+                                    opacity: loading ? 0.7 : 1,
+                                    cursor: loading
+                                        ? "not-allowed"
+                                        : "pointer"
                                 }}
                             >
-
                                 <span
                                     style={{
-                                        ...refreshIconStyle,
-                                        display:
-                                            "inline-block",
-                                        animation:
-                                            refreshing
-                                                ? "spin 0.8s linear infinite"
-                                                : "none"
+                                        ...refreshIcon,
+                                        animation: loading
+                                            ? "vendorSpin 0.8s linear infinite"
+                                            : "none"
                                     }}
                                 >
                                     ↻
                                 </span>
 
-                                {refreshing
+                                {loading
                                     ? "Refreshing..."
                                     : "Refresh"}
-
                             </button>
 
-
-                            {/* =================================
-                                ADD VENDOR
-                            ================================= */}
 
                             <button
                                 type="button"
                                 onClick={() =>
-                                    navigate(
-                                        "/vendors/add"
-                                    )
+                                    navigate("/vendors/add")
                                 }
-                                style={
-                                    addButtonStyle
-                                }
+                                style={heroPrimaryButton}
                             >
-
-                                <span
-                                    style={
-                                        plusStyle
-                                    }
-                                >
+                                <span style={plusIcon}>
                                     +
                                 </span>
 
                                 Add Vendor
-
                             </button>
 
                         </div>
@@ -284,150 +221,102 @@ function Vendors() {
                     </div>
 
 
-                    {/* =====================================
-                        SUMMARY
-                    ===================================== */}
+                    {/* =================================================
+                        SUMMARY CARDS
+                    ================================================= */}
 
-                    <div style={summaryGridStyle}>
+                    <div style={statsGrid}>
 
-                        <SummaryCard
+                        <StatCard
                             title="Total Vendors"
-                            value={vendors.length}
+                            value={stats.total}
                             icon="▣"
-                            color="#2563eb"
-                            background="#eff6ff"
+                            iconColor="#2563eb"
+                            iconBackground="#eff6ff"
                         />
 
-
-                        <SummaryCard
+                        <StatCard
                             title="Active"
-                            value={
-                                vendors.filter(
-                                    (vendor) =>
-                                        vendor.status ===
-                                        "Active"
-                                ).length
-                            }
+                            value={stats.active}
                             icon="✓"
-                            color="#16a34a"
-                            background="#f0fdf4"
+                            iconColor="#16a34a"
+                            iconBackground="#f0fdf4"
                         />
 
-
-                        <SummaryCard
+                        <StatCard
                             title="Inactive"
-                            value={
-                                vendors.filter(
-                                    (vendor) =>
-                                        vendor.status &&
-                                        vendor.status !==
-                                            "Active"
-                                ).length
-                            }
+                            value={stats.inactive}
                             icon="!"
-                            color="#dc2626"
-                            background="#fef2f2"
+                            iconColor="#dc2626"
+                            iconBackground="#fef2f2"
                         />
 
-
-                        <SummaryCard
+                        <StatCard
                             title="Search Results"
-                            value={
-                                filteredVendors.length
-                            }
+                            value={stats.showing}
                             icon="⌕"
-                            color="#7c3aed"
-                            background="#f5f3ff"
+                            iconColor="#7c3aed"
+                            iconBackground="#f5f3ff"
                         />
 
                     </div>
 
 
-                    {/* =====================================
+                    {/* =================================================
                         TABLE CARD
-                    ===================================== */}
+                    ================================================= */}
 
-                    <div style={tableCardStyle}>
+                    <div style={tableCard}>
 
+                        {/* =================================================
+                            TABLE HEADER
+                        ================================================= */}
 
-                        {/* =================================
-                            TABLE TOP
-                        ================================= */}
-
-                        <div style={tableTopStyle}>
+                        <div style={tableHeader}>
 
                             <div>
-
-                                <h2
-                                    style={
-                                        tableTitleStyle
-                                    }
-                                >
+                                <h2 style={tableTitle}>
                                     Vendor Directory
                                 </h2>
 
-                                <p
-                                    style={
-                                        tableSubtitleStyle
-                                    }
-                                >
+                                <p style={tableSubtitle}>
                                     {filteredVendors.length} vendor
                                     {filteredVendors.length !== 1
                                         ? "s"
-                                        : ""} found
+                                        : ""}{" "}
+                                    found
                                 </p>
-
                             </div>
 
 
-                            {/* =================================
-                                SEARCH
-                            ================================= */}
+                            {/* SEARCH */}
 
-                            <div
-                                style={
-                                    searchWrapperStyle
-                                }
-                            >
+                            <div style={searchWrapper}>
 
-                                <span
-                                    style={
-                                        searchIconStyle
-                                    }
-                                >
+                                <span style={searchIcon}>
                                     ⌕
                                 </span>
 
-
                                 <input
                                     type="text"
-                                    placeholder="Search vendors..."
+                                    placeholder="Search vendors, contact, email..."
                                     value={search}
                                     onChange={(e) =>
-                                        setSearch(
-                                            e.target.value
-                                        )
+                                        setSearch(e.target.value)
                                     }
-                                    style={
-                                        searchInputStyle
-                                    }
+                                    style={searchInput}
                                 />
 
-
                                 {search && (
-
                                     <button
                                         type="button"
                                         onClick={() =>
                                             setSearch("")
                                         }
-                                        style={
-                                            clearButtonStyle
-                                        }
+                                        style={clearSearch}
                                     >
                                         ×
                                     </button>
-
                                 )}
 
                             </div>
@@ -435,97 +324,53 @@ function Vendors() {
                         </div>
 
 
-                        {/* =================================
+                        {/* =================================================
                             TABLE
-                        ================================= */}
+                        ================================================= */}
 
-                        <div
-                            style={
-                                tableWrapperStyle
-                            }
-                        >
+                        <div style={tableScroll}>
 
-                            <table
-                                style={
-                                    tableStyle
-                                }
-                            >
+                            <table style={table}>
 
                                 <thead>
 
                                     <tr>
 
-                                        <th
-                                            style={
-                                                thStyle
-                                            }
-                                        >
+                                        <th style={thStyle}>
                                             ID
                                         </th>
 
-
-                                        <th
-                                            style={
-                                                thStyle
-                                            }
-                                        >
+                                        <th style={thStyle}>
                                             Vendor Code
                                         </th>
 
-
-                                        <th
-                                            style={
-                                                thStyle
-                                            }
-                                        >
-                                            Vendor Name
+                                        <th style={thStyle}>
+                                            Vendor
                                         </th>
 
-
-                                        <th
-                                            style={
-                                                thStyle
-                                            }
-                                        >
+                                        <th style={thStyle}>
                                             Contact Person
                                         </th>
 
-
-                                        <th
-                                            style={
-                                                thStyle
-                                            }
-                                        >
+                                        <th style={thStyle}>
                                             Email
                                         </th>
 
-
-                                        <th
-                                            style={
-                                                thStyle
-                                            }
-                                        >
+                                        <th style={thStyle}>
                                             Phone
                                         </th>
 
-
-                                        <th
-                                            style={
-                                                thStyle
-                                            }
-                                        >
+                                        <th style={thStyle}>
                                             Status
                                         </th>
-
 
                                         <th
                                             style={{
                                                 ...thStyle,
-                                                textAlign:
-                                                    "center"
+                                                textAlign: "right"
                                             }}
                                         >
-                                            Actions
+                                            Action
                                         </th>
 
                                     </tr>
@@ -535,94 +380,97 @@ function Vendors() {
 
                                 <tbody>
 
-
-                                    {/* =================================
+                                    {/* =================================================
                                         LOADING
-                                    ================================= */}
+                                    ================================================= */}
 
                                     {loading ? (
+                                        <>
+                                            {[1, 2, 3, 4, 5].map(
+                                                (row) => (
+                                                    <tr key={row}>
 
-                                        <tr>
+                                                        {Array.from({
+                                                            length: 8
+                                                        }).map(
+                                                            (
+                                                                _,
+                                                                index
+                                                            ) => (
+                                                                <td
+                                                                    key={
+                                                                        index
+                                                                    }
+                                                                    style={
+                                                                        tdStyle
+                                                                    }
+                                                                >
+                                                                    <div
+                                                                        style={{
+                                                                            ...skeleton,
+                                                                            width:
+                                                                                index ===
+                                                                                2
+                                                                                    ? "170px"
+                                                                                    : "75%"
+                                                                        }}
+                                                                    />
+                                                                </td>
+                                                            )
+                                                        )}
 
-                                            <td
-                                                colSpan="8"
-                                                style={
-                                                    emptyStyle
-                                                }
-                                            >
-
-                                                <div
-                                                    style={
-                                                        loaderStyle
-                                                    }
-                                                >
-
-                                                    <div
-                                                        style={
-                                                            spinnerStyle
-                                                        }
-                                                    />
-
-                                                </div>
-
-                                                Loading vendors...
-
-                                            </td>
-
-                                        </tr>
-
-
+                                                    </tr>
+                                                )
+                                            )}
+                                        </>
                                     ) : filteredVendors.length === 0 ? (
 
-
-                                        /* =================================
+                                        /* =================================================
                                             EMPTY
-                                        ================================= */
+                                        ================================================= */
 
                                         <tr>
 
                                             <td
                                                 colSpan="8"
-                                                style={
-                                                    emptyStyle
-                                                }
+                                                style={emptyCell}
                                             >
 
                                                 <div
                                                     style={
-                                                        emptyIconStyle
+                                                        emptyIcon
                                                     }
                                                 >
                                                     ▣
                                                 </div>
 
-                                                <strong>
-                                                    No vendors found
-                                                </strong>
-
-                                                <p
-                                                    style={{
-                                                        margin:
-                                                            "6px 0 0",
-                                                        color:
-                                                            "#94a3b8"
-                                                    }}
+                                                <div
+                                                    style={
+                                                        emptyTitle
+                                                    }
                                                 >
-                                                    Try changing your
-                                                    search
-                                                </p>
+                                                    No vendors found
+                                                </div>
+
+                                                <div
+                                                    style={
+                                                        emptyText
+                                                    }
+                                                >
+                                                    {search
+                                                        ? "Try changing your search."
+                                                        : "No vendors are available yet."}
+                                                </div>
 
                                             </td>
 
                                         </tr>
 
-
                                     ) : (
 
-
-                                        /* =================================
+                                        /* =================================================
                                             VENDOR ROWS
-                                        ================================= */
+                                        ================================================= */
 
                                         filteredVendors.map(
                                             (vendor) => (
@@ -634,16 +482,19 @@ function Vendors() {
                                                     style={
                                                         rowStyle
                                                     }
-                                                    onMouseEnter={(e) => {
+                                                    onMouseEnter={(
+                                                        e
+                                                    ) => {
                                                         e.currentTarget.style.background =
                                                             "#f8fafc";
                                                     }}
-                                                    onMouseLeave={(e) => {
+                                                    onMouseLeave={(
+                                                        e
+                                                    ) => {
                                                         e.currentTarget.style.background =
                                                             "#ffffff";
                                                     }}
                                                 >
-
 
                                                     {/* ID */}
 
@@ -652,27 +503,38 @@ function Vendors() {
                                                             tdStyle
                                                         }
                                                     >
-                                                        {
-                                                            vendor.vendor_id
-                                                        }
+                                                        <span
+                                                            style={
+                                                                idText
+                                                            }
+                                                        >
+                                                            #
+                                                            {
+                                                                vendor.vendor_id
+                                                            }
+                                                        </span>
                                                     </td>
 
 
-                                                    {/* VENDOR CODE */}
+                                                    {/* CODE */}
 
                                                     <td
                                                         style={
                                                             tdStyle
                                                         }
                                                     >
-                                                        {
-                                                            vendor.vendor_code ||
-                                                            "-"
-                                                        }
+                                                        <span
+                                                            style={
+                                                                codeBadge
+                                                            }
+                                                        >
+                                                            {vendor.vendor_code ||
+                                                                "-"}
+                                                        </span>
                                                     </td>
 
 
-                                                    {/* VENDOR NAME */}
+                                                    {/* VENDOR */}
 
                                                     <td
                                                         style={
@@ -682,16 +544,23 @@ function Vendors() {
 
                                                         <div
                                                             style={
-                                                                vendorCellStyle
+                                                                vendorCell
                                                             }
                                                         >
 
                                                             <div
                                                                 style={
-                                                                    vendorIconStyle
+                                                                    vendorIcon
                                                                 }
                                                             >
-                                                                ▣
+                                                                {(
+                                                                    vendor.vendor_name ||
+                                                                    "V"
+                                                                )
+                                                                    .charAt(
+                                                                        0
+                                                                    )
+                                                                    .toUpperCase()}
                                                             </div>
 
 
@@ -705,25 +574,20 @@ function Vendors() {
                                                                         )
                                                                     }
                                                                     style={
-                                                                        vendorNameButtonStyle
+                                                                        vendorName
                                                                     }
                                                                 >
-                                                                    {
-                                                                        vendor.vendor_name ||
-                                                                        "-"
-                                                                    }
+                                                                    {vendor.vendor_name ||
+                                                                        "-"}
                                                                 </button>
-
 
                                                                 <div
                                                                     style={
-                                                                        vendorCodeSmallStyle
+                                                                        vendorSmallCode
                                                                     }
                                                                 >
-                                                                    {
-                                                                        vendor.vendor_code ||
-                                                                        "Vendor"
-                                                                    }
+                                                                    {vendor.vendor_code ||
+                                                                        "Vendor"}
                                                                 </div>
 
                                                             </div>
@@ -733,17 +597,15 @@ function Vendors() {
                                                     </td>
 
 
-                                                    {/* CONTACT PERSON */}
+                                                    {/* CONTACT */}
 
                                                     <td
                                                         style={
                                                             tdStyle
                                                         }
                                                     >
-                                                        {
-                                                            vendor.contact_person ||
-                                                            "-"
-                                                        }
+                                                        {vendor.contact_person ||
+                                                            "-"}
                                                     </td>
 
 
@@ -754,10 +616,8 @@ function Vendors() {
                                                             tdStyle
                                                         }
                                                     >
-                                                        {
-                                                            vendor.email ||
-                                                            "-"
-                                                        }
+                                                        {vendor.email ||
+                                                            "-"}
                                                     </td>
 
 
@@ -768,12 +628,10 @@ function Vendors() {
                                                             tdStyle
                                                         }
                                                     >
-                                                        {
-                                                            vendor.phone ||
+                                                        {vendor.phone ||
                                                             vendor.mobile ||
                                                             vendor.mobile_number ||
-                                                            "-"
-                                                        }
+                                                            "-"}
                                                     </td>
 
 
@@ -787,58 +645,70 @@ function Vendors() {
 
                                                         <span
                                                             style={{
-                                                                ...statusBadgeStyle,
-                                                                background:
-                                                                    vendor.status ===
-                                                                    "Active"
-                                                                        ? "#dcfce7"
-                                                                        : "#fee2e2",
+                                                                ...statusBadge,
                                                                 color:
                                                                     vendor.status ===
                                                                     "Active"
-                                                                        ? "#166534"
-                                                                        : "#991b1b"
+                                                                        ? "#15803d"
+                                                                        : "#64748b",
+                                                                background:
+                                                                    vendor.status ===
+                                                                    "Active"
+                                                                        ? "#f0fdf4"
+                                                                        : "#f1f5f9"
                                                             }}
                                                         >
-                                                            {
-                                                                vendor.status ||
-                                                                "-"
-                                                            }
+
+                                                            <span
+                                                                style={{
+                                                                    width: "6px",
+                                                                    height: "6px",
+                                                                    borderRadius:
+                                                                        "50%",
+                                                                    background:
+                                                                        vendor.status ===
+                                                                        "Active"
+                                                                            ? "#22c55e"
+                                                                            : "#94a3b8"
+                                                                }}
+                                                            />
+
+                                                            {vendor.status ||
+                                                                "-"}
+
                                                         </span>
 
                                                     </td>
 
 
-                                                    {/* ACTIONS */}
+                                                    {/* ACTION */}
 
                                                     <td
                                                         style={{
                                                             ...tdStyle,
                                                             textAlign:
-                                                                "center"
+                                                                "right"
                                                         }}
                                                     >
 
                                                         <div
                                                             style={
-                                                                actionStyle
+                                                                actionWrapper
                                                             }
                                                         >
-
 
                                                             {/* VIEW */}
 
                                                             <button
                                                                 type="button"
-                                                                title="View Vendor"
-                                                                aria-label="View Vendor"
+                                                                title="View"
                                                                 onClick={() =>
                                                                     navigate(
                                                                         `/vendors/${vendor.vendor_id}`
                                                                     )
                                                                 }
                                                                 style={
-                                                                    iconViewButtonStyle
+                                                                    viewButton
                                                                 }
                                                             >
                                                                 👁
@@ -849,18 +719,17 @@ function Vendors() {
 
                                                             <button
                                                                 type="button"
-                                                                title="Edit Vendor"
-                                                                aria-label="Edit Vendor"
+                                                                title="Edit"
                                                                 onClick={() =>
                                                                     navigate(
                                                                         `/vendors/edit/${vendor.vendor_id}`
                                                                     )
                                                                 }
                                                                 style={
-                                                                    iconEditButtonStyle
+                                                                    editButton
                                                                 }
                                                             >
-                                                                ✏
+                                                                ✎
                                                             </button>
 
 
@@ -868,18 +737,34 @@ function Vendors() {
 
                                                             <button
                                                                 type="button"
-                                                                title="Delete Vendor"
-                                                                aria-label="Delete Vendor"
+                                                                title="Delete"
+                                                                disabled={
+                                                                    deletingId ===
+                                                                    vendor.vendor_id
+                                                                }
                                                                 onClick={() =>
                                                                     handleDelete(
                                                                         vendor
                                                                     )
                                                                 }
-                                                                style={
-                                                                    iconDeleteButtonStyle
-                                                                }
+                                                                style={{
+                                                                    ...deleteButton,
+                                                                    opacity:
+                                                                        deletingId ===
+                                                                        vendor.vendor_id
+                                                                            ? 0.6
+                                                                            : 1,
+                                                                    cursor:
+                                                                        deletingId ===
+                                                                        vendor.vendor_id
+                                                                            ? "not-allowed"
+                                                                            : "pointer"
+                                                                }}
                                                             >
-                                                                🗑
+                                                                {deletingId ===
+                                                                vendor.vendor_id
+                                                                    ? "..."
+                                                                    : "⌫"}
                                                             </button>
 
                                                         </div>
@@ -905,56 +790,110 @@ function Vendors() {
 
             </div>
 
+
+            {/* =====================================================
+                ANIMATIONS
+            ===================================================== */}
+
+            <style>
+                {`
+                    @keyframes vendorSpin {
+                        from {
+                            transform: rotate(0deg);
+                        }
+
+                        to {
+                            transform: rotate(360deg);
+                        }
+                    }
+
+                    @media (max-width: 900px) {
+                        .vendor-hero-header {
+                            flex-direction: column !important;
+                            align-items: flex-start !important;
+                        }
+
+                        .vendor-hero-actions {
+                            width: 100% !important;
+                        }
+
+                        .vendor-hero-actions button {
+                            flex: 1;
+                        }
+                    }
+
+                    @media (max-width: 600px) {
+                        .vendor-main {
+                            padding: 18px !important;
+                        }
+
+                        .vendor-hero-header {
+                            padding: 22px !important;
+                            border-radius: 16px !important;
+                        }
+
+                        .vendor-hero-title {
+                            font-size: 25px !important;
+                        }
+
+                        .vendor-hero-actions {
+                            flex-direction: column !important;
+                        }
+
+                        .vendor-hero-actions button {
+                            width: 100%;
+                        }
+
+                        .vendor-stats {
+                            grid-template-columns: 1fr !important;
+                        }
+                    }
+                `}
+            </style>
+
         </div>
-
     );
-
 }
 
 
 // =====================================================
-// SUMMARY CARD
+// STAT CARD
 // =====================================================
 
-function SummaryCard({
+function StatCard({
     title,
     value,
     icon,
-    color,
-    background
+    iconColor,
+    iconBackground
 }) {
-
     return (
-
-        <div style={summaryCardStyle}>
+        <div style={statCard}>
 
             <div
                 style={{
-                    ...summaryIconStyle,
-                    color,
-                    background
+                    ...statIcon,
+                    color: iconColor,
+                    background: iconBackground
                 }}
             >
                 {icon}
             </div>
 
-
             <div>
 
-                <div style={summaryTitleStyle}>
+                <div style={statTitle}>
                     {title}
                 </div>
 
-                <div style={summaryValueStyle}>
+                <div style={statValue}>
                     {value}
                 </div>
 
             </div>
 
         </div>
-
     );
-
 }
 
 
@@ -963,264 +902,204 @@ function SummaryCard({
 // =====================================================
 
 const pageStyle = {
-
     display: "flex",
-
     minHeight: "100vh",
-
-    background: "#f8fafc",
-
-    color: "#0f172a"
-
+    background: "#f8fafc"
 };
-
-
-const mainStyle = {
-
-    flex: 1,
-
-    minWidth: 0
-
-};
-
 
 const contentStyle = {
+    flex: 1,
+    minWidth: 0
+};
 
-    width: "100%",
-
-    maxWidth: "1500px",
-
-    margin: "0 auto",
-
-    padding: "30px",
-
-    boxSizing: "border-box"
-
+const mainStyle = {
+    padding: "28px",
+    maxWidth: "1800px",
+    margin: "0 auto"
 };
 
 
 // =====================================================
-// HEADER
+// HERO HEADER
 // =====================================================
 
-const headerStyle = {
-
+const heroHeader = {
+    position: "relative",
     display: "flex",
-
     justifyContent: "space-between",
-
     alignItems: "center",
-
-    gap: "20px",
-
-    flexWrap: "wrap",
-
-    marginBottom: "25px"
-
-};
-
-
-const eyebrowStyle = {
-
-    color: "#2563eb",
-
-    fontSize: "11px",
-
-    fontWeight: "700",
-
-    letterSpacing: "1.5px",
-
-    marginBottom: "7px"
-
-};
-
-
-const titleStyle = {
-
-    margin: 0,
-
-    fontSize: "32px",
-
-    fontWeight: "750",
-
-    letterSpacing: "-0.8px"
-
-};
-
-
-const subtitleStyle = {
-
-    margin: "7px 0 0",
-
-    color: "#64748b",
-
-    fontSize: "14px"
-
-};
-
-
-const headerButtonsStyle = {
-
-    display: "flex",
-
-    gap: "10px",
-
-    flexWrap: "wrap"
-
-};
-
-
-// =====================================================
-// BUTTONS
-// =====================================================
-
-const refreshButtonStyle = {
-
-    height: "42px",
-
-    padding: "0 16px",
-
-    border: "1px solid #dbe2ea",
-
-    borderRadius: "9px",
-
-    background: "#ffffff",
-
-    color: "#334155",
-
-    fontSize: "13px",
-
-    fontWeight: "600"
-
-};
-
-
-const refreshIconStyle = {
-
-    fontSize: "18px",
-
-    marginRight: "7px",
-
-    verticalAlign: "middle"
-
-};
-
-
-const addButtonStyle = {
-
-    height: "42px",
-
-    padding: "0 18px",
-
-    border: "none",
-
-    borderRadius: "9px",
-
-    background: "#2563eb",
-
-    color: "#ffffff",
-
-    fontSize: "13px",
-
-    fontWeight: "600",
-
-    cursor: "pointer",
-
+    gap: "24px",
+    marginBottom: "24px",
+    padding: "25px 28px",
+    borderRadius: "16px",
+    overflow: "hidden",
+    background:
+        "linear-gradient(135deg, #0f172a 0%, #172554 42%, #2563eb 100%)",
     boxShadow:
-        "0 4px 10px rgba(37,99,235,0.18)"
-
+        "0 10px 30px rgba(15, 23, 42, 0.18)"
 };
 
+const heroLeft = {
+    display: "flex",
+    alignItems: "center",
+    gap: "15px",
+    minWidth: 0
+};
 
-const plusStyle = {
+const heroIcon = {
+    width: "48px",
+    height: "48px",
+    borderRadius: "12px",
+    flexShrink: 0,
+    background: "rgba(255,255,255,0.14)",
+    border: "1px solid rgba(255,255,255,0.16)",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    color: "#ffffff",
+    fontSize: "22px",
+    fontWeight: "700",
+    boxShadow:
+        "inset 0 1px 0 rgba(255,255,255,0.08)"
+};
 
-    fontSize: "18px",
+const heroBreadcrumb = {
+    display: "flex",
+    alignItems: "center",
+    gap: "8px",
+    marginBottom: "4px",
+    color: "rgba(255,255,255,0.62)",
+    fontSize: "11px",
+    fontWeight: "500"
+};
 
-    marginRight: "6px"
+const heroSlash = {
+    color: "rgba(255,255,255,0.38)"
+};
 
+const heroTitle = {
+    margin: 0,
+    color: "#ffffff",
+    fontSize: "29px",
+    lineHeight: 1.15,
+    fontWeight: "750",
+    letterSpacing: "-0.02em"
+};
+
+const heroDescription = {
+    margin: "6px 0 0",
+    color: "rgba(255,255,255,0.72)",
+    fontSize: "13px",
+    lineHeight: 1.5
+};
+
+const heroActions = {
+    display: "flex",
+    alignItems: "center",
+    gap: "9px",
+    flexShrink: 0
 };
 
 
 // =====================================================
-// SUMMARY
+// HERO BUTTONS
 // =====================================================
 
-const summaryGridStyle = {
+const heroSecondaryButton = {
+    height: "40px",
+    padding: "0 15px",
+    border: "1px solid rgba(255,255,255,0.22)",
+    borderRadius: "8px",
+    background: "rgba(255,255,255,0.10)",
+    color: "#ffffff",
+    cursor: "pointer",
+    fontSize: "12px",
+    fontWeight: "600",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: "7px",
+    backdropFilter: "blur(8px)"
+};
 
+const heroPrimaryButton = {
+    height: "40px",
+    padding: "0 16px",
+    border: "none",
+    borderRadius: "8px",
+    background: "#ffffff",
+    color: "#1d4ed8",
+    cursor: "pointer",
+    fontSize: "12px",
+    fontWeight: "700",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: "7px",
+    boxShadow:
+        "0 4px 12px rgba(0,0,0,0.14)"
+};
+
+const refreshIcon = {
+    display: "inline-block",
+    fontSize: "17px",
+    lineHeight: 1
+};
+
+const plusIcon = {
+    fontSize: "17px",
+    lineHeight: 1
+};
+
+
+// =====================================================
+// STATS
+// =====================================================
+
+const statsGrid = {
     display: "grid",
-
     gridTemplateColumns:
         "repeat(4, minmax(0, 1fr))",
-
-    gap: "16px",
-
+    gap: "15px",
     marginBottom: "22px"
-
 };
 
-
-const summaryCardStyle = {
-
+const statCard = {
     background: "#ffffff",
-
-    border: "1px solid #e8edf3",
-
-    borderRadius: "12px",
-
-    padding: "18px 20px",
-
-    display: "flex",
-
-    alignItems: "center",
-
-    gap: "14px",
-
-    boxShadow:
-        "0 2px 8px rgba(15,23,42,0.035)"
-
-};
-
-
-const summaryIconStyle = {
-
-    width: "44px",
-
-    height: "44px",
-
+    border: "1px solid #e5eaf0",
     borderRadius: "11px",
-
+    padding: "18px",
     display: "flex",
-
     alignItems: "center",
+    gap: "14px",
+    minHeight: "82px",
+    boxSizing: "border-box",
+    boxShadow:
+        "0 1px 3px rgba(15,23,42,0.04)"
+};
 
+const statIcon = {
+    width: "42px",
+    height: "42px",
+    borderRadius: "9px",
+    display: "flex",
+    alignItems: "center",
     justifyContent: "center",
-
-    fontSize: "18px",
-
-    fontWeight: "700"
-
+    fontSize: "20px",
+    fontWeight: "700",
+    flexShrink: 0
 };
 
-
-const summaryTitleStyle = {
-
-    color: "#64748b",
-
+const statTitle = {
     fontSize: "12px",
-
+    color: "#64748b",
     marginBottom: "4px"
-
 };
 
-
-const summaryValueStyle = {
-
+const statValue = {
     fontSize: "24px",
-
     fontWeight: "750",
-
     color: "#0f172a"
-
 };
 
 
@@ -1228,61 +1107,36 @@ const summaryValueStyle = {
 // TABLE CARD
 // =====================================================
 
-const tableCardStyle = {
-
+const tableCard = {
     background: "#ffffff",
-
     border: "1px solid #e5eaf0",
-
-    borderRadius: "14px",
-
+    borderRadius: "12px",
+    overflow: "hidden",
     boxShadow:
-        "0 4px 14px rgba(15,23,42,0.04)",
-
-    overflow: "hidden"
-
+        "0 2px 5px rgba(15,23,42,0.04)"
 };
 
-
-const tableTopStyle = {
-
-    padding: "20px 22px",
-
+const tableHeader = {
+    padding: "18px 20px",
+    borderBottom: "1px solid #eef2f6",
     display: "flex",
-
     justifyContent: "space-between",
-
     alignItems: "center",
-
     gap: "15px",
-
-    flexWrap: "wrap",
-
-    borderBottom:
-        "1px solid #edf1f5"
-
+    flexWrap: "wrap"
 };
 
-
-const tableTitleStyle = {
-
+const tableTitle = {
     margin: 0,
-
-    fontSize: "17px",
-
+    fontSize: "16px",
+    color: "#0f172a",
     fontWeight: "700"
-
 };
 
-
-const tableSubtitleStyle = {
-
-    margin: "5px 0 0",
-
+const tableSubtitle = {
+    margin: "4px 0 0",
     color: "#94a3b8",
-
     fontSize: "12px"
-
 };
 
 
@@ -1290,75 +1144,44 @@ const tableSubtitleStyle = {
 // SEARCH
 // =====================================================
 
-const searchWrapperStyle = {
-
-    width: "320px",
-
+const searchWrapper = {
+    width: "360px",
     maxWidth: "100%",
-
-    height: "42px",
-
-    display: "flex",
-
-    alignItems: "center",
-
-    background: "#f8fafc",
-
+    height: "40px",
     border: "1px solid #dbe2ea",
-
-    borderRadius: "9px",
-
-    padding: "0 11px",
-
-    boxSizing: "border-box"
-
+    borderRadius: "8px",
+    display: "flex",
+    alignItems: "center",
+    background: "#ffffff",
+    boxSizing: "border-box",
+    transition: "border-color .15s, box-shadow .15s"
 };
 
-
-const searchIconStyle = {
-
+const searchIcon = {
+    marginLeft: "12px",
     color: "#94a3b8",
-
-    fontSize: "20px",
-
-    marginRight: "7px"
-
+    fontSize: "21px"
 };
 
-
-const searchInputStyle = {
-
+const searchInput = {
     flex: 1,
-
     minWidth: 0,
-
     height: "100%",
-
     border: "none",
-
     outline: "none",
-
-    background: "transparent",
-
+    padding: "0 10px",
+    color: "#334155",
     fontSize: "13px",
-
-    color: "#0f172a"
-
+    background: "transparent"
 };
 
-
-const clearButtonStyle = {
-
+const clearSearch = {
     border: "none",
-
     background: "transparent",
-
     color: "#94a3b8",
-
-    fontSize: "19px",
-
-    cursor: "pointer"
-
+    fontSize: "18px",
+    cursor: "pointer",
+    marginRight: "8px"
 };
 
 
@@ -1366,74 +1189,43 @@ const clearButtonStyle = {
 // TABLE
 // =====================================================
 
-const tableWrapperStyle = {
-
+const tableScroll = {
     width: "100%",
-
     overflowX: "auto"
-
 };
 
-
-const tableStyle = {
-
+const table = {
     width: "100%",
-
-    minWidth: "1100px",
-
+    minWidth: "1200px",
     borderCollapse: "collapse"
-
 };
-
 
 const thStyle = {
-
-    padding: "13px 16px",
-
+    padding: "13px 15px",
     textAlign: "left",
-
-    background: "#f8fafc",
-
-    color: "#64748b",
-
+    whiteSpace: "nowrap",
     fontSize: "11px",
-
-    fontWeight: "700",
-
     textTransform: "uppercase",
-
-    letterSpacing: "0.5px",
-
-    borderBottom:
-        "1px solid #e8edf3",
-
-    whiteSpace: "nowrap"
-
+    letterSpacing: ".04em",
+    color: "#64748b",
+    background: "#f8fafc",
+    borderBottom: "1px solid #e2e8f0",
+    fontWeight: "700"
 };
-
 
 const tdStyle = {
-
-    padding: "14px 16px",
-
-    color: "#475569",
-
+    padding: "14px 15px",
+    textAlign: "left",
+    whiteSpace: "nowrap",
     fontSize: "13px",
-
-    borderBottom:
-        "1px solid #f0f2f5",
-
+    color: "#475569",
+    borderBottom: "1px solid #f1f5f9",
     verticalAlign: "middle"
-
 };
 
-
 const rowStyle = {
-
     background: "#ffffff",
-
-    transition: "background 0.15s"
-
+    transition: "background .15s"
 };
 
 
@@ -1441,73 +1233,56 @@ const rowStyle = {
 // VENDOR CELL
 // =====================================================
 
-const vendorCellStyle = {
+const idText = {
+    color: "#64748b",
+    fontSize: "12px",
+    fontWeight: "600"
+};
 
+const codeBadge = {
+    padding: "4px 7px",
+    borderRadius: "5px",
+    background: "#f8fafc",
+    color: "#475569",
+    border: "1px solid #e2e8f0",
+    fontSize: "11px"
+};
+
+const vendorCell = {
     display: "flex",
-
     alignItems: "center",
-
     gap: "10px"
-
 };
 
-
-const vendorIconStyle = {
-
+const vendorIcon = {
     width: "36px",
-
     height: "36px",
-
-    borderRadius: "10px",
-
+    borderRadius: "8px",
     background: "#eff6ff",
-
     color: "#2563eb",
-
     display: "flex",
-
     alignItems: "center",
-
     justifyContent: "center",
-
-    fontSize: "15px",
-
     fontWeight: "700",
-
+    fontSize: "14px",
     flexShrink: 0
-
 };
 
-
-const vendorNameButtonStyle = {
-
+const vendorName = {
     border: "none",
-
     background: "transparent",
-
-    color: "#1d4ed8",
-
+    color: "#0f172a",
     cursor: "pointer",
-
     padding: 0,
-
     fontWeight: "650",
-
     fontSize: "13px",
-
     textAlign: "left"
-
 };
 
-
-const vendorCodeSmallStyle = {
-
+const vendorSmallCode = {
     color: "#94a3b8",
-
     fontSize: "11px",
-
     marginTop: "3px"
-
 };
 
 
@@ -1515,18 +1290,14 @@ const vendorCodeSmallStyle = {
 // STATUS
 // =====================================================
 
-const statusBadgeStyle = {
-
-    display: "inline-block",
-
-    padding: "5px 9px",
-
+const statusBadge = {
+    display: "inline-flex",
+    alignItems: "center",
+    gap: "6px",
     borderRadius: "20px",
-
-    fontSize: "11px",
-
-    fontWeight: "650"
-
+    padding: "5px 8px",
+    fontSize: "10px",
+    fontWeight: "700"
 };
 
 
@@ -1534,147 +1305,103 @@ const statusBadgeStyle = {
 // ACTIONS
 // =====================================================
 
-const actionStyle = {
-
+const actionWrapper = {
     display: "flex",
-
-    justifyContent: "center",
-
-    alignItems: "center",
-
-    gap: "5px",
-
-    flexWrap: "nowrap"
-
+    justifyContent: "flex-end",
+    gap: "6px"
 };
 
-
-const iconBaseStyle = {
-
-    width: "32px",
-
-    height: "32px",
-
-    padding: 0,
-
-    display: "inline-flex",
-
-    alignItems: "center",
-
-    justifyContent: "center",
-
+const actionBase = {
+    width: "31px",
+    height: "31px",
     borderRadius: "7px",
-
     cursor: "pointer",
-
     fontSize: "14px",
-
-    lineHeight: 1,
-
-    flexShrink: 0
-
-};
-
-
-const iconViewButtonStyle = {
-
-    ...iconBaseStyle,
-
-    border: "1px solid #cbd5e1",
-
-    background: "#ffffff",
-
-    color: "#475569"
-
-};
-
-
-const iconEditButtonStyle = {
-
-    ...iconBaseStyle,
-
-    border: "1px solid #bfdbfe",
-
-    background: "#eff6ff",
-
-    color: "#1d4ed8"
-
-};
-
-
-const iconDeleteButtonStyle = {
-
-    ...iconBaseStyle,
-
-    border: "1px solid #fecaca",
-
-    background: "#fef2f2",
-
-    color: "#b91c1c"
-
-};
-
-
-// =====================================================
-// LOADING
-// =====================================================
-
-const emptyStyle = {
-
-    padding: "55px 20px",
-
-    textAlign: "center",
-
-    color: "#64748b",
-
-    fontSize: "13px"
-
-};
-
-
-const emptyIconStyle = {
-
-    fontSize: "32px",
-
-    marginBottom: "10px",
-
-    opacity: 0.6
-
-};
-
-
-const loaderStyle = {
-
-    display: "flex",
-
+    display: "inline-flex",
+    alignItems: "center",
     justifyContent: "center",
-
-    marginBottom: "12px"
-
+    padding: 0
 };
 
+const viewButton = {
+    ...actionBase,
+    border: "1px solid #e2e8f0",
+    background: "#f8fafc",
+    color: "#475569"
+};
 
-const spinnerStyle = {
+const editButton = {
+    ...actionBase,
+    border: "1px solid #dbeafe",
+    background: "#eff6ff",
+    color: "#2563eb"
+};
 
-    width: "22px",
-
-    height: "22px",
-
-    border: "3px solid #dbeafe",
-
-    borderTop:
-        "3px solid #2563eb",
-
-    borderRadius: "50%",
-
-    animation:
-        "spin 0.8s linear infinite"
-
+const deleteButton = {
+    ...actionBase,
+    border: "1px solid #fee2e2",
+    background: "#fef2f2",
+    color: "#dc2626"
 };
 
 
 // =====================================================
-// EXPORT
+// EMPTY
 // =====================================================
+
+const emptyCell = {
+    padding: "70px 20px",
+    textAlign: "center"
+};
+
+const emptyIcon = {
+    width: "48px",
+    height: "48px",
+    borderRadius: "12px",
+    background: "#f1f5f9",
+    color: "#94a3b8",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    margin: "0 auto 12px",
+    fontSize: "20px"
+};
+
+const emptyTitle = {
+    color: "#334155",
+    fontWeight: "700",
+    fontSize: "14px"
+};
+
+const emptyText = {
+    color: "#94a3b8",
+    fontSize: "12px",
+    marginTop: "5px"
+};
+
+
+// =====================================================
+// SKELETON
+// =====================================================
+
+const skeleton = {
+    height: "13px",
+    width: "75%",
+    borderRadius: "5px",
+    background:
+        "linear-gradient(90deg,#f1f5f9,#e2e8f0,#f1f5f9)",
+    backgroundSize: "200% 100%",
+    animation: "vendorSkeleton 1.4s ease-in-out infinite"
+};
+
+
+// =====================================================
+// GLOBAL SKELETON ANIMATION
+// =====================================================
+
+/*
+   Added through a small style tag in component.
+   No external CSS required.
+*/
 
 export default Vendors;

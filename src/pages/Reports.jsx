@@ -11,56 +11,31 @@ function Reports() {
     // STATE
     // =====================================================
 
-    const [reportType, setReportType] =
-        useState("all");
+    const [reportType, setReportType] = useState("all");
 
+    const [summary, setSummary] = useState(null);
 
-    const [summary, setSummary] =
-        useState(null);
+    const [data, setData] = useState([]);
 
+    const [search, setSearch] = useState("");
 
-    const [data, setData] =
-        useState([]);
+    const [loading, setLoading] = useState(false);
 
+    const [error, setError] = useState("");
 
-    const [search, setSearch] =
-        useState("");
-
-
-    const [loading, setLoading] =
-        useState(false);
-
-
-    const [error, setError] =
-        useState("");
-
-
-    const [filters, setFilters] =
-        useState({
-
-            from_date: "",
-
-            to_date: "",
-
-            status: "",
-
-            category_id: "",
-
-            employee_id: "",
-
-            department_id: "",
-
-            location_id: "",
-
-            vendor_id: "",
-
-            po_number: "",
-
-            invoice_number: "",
-
-            payment_status: ""
-
-        });
+    const [filters, setFilters] = useState({
+        from_date: "",
+        to_date: "",
+        status: "",
+        category_id: "",
+        employee_id: "",
+        department_id: "",
+        location_id: "",
+        vendor_id: "",
+        po_number: "",
+        invoice_number: "",
+        payment_status: ""
+    });
 
 
     // =====================================================
@@ -68,37 +43,17 @@ function Reports() {
     // =====================================================
 
     const reportEndpoints = {
-
-        all:
-            "/reports/assets",
-
-        assigned:
-            "/reports/assigned",
-
-        repair:
-            "/reports/repair",
-
-        scrap:
-            "/reports/scrap",
-
-        lost:
-            "/reports/lost",
-
-        employee:
-            "/reports/employee-assets",
-
-        purchase:
-            "/reports/purchases"
-
+        all: "/reports/assets",
+        assigned: "/reports/assigned",
+        repair: "/reports/repair",
+        scrap: "/reports/scrap",
+        lost: "/reports/lost",
+        employee: "/reports/employee-assets",
+        purchase: "/reports/purchases"
     };
 
 
-    // =====================================================
-    // CHECK PURCHASE REPORT
-    // =====================================================
-
-    const isPurchaseReport =
-        reportType === "purchase";
+    const isPurchaseReport = reportType === "purchase";
 
 
     // =====================================================
@@ -129,7 +84,6 @@ function Reports() {
 
             default:
                 return "All Assets Report";
-
         }
     };
 
@@ -142,44 +96,25 @@ function Reports() {
 
         try {
 
-            // -------------------------------------------------
-            // PURCHASE SUMMARY
-            // -------------------------------------------------
-
             if (isPurchaseReport) {
-
-                /*
-                 * Purchase summary backend endpoint irundha
-                 * idhu use aagum.
-                 *
-                 * Endpoint illa na catch-la summary
-                 * data-la irundhu calculate pannuvom.
-                 */
 
                 try {
 
-                    const response =
-                        await API.get(
-                            "/reports/purchases/summary",
-                            {
-                                params: {
-                                    ...filters,
-                                    search
-                                }
+                    const response = await API.get(
+                        "/reports/purchases/summary",
+                        {
+                            params: {
+                                ...filters,
+                                search
                             }
-                        );
+                        }
+                    );
 
+                    if (response.data?.data) {
 
-                    if (
-                        response.data?.data
-                    ) {
-
-                        setSummary(
-                            response.data.data
-                        );
+                        setSummary(response.data.data);
 
                         return;
-
                     }
 
                 } catch (purchaseSummaryError) {
@@ -187,118 +122,84 @@ function Reports() {
                     console.warn(
                         "Purchase summary endpoint unavailable. Calculating from report data."
                     );
-
                 }
 
 
-                // -------------------------------------------------
-                // FALLBACK PURCHASE SUMMARY
-                // -------------------------------------------------
+                const totalPurchases = data.length;
 
-                const totalPurchases =
-                    data.length;
+                const totalAmount = data.reduce(
+                    (sum, item) =>
+                        sum +
+                        Number(
+                            item.amount ??
+                            item.purchase_amount ??
+                            item.total_amount ??
+                            0
+                        ),
+                    0
+                );
 
 
-                const totalAmount =
-                    data.reduce(
-                        (sum, item) =>
-                            sum +
+                const paidPurchases = data.filter(
+                    item =>
+                        String(
+                            item.payment_status || ""
+                        ).toLowerCase() === "paid"
+                ).length;
+
+
+                const pendingPurchases = data.filter(item => {
+
+                    const status = String(
+                        item.payment_status || ""
+                    ).toLowerCase();
+
+                    return (
+                        status === "pending" ||
+                        status === "unpaid" ||
+                        status === "partially paid"
+                    );
+
+                }).length;
+
+
+                const highestPurchaseAmount = data.reduce(
+                    (max, item) =>
+                        Math.max(
+                            max,
                             Number(
                                 item.amount ??
                                 item.purchase_amount ??
                                 item.total_amount ??
                                 0
-                            ),
-                        0
-                    );
-
-
-                const paidPurchases =
-                    data.filter(
-                        item =>
-                            String(
-                                item.payment_status ||
-                                ""
-                            ).toLowerCase() ===
-                            "paid"
-                    ).length;
-
-
-                const pendingPurchases =
-                    data.filter(
-                        item => {
-
-                            const status =
-                                String(
-                                    item.payment_status ||
-                                    ""
-                                ).toLowerCase();
-
-                            return (
-                                status === "pending" ||
-                                status === "unpaid" ||
-                                status === "partially paid"
-                            );
-
-                        }
-                    ).length;
-
-
-                const highestPurchaseAmount =
-                    data.reduce(
-                        (max, item) =>
-                            Math.max(
-                                max,
-                                Number(
-                                    item.amount ??
-                                    item.purchase_amount ??
-                                    item.total_amount ??
-                                    0
-                                )
-                            ),
-                        0
-                    );
+                            )
+                        ),
+                    0
+                );
 
 
                 setSummary({
-
-                    total_purchases:
-                        totalPurchases,
-
-                    total_purchase_amount:
-                        totalAmount,
-
-                    paid_purchases:
-                        paidPurchases,
-
-                    pending_payments:
-                        pendingPurchases,
-
+                    total_purchases: totalPurchases,
+                    total_purchase_amount: totalAmount,
+                    paid_purchases: paidPurchases,
+                    pending_payments: pendingPurchases,
                     highest_purchase_amount:
                         highestPurchaseAmount
-
                 });
 
-
                 return;
-
             }
 
 
-            // -------------------------------------------------
-            // ASSET SUMMARY
-            // -------------------------------------------------
-
-            const response =
-                await API.get(
-                    "/reports/assets/summary",
-                    {
-                        params: {
-                            ...filters,
-                            search
-                        }
+            const response = await API.get(
+                "/reports/assets/summary",
+                {
+                    params: {
+                        ...filters,
+                        search
                     }
-                );
+                }
+            );
 
 
             setSummary(
@@ -311,9 +212,7 @@ function Reports() {
                 "Summary Error:",
                 err
             );
-
         }
-
     };
 
 
@@ -330,31 +229,24 @@ function Reports() {
             setError("");
 
 
-            const response =
-                await API.get(
-                    reportEndpoints[
-                        reportType
-                    ],
-                    {
-                        params: {
-                            ...filters,
-                            search
-                        }
+            const response = await API.get(
+                reportEndpoints[reportType],
+                {
+                    params: {
+                        ...filters,
+                        search
                     }
-                );
+                }
+            );
 
 
             const reportData =
                 response.data.data || [];
 
 
-            setData(
-                reportData
-            );
+            setData(reportData);
 
 
-            // Purchase report summary fallback
-            // data set aana apram calculate panna
             if (isPurchaseReport) {
 
                 const totalPurchases =
@@ -387,23 +279,21 @@ function Reports() {
 
 
                 const pendingPurchases =
-                    reportData.filter(
-                        item => {
+                    reportData.filter(item => {
 
-                            const status =
-                                String(
-                                    item.payment_status ||
-                                    ""
-                                ).toLowerCase();
+                        const status =
+                            String(
+                                item.payment_status ||
+                                ""
+                            ).toLowerCase();
 
-                            return (
-                                status === "pending" ||
-                                status === "unpaid" ||
-                                status === "partially paid"
-                            );
+                        return (
+                            status === "pending" ||
+                            status === "unpaid" ||
+                            status === "partially paid"
+                        );
 
-                        }
-                    ).length;
+                    }).length;
 
 
                 const highestPurchaseAmount =
@@ -444,7 +334,6 @@ function Reports() {
             } else {
 
                 await loadSummary();
-
             }
 
         } catch (err) {
@@ -457,7 +346,6 @@ function Reports() {
 
             setData([]);
 
-
             setSummary(null);
 
 
@@ -469,9 +357,7 @@ function Reports() {
         } finally {
 
             setLoading(false);
-
         }
-
     };
 
 
@@ -487,6 +373,17 @@ function Reports() {
 
 
     // =====================================================
+    // REFRESH PAGE
+    // =====================================================
+
+    const refreshPage = () => {
+
+        window.location.reload();
+
+    };
+
+
+    // =====================================================
     // RESET FILTERS
     // =====================================================
 
@@ -495,49 +392,30 @@ function Reports() {
         const resetValues = {
 
             from_date: "",
-
             to_date: "",
-
             status: "",
-
             category_id: "",
-
             employee_id: "",
-
             department_id: "",
-
             location_id: "",
-
             vendor_id: "",
-
             po_number: "",
-
             invoice_number: "",
-
             payment_status: ""
 
         };
 
 
-        setFilters(
-            resetValues
-        );
-
+        setFilters(resetValues);
 
         setSearch("");
 
-
-        /*
-         * setState async.
-         * So reset values direct-a API-ku anuprom.
-         */
 
         setTimeout(() => {
 
             loadReport();
 
         }, 0);
-
     };
 
 
@@ -547,13 +425,10 @@ function Reports() {
 
     const formatDate = (date) => {
 
-        if (!date) {
-            return "-";
-        }
+        if (!date) return "-";
 
 
-        const parsed =
-            new Date(date);
+        const parsed = new Date(date);
 
 
         if (
@@ -568,7 +443,6 @@ function Reports() {
         return parsed.toLocaleDateString(
             "en-IN"
         );
-
     };
 
 
@@ -595,7 +469,6 @@ function Reports() {
                 maximumFractionDigits: 2
             }
         );
-
     };
 
 
@@ -605,13 +478,8 @@ function Reports() {
 
     const analysis = useMemo(() => {
 
-        const total =
-            data.length;
+        const total = data.length;
 
-
-        // -------------------------------------------------
-        // PURCHASE REPORT ANALYSIS
-        // -------------------------------------------------
 
         if (isPurchaseReport) {
 
@@ -647,55 +515,37 @@ function Reports() {
 
 
             const pending =
-                data.filter(
-                    item => {
+                data.filter(item => {
 
-                        const status =
-                            String(
-                                item.payment_status ||
-                                ""
-                            ).toLowerCase();
+                    const status =
+                        String(
+                            item.payment_status ||
+                            ""
+                        ).toLowerCase();
 
-                        return (
-                            status === "pending" ||
-                            status === "unpaid" ||
-                            status === "partially paid"
-                        );
+                    return (
+                        status === "pending" ||
+                        status === "unpaid" ||
+                        status === "partially paid"
+                    );
 
-                    }
-                ).length;
+                }).length;
 
 
             return {
-
                 total,
-
                 assigned: 0,
-
                 stock: 0,
-
                 repair: 0,
-
                 scrap: 0,
-
                 lost: 0,
-
                 totalCost,
-
                 averageCost,
-
                 paid,
-
                 pending
-
             };
-
         }
 
-
-        // -------------------------------------------------
-        // ASSET REPORT ANALYSIS
-        // -------------------------------------------------
 
         const assigned =
             data.filter(
@@ -755,27 +605,16 @@ function Reports() {
 
 
         return {
-
             total,
-
             assigned,
-
             stock,
-
             repair,
-
             scrap,
-
             lost,
-
             totalCost,
-
             averageCost,
-
             paid: 0,
-
             pending: 0
-
         };
 
     }, [data, isPurchaseReport]);
@@ -807,13 +646,10 @@ function Reports() {
 
                 result[status] =
                     (result[status] || 0) + 1;
-
             });
 
 
-            return Object.entries(
-                result
-            );
+            return Object.entries(result);
 
         }, [data, isPurchaseReport]);
 
@@ -826,9 +662,7 @@ function Reports() {
         useMemo(() => {
 
             if (isPurchaseReport) {
-
                 return [];
-
             }
 
 
@@ -844,13 +678,10 @@ function Reports() {
 
                 result[category] =
                     (result[category] || 0) + 1;
-
             });
 
 
-            return Object.entries(
-                result
-            )
+            return Object.entries(result)
                 .sort(
                     (a, b) =>
                         b[1] - a[1]
@@ -868,9 +699,7 @@ function Reports() {
         useMemo(() => {
 
             if (isPurchaseReport) {
-
                 return [];
-
             }
 
 
@@ -886,13 +715,10 @@ function Reports() {
 
                 result[department] =
                     (result[department] || 0) + 1;
-
             });
 
 
-            return Object.entries(
-                result
-            )
+            return Object.entries(result)
                 .sort(
                     (a, b) =>
                         b[1] - a[1]
@@ -911,23 +737,14 @@ function Reports() {
         if (!data.length) {
 
             return "No sufficient data available for analysis.";
-
         }
 
 
-        // -------------------------------------------------
-        // PURCHASE INSIGHT
-        // -------------------------------------------------
-
         if (isPurchaseReport) {
 
-            if (
-                analysis.pending >
-                0
-            ) {
+            if (analysis.pending > 0) {
 
                 return `${analysis.pending} purchase(s) have pending or partially paid payment status.`;
-
             }
 
 
@@ -937,28 +754,18 @@ function Reports() {
             ) {
 
                 return "All selected purchases are fully paid.";
-
             }
 
 
-            if (
-                analysis.totalCost >
-                0
-            ) {
+            if (analysis.totalCost > 0) {
 
                 return `Total purchase value for the selected report is ${formatCost(analysis.totalCost)}.`;
-
             }
 
 
             return "The selected purchase report data is available for analysis.";
-
         }
 
-
-        // -------------------------------------------------
-        // ASSET INSIGHT
-        // -------------------------------------------------
 
         if (
             analysis.assigned >
@@ -966,41 +773,28 @@ function Reports() {
         ) {
 
             return "Most assets are currently assigned to employees.";
-
         }
 
 
-        if (
-            analysis.repair >
-            0
-        ) {
+        if (analysis.repair > 0) {
 
             return `${analysis.repair} asset(s) are currently under repair.`;
-
         }
 
 
-        if (
-            analysis.lost >
-            0
-        ) {
+        if (analysis.lost > 0) {
 
             return `${analysis.lost} asset(s) are marked as lost.`;
-
         }
 
 
-        if (
-            categoryAnalysis.length
-        ) {
+        if (categoryAnalysis.length) {
 
             return `${categoryAnalysis[0][0]} is the highest asset category in the selected report.`;
-
         }
 
 
         return "The selected report data is available for analysis.";
-
     };
 
 
@@ -1017,38 +811,23 @@ function Reports() {
             );
 
             return;
-
         }
 
-
-        // =================================================
-        // PURCHASE CSV
-        // =================================================
 
         if (isPurchaseReport) {
 
             const headers = [
 
                 "Purchase ID",
-
                 "PO Number",
-
                 "Invoice Number",
-
                 "Vendor ID",
-
                 "Vendor Code",
-
                 "Vendor Name",
-
                 "Purchase Date",
-
                 "Amount",
-
                 "Payment Status",
-
                 "Warranty Expiry",
-
                 "Remarks"
 
             ];
@@ -1057,23 +836,12 @@ function Reports() {
             const rows =
                 data.map(item => [
 
-                    item.purchase_id ??
-                    "",
-
-                    item.po_number ??
-                    "",
-
-                    item.invoice_number ??
-                    "",
-
-                    item.vendor_id ??
-                    "",
-
-                    item.vendor_code ??
-                    "",
-
-                    item.vendor_name ??
-                    "",
+                    item.purchase_id ?? "",
+                    item.po_number ?? "",
+                    item.invoice_number ?? "",
+                    item.vendor_id ?? "",
+                    item.vendor_code ?? "",
+                    item.vendor_name ?? "",
 
                     formatDate(
                         item.purchase_date
@@ -1086,15 +854,13 @@ function Reports() {
                         0
                     ),
 
-                    item.payment_status ??
-                    "",
+                    item.payment_status ?? "",
 
                     formatDate(
                         item.warranty_expiry
                     ),
 
-                    item.remarks ??
-                    ""
+                    item.remarks ?? ""
 
                 ]);
 
@@ -1105,46 +871,26 @@ function Reports() {
                 `${getReportTitle().replaceAll(" ", "_")}.csv`
             );
 
-
             return;
-
         }
 
-
-        // =================================================
-        // ASSET CSV
-        // =================================================
 
         const headers = [
 
             "Asset ID",
-
             "Asset Code",
-
             "Asset Name",
-
             "Category",
-
             "Employee",
-
             "Department",
-
             "Designation",
-
             "Vendor",
-
             "Location",
-
             "Purchase Date",
-
             "Purchase Cost",
-
             "Assigned Date",
-
             "Returned Date",
-
             "Status",
-
             "Remarks"
 
         ];
@@ -1154,21 +900,13 @@ function Reports() {
             data.map(item => [
 
                 item.asset_id ?? "",
-
                 item.asset_code ?? "",
-
                 item.asset_name ?? "",
-
                 item.category_name ?? "",
-
                 item.employee_name ?? "",
-
                 item.department_name ?? "",
-
                 item.designation_name ?? "",
-
                 item.vendor_name ?? "",
-
                 item.location_name ?? "",
 
                 formatDate(
@@ -1188,7 +926,6 @@ function Reports() {
                 ),
 
                 item.asset_status ?? "",
-
                 item.remarks ?? ""
 
             ]);
@@ -1199,7 +936,6 @@ function Reports() {
             rows,
             `${getReportTitle().replaceAll(" ", "_")}.csv`
         );
-
     };
 
 
@@ -1214,11 +950,8 @@ function Reports() {
     ) => {
 
         const csv = [
-
             headers,
-
             ...rows
-
         ]
             .map(row =>
                 row
@@ -1256,12 +989,9 @@ function Reports() {
             document.createElement("a");
 
 
-        link.href =
-            url;
+        link.href = url;
 
-
-        link.download =
-            filename;
+        link.download = filename;
 
 
         document.body.appendChild(
@@ -1280,7 +1010,6 @@ function Reports() {
         URL.revokeObjectURL(
             url
         );
-
     };
 
 
@@ -1297,12 +1026,26 @@ function Reports() {
             );
 
             return;
-
         }
 
 
         window.print();
+    };
 
+
+    // =====================================================
+    // FILTER UPDATE
+    // =====================================================
+
+    const updateFilter = (
+        key,
+        value
+    ) => {
+
+        setFilters(prev => ({
+            ...prev,
+            [key]: value
+        }));
     };
 
 
@@ -1312,376 +1055,305 @@ function Reports() {
 
     return (
 
-        <div
-            style={{
-                display: "flex",
-                minHeight: "100vh",
-                background: "#f5f6f8"
-            }}
-        >
-
-            {/* =================================================
-                SIDEBAR
-            ================================================= */}
+        <div className="reports-page">
 
             <div className="no-print">
-
                 <Sidebar />
-
             </div>
 
 
-            <div
-                style={{
-                    flex: 1,
-                    minWidth: 0,
-                    width: "calc(100vw - 180px)",
-                    maxWidth: "calc(100vw - 180px)",
-                    boxSizing: "border-box",
-                    overflowX: "auto",
-                    overflowY: "visible"
-                }}
-            >
-
-                {/* =================================================
-                    NAVBAR
-                ================================================= */}
+            <div className="reports-main">
 
                 <div className="no-print">
-
                     <Navbar />
-
                 </div>
 
 
-                <main
-                    style={{
-                        padding: "20px 24px",
-                        width: "100%",
-                        maxWidth: "none",
-                        minWidth: "0",
-                        boxSizing: "border-box",
-                        margin: "0 auto"
-                    }}
-                >
+                <main className="reports-content">
 
                     {/* =================================================
-                        HEADER
+                        HERO HEADER
                     ================================================= */}
 
-                    <div
-                        style={{
-                            display: "flex",
-                            justifyContent:
-                                "space-between",
-                            alignItems:
-                                "center",
-                            gap: "20px",
-                            marginBottom: "24px"
-                        }}
-                    >
+                    <section className="reports-hero">
 
                         <div>
 
-                            <h1
-                                style={{
-                                    margin: 0,
-                                    fontSize: "36px",
-                                    fontWeight: 700,
-                                    color: "#111827"
-                                }}
-                            >
-                                Reports
+                            <div className="eyebrow">
+                                ASSETSPHERE • ANALYTICS
+                            </div>
+
+                            <h1>
+                                Reports & Analytics
                             </h1>
 
-
-                            <p
-                                style={{
-                                    margin:
-                                        "5px 0 0",
-                                    color: "#6b7280"
-                                }}
-                            >
-                                AssetSphere reports
-                                and asset analysis
+                            <p>
+                                Monitor assets, purchases,
+                                payments and operational
+                                performance from one place.
                             </p>
 
                         </div>
 
 
-                        <button
-                            onClick={
-                                loadReport
-                            }
-                            className="no-print"
-                            style={{
-                                border: "none",
-                                background:
-                                    "#2563eb",
-                                color: "#fff",
-                                padding:
-                                    "10px 18px",
-                                borderRadius:
-                                    "6px",
-                                cursor:
-                                    "pointer",
-                                fontWeight:
-                                    600
-                            }}
-                        >
-                            Refresh
-                        </button>
+                        <div className="hero-actions no-print">
 
-                    </div>
+                            <button
+                                onClick={refreshPage}
+                                className="refresh-button"
+                                type="button"
+                            >
+                                <span>↻</span>
+                                Refresh
+                            </button>
+
+                        </div>
+
+                    </section>
 
 
                     {/* =================================================
-                        SUMMARY CARDS
+                        REPORT TYPE BAR
                     ================================================= */}
 
-                    {isPurchaseReport ? (
+                    <section className="report-selector no-print">
 
-                        <div
-                            style={{
-                                display: "grid",
-                                gridTemplateColumns:
-                                    "repeat(auto-fit, minmax(220px, 1fr))",
-                                gap: "15px",
-                                marginBottom: "22px"
-                            }}
-                        >
+                        <div>
 
-                            <SummaryCard
-                                title="Total Purchases"
-                                value={
-                                    summary?.total_purchases ??
-                                    analysis.total
-                                }
-                                color="#2563eb"
-                            />
+                            <span className="selector-label">
+                                Current Report
+                            </span>
 
-
-                            <SummaryCard
-                                title="Total Purchase Amount"
-                                value={
-                                    formatCost(
-                                        summary?.total_purchase_amount ??
-                                        analysis.totalCost
-                                    )
-                                }
-                                color="#16a34a"
-                            />
-
-
-                            <SummaryCard
-                                title="Pending Payments"
-                                value={
-                                    summary?.pending_payments ??
-                                    analysis.pending
-                                }
-                                color="#f59e0b"
-                            />
-
-
-                            <SummaryCard
-                                title="Paid Purchases"
-                                value={
-                                    summary?.paid_purchases ??
-                                    analysis.paid
-                                }
-                                color="#0891b2"
-                            />
+                            <strong>
+                                {getReportTitle()}
+                            </strong>
 
                         </div>
 
-                    ) : (
 
-                        <div
-                            style={{
-                                display: "grid",
-                                gridTemplateColumns:
-                                    "repeat(auto-fit, minmax(220px, 1fr))",
-                                gap: "15px",
-                                marginBottom: "22px"
-                            }}
+                        <select
+                            value={reportType}
+                            onChange={e =>
+                                setReportType(
+                                    e.target.value
+                                )
+                            }
+                            className="report-type-select"
                         >
 
-                            <SummaryCard
-                                title="Total Assets"
-                                value={
-                                    summary?.total_assets ??
-                                    analysis.total
-                                }
-                                color="#2563eb"
-                            />
+                            <option value="all">
+                                All Assets
+                            </option>
+
+                            <option value="assigned">
+                                Assigned Assets
+                            </option>
+
+                            <option value="repair">
+                                Repair Assets
+                            </option>
+
+                            <option value="scrap">
+                                Scrap Assets
+                            </option>
+
+                            <option value="lost">
+                                Lost Assets
+                            </option>
+
+                            <option value="employee">
+                                Employee Assets
+                            </option>
+
+                            <option value="purchase">
+                                Purchase Report
+                            </option>
+
+                        </select>
+
+                    </section>
 
 
-                            <SummaryCard
-                                title="Assigned"
-                                value={
-                                    summary?.assigned_assets ??
-                                    analysis.assigned
-                                }
-                                color="#16a34a"
-                            />
+                    {/* =================================================
+                        SUMMARY
+                    ================================================= */}
 
+                    <section className="summary-grid">
 
-                            <SummaryCard
-                                title="In Stock"
-                                value={
-                                    summary?.in_stock_assets ??
-                                    analysis.stock
-                                }
-                                color="#0891b2"
-                            />
+                        {isPurchaseReport ? (
 
+                            <>
 
-                            <SummaryCard
-                                title="Repair"
-                                value={
-                                    summary?.repair_assets ??
-                                    analysis.repair
-                                }
-                                color="#f59e0b"
-                            />
+                                <SummaryCard
+                                    title="Total Purchases"
+                                    value={
+                                        summary?.total_purchases ??
+                                        analysis.total
+                                    }
+                                    icon="🛒"
+                                    color="#2563eb"
+                                    background="#eff6ff"
+                                />
 
+                                <SummaryCard
+                                    title="Purchase Amount"
+                                    value={
+                                        formatCost(
+                                            summary?.total_purchase_amount ??
+                                            analysis.totalCost
+                                        )
+                                    }
+                                    icon="₹"
+                                    color="#16a34a"
+                                    background="#f0fdf4"
+                                />
 
-                            <SummaryCard
-                                title="Scrap"
-                                value={
-                                    summary?.scrap_assets ??
-                                    analysis.scrap
-                                }
-                                color="#6b7280"
-                            />
+                                <SummaryCard
+                                    title="Pending Payments"
+                                    value={
+                                        summary?.pending_payments ??
+                                        analysis.pending
+                                    }
+                                    icon="⏳"
+                                    color="#d97706"
+                                    background="#fffbeb"
+                                />
 
+                                <SummaryCard
+                                    title="Paid Purchases"
+                                    value={
+                                        summary?.paid_purchases ??
+                                        analysis.paid
+                                    }
+                                    icon="✓"
+                                    color="#0891b2"
+                                    background="#ecfeff"
+                                />
 
-                            <SummaryCard
-                                title="Lost"
-                                value={
-                                    summary?.lost_assets ??
-                                    analysis.lost
-                                }
-                                color="#dc2626"
-                            />
+                            </>
 
-                        </div>
+                        ) : (
 
-                    )}
+                            <>
+
+                                <SummaryCard
+                                    title="Total Assets"
+                                    value={
+                                        summary?.total_assets ??
+                                        analysis.total
+                                    }
+                                    icon="▦"
+                                    color="#2563eb"
+                                    background="#eff6ff"
+                                />
+
+                                <SummaryCard
+                                    title="Assigned"
+                                    value={
+                                        summary?.assigned_assets ??
+                                        analysis.assigned
+                                    }
+                                    icon="✓"
+                                    color="#16a34a"
+                                    background="#f0fdf4"
+                                />
+
+                                <SummaryCard
+                                    title="In Stock"
+                                    value={
+                                        summary?.in_stock_assets ??
+                                        analysis.stock
+                                    }
+                                    icon="▣"
+                                    color="#0891b2"
+                                    background="#ecfeff"
+                                />
+
+                                <SummaryCard
+                                    title="Repair"
+                                    value={
+                                        summary?.repair_assets ??
+                                        analysis.repair
+                                    }
+                                    icon="⚒"
+                                    color="#d97706"
+                                    background="#fffbeb"
+                                />
+
+                                <SummaryCard
+                                    title="Scrap"
+                                    value={
+                                        summary?.scrap_assets ??
+                                        analysis.scrap
+                                    }
+                                    icon="◌"
+                                    color="#64748b"
+                                    background="#f8fafc"
+                                />
+
+                                <SummaryCard
+                                    title="Lost"
+                                    value={
+                                        summary?.lost_assets ??
+                                        analysis.lost
+                                    }
+                                    icon="!"
+                                    color="#dc2626"
+                                    background="#fef2f2"
+                                />
+
+                            </>
+
+                        )}
+
+                    </section>
 
 
                     {/* =================================================
                         FILTERS
                     ================================================= */}
 
-                    <section
-                        className="no-print"
-                        style={{
-                            background: "#fff",
-                            borderRadius: "10px",
-                            padding: "20px",
-                            marginBottom: "20px",
-                            border:
-                                "1px solid #e5e7eb"
-                        }}
-                    >
+                    <section className="filter-card no-print">
 
-                        <div
-                            style={{
-                                display: "flex",
-                                justifyContent:
-                                    "space-between",
-                                alignItems:
-                                    "center",
-                                marginBottom:
-                                    "16px",
-                                flexWrap:
-                                    "wrap",
-                                gap: "10px"
-                            }}
-                        >
+                        <div className="section-heading">
 
                             <div>
 
-                                <h3
-                                    style={{
-                                        margin: 0,
-                                        color:
-                                            "#111827"
-                                    }}
-                                >
-                                    Report Filters
-                                </h3>
+                                <div className="section-icon">
+                                    ⚙
+                                </div>
 
+                                <div>
 
-                                <p
-                                    style={{
-                                        margin:
-                                            "4px 0 0",
-                                        color:
-                                            "#6b7280",
-                                        fontSize:
-                                            "13px"
-                                    }}
-                                >
-                                    {isPurchaseReport
-                                        ? "Filter purchase reports by vendor, PO, invoice and date"
-                                        : "Select filters and generate the report"}
-                                </p>
+                                    <h2>
+                                        Report Filters
+                                    </h2>
+
+                                    <p>
+                                        {isPurchaseReport
+                                            ? "Filter purchases using vendor, PO, invoice, payment and date."
+                                            : "Narrow your asset report using the available filters."}
+                                    </p>
+
+                                </div>
 
                             </div>
 
 
-                            <div
-                                style={{
-                                    display:
-                                        "flex",
-                                    gap:
-                                        "8px"
-                                }}
-                            >
+                            <div className="filter-actions">
 
                                 <button
-                                    onClick={
-                                        loadReport
-                                    }
-                                    style={{
-                                        background:
-                                            "#2563eb",
-                                        color:
-                                            "#fff",
-                                        border:
-                                            "none",
-                                        padding:
-                                            "9px 16px",
-                                        borderRadius:
-                                            "6px",
-                                        cursor:
-                                            "pointer"
-                                    }}
+                                    onClick={loadReport}
+                                    className="primary-button"
+                                    type="button"
                                 >
                                     Generate Report
                                 </button>
 
-
                                 <button
-                                    onClick={
-                                        resetFilters
-                                    }
-                                    style={{
-                                        background:
-                                            "#fff",
-                                        color:
-                                            "#374151",
-                                        border:
-                                            "1px solid #d1d5db",
-                                        padding:
-                                            "9px 16px",
-                                        borderRadius:
-                                            "6px",
-                                        cursor:
-                                            "pointer"
-                                    }}
+                                    onClick={resetFilters}
+                                    className="secondary-button"
+                                    type="button"
                                 >
                                     Reset
                                 </button>
@@ -1691,348 +1363,119 @@ function Reports() {
                         </div>
 
 
-                        {/* =================================================
-                            PURCHASE FILTERS
-                        ================================================= */}
-
                         {isPurchaseReport ? (
 
-                            <div
-                                style={{
-                                    display:
-                                        "grid",
-                                    gridTemplateColumns:
-                                        "repeat(3, minmax(0, 1fr))",
-                                    gap:
-                                        "12px"
-                                }}
-                            >
-
-                                {/* REPORT TYPE */}
-
-                                <div>
-
-                                    <label
-                                        style={
-                                            labelStyle
-                                        }
-                                    >
-                                        Report Type
-                                    </label>
-
-
-                                    <select
-                                        value={
-                                            reportType
-                                        }
-                                        onChange={
-                                            e =>
-                                                setReportType(
-                                                    e.target.value
-                                                )
-                                        }
-                                        style={
-                                            inputStyle
-                                        }
-                                    >
-
-                                        <option value="all">
-                                            All Assets
-                                        </option>
-
-                                        <option value="assigned">
-                                            Assigned Assets
-                                        </option>
-
-                                        <option value="repair">
-                                            Repair Assets
-                                        </option>
-
-                                        <option value="scrap">
-                                            Scrap Assets
-                                        </option>
-
-                                        <option value="lost">
-                                            Lost Assets
-                                        </option>
-
-                                        <option value="employee">
-                                            Employee Assets
-                                        </option>
-
-                                        <option value="purchase">
-                                            Purchase Report
-                                        </option>
-
-                                    </select>
-
-                                </div>
-
-
-                                {/* FROM DATE */}
-
-                                <div>
-
-                                    <label
-                                        style={
-                                            labelStyle
-                                        }
-                                    >
-                                        From Date
-                                    </label>
-
-
-                                    <input
-                                        type="date"
-                                        value={
-                                            filters.from_date
-                                        }
-                                        onChange={
-                                            e =>
-                                                setFilters({
-                                                    ...filters,
-                                                    from_date:
-                                                        e.target.value
-                                                })
-                                        }
-                                        style={
-                                            inputStyle
-                                        }
-                                    />
-
-                                </div>
-
-
-                                {/* TO DATE */}
-
-                                <div>
-
-                                    <label
-                                        style={
-                                            labelStyle
-                                        }
-                                    >
-                                        To Date
-                                    </label>
-
-
-                                    <input
-                                        type="date"
-                                        value={
-                                            filters.to_date
-                                        }
-                                        onChange={
-                                            e =>
-                                                setFilters({
-                                                    ...filters,
-                                                    to_date:
-                                                        e.target.value
-                                                })
-                                        }
-                                        style={
-                                            inputStyle
-                                        }
-                                    />
-
-                                </div>
-
-
-                                {/* VENDOR ID */}
-
-                                <div>
-
-                                    <label
-                                        style={
-                                            labelStyle
-                                        }
-                                    >
-                                        Vendor ID
-                                    </label>
-
-
-                                    <input
-                                        type="number"
-                                        placeholder="Enter Vendor ID"
-                                        value={
-                                            filters.vendor_id
-                                        }
-                                        onChange={
-                                            e =>
-                                                setFilters({
-                                                    ...filters,
-                                                    vendor_id:
-                                                        e.target.value
-                                                })
-                                        }
-                                        style={
-                                            inputStyle
-                                        }
-                                    />
-
-                                </div>
-
-
-                                {/* PO NUMBER */}
-
-                                <div>
-
-                                    <label
-                                        style={
-                                            labelStyle
-                                        }
-                                    >
-                                        PO Number
-                                    </label>
-
-
-                                    <input
-                                        type="text"
-                                        placeholder="Enter PO Number"
-                                        value={
-                                            filters.po_number
-                                        }
-                                        onChange={
-                                            e =>
-                                                setFilters({
-                                                    ...filters,
-                                                    po_number:
-                                                        e.target.value
-                                                })
-                                        }
-                                        style={
-                                            inputStyle
-                                        }
-                                    />
-
-                                </div>
-
-
-                                {/* INVOICE NUMBER */}
-
-                                <div>
-
-                                    <label
-                                        style={
-                                            labelStyle
-                                        }
-                                    >
-                                        Invoice Number
-                                    </label>
-
-
-                                    <input
-                                        type="text"
-                                        placeholder="Enter Invoice Number"
-                                        value={
-                                            filters.invoice_number
-                                        }
-                                        onChange={
-                                            e =>
-                                                setFilters({
-                                                    ...filters,
-                                                    invoice_number:
-                                                        e.target.value
-                                                })
-                                        }
-                                        style={
-                                            inputStyle
-                                        }
-                                    />
-
-                                </div>
-
-
-                                {/* PAYMENT STATUS */}
-
-                                <div>
-
-                                    <label
-                                        style={
-                                            labelStyle
-                                        }
-                                    >
-                                        Payment Status
-                                    </label>
-
-
-                                    <select
-                                        value={
-                                            filters.payment_status
-                                        }
-                                        onChange={
-                                            e =>
-                                                setFilters({
-                                                    ...filters,
-                                                    payment_status:
-                                                        e.target.value
-                                                })
-                                        }
-                                        style={
-                                            inputStyle
-                                        }
-                                    >
-
-                                        <option value="">
-                                            All Payment Status
-                                        </option>
-
-                                        <option value="Pending">
-                                            Pending
-                                        </option>
-
-                                        <option value="Partially Paid">
-                                            Partially Paid
-                                        </option>
-
-                                        <option value="Paid">
-                                            Paid
-                                        </option>
-
-                                        <option value="Cancelled">
-                                            Cancelled
-                                        </option>
-
-                                    </select>
-
-                                </div>
-
-
-                                {/* SEARCH */}
-
-                                <div
-                                    style={{
-                                        gridColumn:
-                                            "1 / -1"
-                                    }}
-                                >
-
-                                    <label
-                                        style={
-                                            labelStyle
-                                        }
-                                    >
+                            <div className="filter-grid">
+
+                                <FilterField
+                                    label="From Date"
+                                    type="date"
+                                    value={filters.from_date}
+                                    onChange={e =>
+                                        updateFilter(
+                                            "from_date",
+                                            e.target.value
+                                        )
+                                    }
+                                />
+
+
+                                <FilterField
+                                    label="To Date"
+                                    type="date"
+                                    value={filters.to_date}
+                                    onChange={e =>
+                                        updateFilter(
+                                            "to_date",
+                                            e.target.value
+                                        )
+                                    }
+                                />
+
+
+                                <FilterField
+                                    label="Vendor ID"
+                                    type="number"
+                                    placeholder="Enter vendor ID"
+                                    value={filters.vendor_id}
+                                    onChange={e =>
+                                        updateFilter(
+                                            "vendor_id",
+                                            e.target.value
+                                        )
+                                    }
+                                />
+
+
+                                <FilterField
+                                    label="PO Number"
+                                    placeholder="Enter PO number"
+                                    value={filters.po_number}
+                                    onChange={e =>
+                                        updateFilter(
+                                            "po_number",
+                                            e.target.value
+                                        )
+                                    }
+                                />
+
+
+                                <FilterField
+                                    label="Invoice Number"
+                                    placeholder="Enter invoice number"
+                                    value={filters.invoice_number}
+                                    onChange={e =>
+                                        updateFilter(
+                                            "invoice_number",
+                                            e.target.value
+                                        )
+                                    }
+                                />
+
+
+                                <FilterSelect
+                                    label="Payment Status"
+                                    value={filters.payment_status}
+                                    onChange={e =>
+                                        updateFilter(
+                                            "payment_status",
+                                            e.target.value
+                                        )
+                                    }
+                                    options={[
+                                        ["", "All Payment Status"],
+                                        ["Pending", "Pending"],
+                                        ["Partially Paid", "Partially Paid"],
+                                        ["Paid", "Paid"],
+                                        ["Cancelled", "Cancelled"]
+                                    ]}
+                                />
+
+
+                                <div className="filter-search">
+
+                                    <label>
                                         Search
                                     </label>
 
+                                    <div className="search-wrapper">
 
-                                    <input
-                                        type="text"
-                                        placeholder="Search PO, invoice, vendor, remarks..."
-                                        value={
-                                            search
-                                        }
-                                        onChange={
-                                            e =>
+                                        <span>
+                                            ⌕
+                                        </span>
+
+                                        <input
+                                            type="text"
+                                            placeholder="Search PO, invoice, vendor, remarks..."
+                                            value={search}
+                                            onChange={e =>
                                                 setSearch(
                                                     e.target.value
                                                 )
-                                        }
-                                        style={{
-                                            ...inputStyle,
-                                            width:
-                                                "100%"
-                                        }}
-                                    />
+                                            }
+                                        />
+
+                                    </div>
 
                                 </div>
 
@@ -2040,420 +1483,148 @@ function Reports() {
 
                         ) : (
 
-                            /* =================================================
-                                ASSET FILTERS
-                            ================================================= */
-
-                            <div
-                                style={{
-                                    display:
-                                        "grid",
-                                    gridTemplateColumns:
-                                        "repeat(3, minmax(0, 1fr))",
-                                    gap:
-                                        "12px"
-                                }}
-                            >
-
-                                {/* REPORT TYPE */}
-
-                                <div>
-
-                                    <label
-                                        style={
-                                            labelStyle
-                                        }
-                                    >
-                                        Report Type
-                                    </label>
-
-
-                                    <select
-                                        value={
-                                            reportType
-                                        }
-                                        onChange={
-                                            e =>
-                                                setReportType(
-                                                    e.target.value
-                                                )
-                                        }
-                                        style={
-                                            inputStyle
-                                        }
-                                    >
-
-                                        <option value="all">
-                                            All Assets
-                                        </option>
-
-                                        <option value="assigned">
-                                            Assigned Assets
-                                        </option>
-
-                                        <option value="repair">
-                                            Repair Assets
-                                        </option>
-
-                                        <option value="scrap">
-                                            Scrap Assets
-                                        </option>
-
-                                        <option value="lost">
-                                            Lost Assets
-                                        </option>
-
-                                        <option value="employee">
-                                            Employee Assets
-                                        </option>
-
-                                        <option value="purchase">
-                                            Purchase Report
-                                        </option>
-
-                                    </select>
-
-                                </div>
-
-
-                                {/* FROM DATE */}
-
-                                <div>
-
-                                    <label
-                                        style={
-                                            labelStyle
-                                        }
-                                    >
-                                        From Date
-                                    </label>
-
-
-                                    <input
-                                        type="date"
-                                        value={
-                                            filters.from_date
-                                        }
-                                        onChange={
-                                            e =>
-                                                setFilters({
-                                                    ...filters,
-                                                    from_date:
-                                                        e.target.value
-                                                })
-                                        }
-                                        style={
-                                            inputStyle
-                                        }
-                                    />
-
-                                </div>
-
-
-                                {/* TO DATE */}
-
-                                <div>
-
-                                    <label
-                                        style={
-                                            labelStyle
-                                        }
-                                    >
-                                        To Date
-                                    </label>
-
-
-                                    <input
-                                        type="date"
-                                        value={
-                                            filters.to_date
-                                        }
-                                        onChange={
-                                            e =>
-                                                setFilters({
-                                                    ...filters,
-                                                    to_date:
-                                                        e.target.value
-                                                })
-                                        }
-                                        style={
-                                            inputStyle
-                                        }
-                                    />
-
-                                </div>
-
-
-                                {/* STATUS */}
-
-                                <div>
-
-                                    <label
-                                        style={
-                                            labelStyle
-                                        }
-                                    >
-                                        Status
-                                    </label>
-
-
-                                    <select
-                                        value={
-                                            filters.status
-                                        }
-                                        onChange={
-                                            e =>
-                                                setFilters({
-                                                    ...filters,
-                                                    status:
-                                                        e.target.value
-                                                })
-                                        }
-                                        style={
-                                            inputStyle
-                                        }
-                                    >
-
-                                        <option value="">
-                                            All Status
-                                        </option>
-
-                                        <option value="Assigned">
-                                            Assigned
-                                        </option>
-
-                                        <option value="In Stock">
-                                            In Stock
-                                        </option>
-
-                                        <option value="Repair">
-                                            Repair
-                                        </option>
-
-                                        <option value="Scrap">
-                                            Scrap
-                                        </option>
-
-                                        <option value="Lost">
-                                            Lost
-                                        </option>
-
-                                    </select>
-
-                                </div>
-
-
-                                {/* CATEGORY */}
-
-                                <div>
-
-                                    <label
-                                        style={
-                                            labelStyle
-                                        }
-                                    >
-                                        Category ID
-                                    </label>
-
-
-                                    <input
-                                        type="number"
-                                        placeholder="Category ID"
-                                        value={
-                                            filters.category_id
-                                        }
-                                        onChange={
-                                            e =>
-                                                setFilters({
-                                                    ...filters,
-                                                    category_id:
-                                                        e.target.value
-                                                })
-                                        }
-                                        style={
-                                            inputStyle
-                                        }
-                                    />
-
-                                </div>
-
-
-                                {/* EMPLOYEE */}
-
-                                <div>
-
-                                    <label
-                                        style={
-                                            labelStyle
-                                        }
-                                    >
-                                        Employee ID
-                                    </label>
-
-
-                                    <input
-                                        type="number"
-                                        placeholder="Employee ID"
-                                        value={
-                                            filters.employee_id
-                                        }
-                                        onChange={
-                                            e =>
-                                                setFilters({
-                                                    ...filters,
-                                                    employee_id:
-                                                        e.target.value
-                                                })
-                                        }
-                                        style={
-                                            inputStyle
-                                        }
-                                    />
-
-                                </div>
-
-
-                                {/* DEPARTMENT */}
-
-                                <div>
-
-                                    <label
-                                        style={
-                                            labelStyle
-                                        }
-                                    >
-                                        Department ID
-                                    </label>
-
-
-                                    <input
-                                        type="number"
-                                        placeholder="Department ID"
-                                        value={
-                                            filters.department_id
-                                        }
-                                        onChange={
-                                            e =>
-                                                setFilters({
-                                                    ...filters,
-                                                    department_id:
-                                                        e.target.value
-                                                })
-                                        }
-                                        style={
-                                            inputStyle
-                                        }
-                                    />
-
-                                </div>
-
-
-                                {/* LOCATION */}
-
-                                <div>
-
-                                    <label
-                                        style={
-                                            labelStyle
-                                        }
-                                    >
-                                        Location ID
-                                    </label>
-
-
-                                    <input
-                                        type="number"
-                                        placeholder="Location ID"
-                                        value={
-                                            filters.location_id
-                                        }
-                                        onChange={
-                                            e =>
-                                                setFilters({
-                                                    ...filters,
-                                                    location_id:
-                                                        e.target.value
-                                                })
-                                        }
-                                        style={
-                                            inputStyle
-                                        }
-                                    />
-
-                                </div>
-
-
-                                {/* VENDOR */}
-
-                                <div>
-
-                                    <label
-                                        style={
-                                            labelStyle
-                                        }
-                                    >
-                                        Vendor ID
-                                    </label>
-
-
-                                    <input
-                                        type="number"
-                                        placeholder="Vendor ID"
-                                        value={
-                                            filters.vendor_id
-                                        }
-                                        onChange={
-                                            e =>
-                                                setFilters({
-                                                    ...filters,
-                                                    vendor_id:
-                                                        e.target.value
-                                                })
-                                        }
-                                        style={
-                                            inputStyle
-                                        }
-                                    />
-
-                                </div>
-
-
-                                {/* SEARCH */}
-
-                                <div
-                                    style={{
-                                        gridColumn:
-                                            "1 / -1"
-                                    }}
-                                >
-
-                                    <label
-                                        style={
-                                            labelStyle
-                                        }
-                                    >
+                            <div className="filter-grid">
+
+                                <FilterField
+                                    label="From Date"
+                                    type="date"
+                                    value={filters.from_date}
+                                    onChange={e =>
+                                        updateFilter(
+                                            "from_date",
+                                            e.target.value
+                                        )
+                                    }
+                                />
+
+
+                                <FilterField
+                                    label="To Date"
+                                    type="date"
+                                    value={filters.to_date}
+                                    onChange={e =>
+                                        updateFilter(
+                                            "to_date",
+                                            e.target.value
+                                        )
+                                    }
+                                />
+
+
+                                <FilterSelect
+                                    label="Status"
+                                    value={filters.status}
+                                    onChange={e =>
+                                        updateFilter(
+                                            "status",
+                                            e.target.value
+                                        )
+                                    }
+                                    options={[
+                                        ["", "All Status"],
+                                        ["Assigned", "Assigned"],
+                                        ["In Stock", "In Stock"],
+                                        ["Repair", "Repair"],
+                                        ["Scrap", "Scrap"],
+                                        ["Lost", "Lost"]
+                                    ]}
+                                />
+
+
+                                <FilterField
+                                    label="Category ID"
+                                    type="number"
+                                    placeholder="Category ID"
+                                    value={filters.category_id}
+                                    onChange={e =>
+                                        updateFilter(
+                                            "category_id",
+                                            e.target.value
+                                        )
+                                    }
+                                />
+
+
+                                <FilterField
+                                    label="Employee ID"
+                                    type="number"
+                                    placeholder="Employee ID"
+                                    value={filters.employee_id}
+                                    onChange={e =>
+                                        updateFilter(
+                                            "employee_id",
+                                            e.target.value
+                                        )
+                                    }
+                                />
+
+
+                                <FilterField
+                                    label="Department ID"
+                                    type="number"
+                                    placeholder="Department ID"
+                                    value={filters.department_id}
+                                    onChange={e =>
+                                        updateFilter(
+                                            "department_id",
+                                            e.target.value
+                                        )
+                                    }
+                                />
+
+
+                                <FilterField
+                                    label="Location ID"
+                                    type="number"
+                                    placeholder="Location ID"
+                                    value={filters.location_id}
+                                    onChange={e =>
+                                        updateFilter(
+                                            "location_id",
+                                            e.target.value
+                                        )
+                                    }
+                                />
+
+
+                                <FilterField
+                                    label="Vendor ID"
+                                    type="number"
+                                    placeholder="Vendor ID"
+                                    value={filters.vendor_id}
+                                    onChange={e =>
+                                        updateFilter(
+                                            "vendor_id",
+                                            e.target.value
+                                        )
+                                    }
+                                />
+
+
+                                <div className="filter-search">
+
+                                    <label>
                                         Search
                                     </label>
 
+                                    <div className="search-wrapper">
 
-                                    <input
-                                        type="text"
-                                        placeholder="Search asset, employee, vendor, category..."
-                                        value={
-                                            search
-                                        }
-                                        onChange={
-                                            e =>
+                                        <span>
+                                            ⌕
+                                        </span>
+
+                                        <input
+                                            type="text"
+                                            placeholder="Search asset, employee, vendor, category..."
+                                            value={search}
+                                            onChange={e =>
                                                 setSearch(
                                                     e.target.value
                                                 )
-                                        }
-                                        style={{
-                                            ...inputStyle,
-                                            width:
-                                                "100%"
-                                        }}
-                                    />
+                                            }
+                                        />
+
+                                    </div>
 
                                 </div>
 
@@ -2468,52 +1639,22 @@ function Reports() {
                         ANALYSIS
                     ================================================= */}
 
-                    <section
-                        style={{
-                            background: "#fff",
-                            padding: "20px",
-                            borderRadius: "10px",
-                            marginBottom: "20px",
-                            border:
-                                "1px solid #e5e7eb"
-                        }}
-                    >
+                    <section className="analysis-card">
 
-                        <div
-                            style={{
-                                display:
-                                    "flex",
-                                justifyContent:
-                                    "space-between",
-                                alignItems:
-                                    "center",
-                                marginBottom:
-                                    "15px"
-                            }}
-                        >
+                        <div className="section-title-row">
 
                             <div>
 
-                                <h2
-                                    style={{
-                                        margin: 0
-                                    }}
-                                >
+                                <span className="mini-label">
+                                    PERFORMANCE
+                                </span>
+
+                                <h2>
                                     Report Analysis
                                 </h2>
 
-
-                                <p
-                                    style={{
-                                        color:
-                                            "#6b7280",
-                                        margin:
-                                            "4px 0 0"
-                                    }}
-                                >
-                                    Analysis based
-                                    on currently
-                                    loaded report
+                                <p>
+                                    Analysis based on the currently loaded report.
                                 </p>
 
                             </div>
@@ -2521,16 +1662,7 @@ function Reports() {
                         </div>
 
 
-                        <div
-                            style={{
-                                display:
-                                    "grid",
-                                gridTemplateColumns:
-                                    "repeat(4, minmax(0, 1fr))",
-                                gap:
-                                    "12px"
-                            }}
-                        >
+                        <div className="analysis-grid">
 
                             <AnalysisCard
                                 title={
@@ -2538,33 +1670,26 @@ function Reports() {
                                         ? "Total Purchases"
                                         : "Total Records"
                                 }
-                                value={
-                                    analysis.total
-                                }
+                                value={analysis.total}
+                                icon="▦"
                             />
 
 
                             <AnalysisCard
                                 title={
                                     isPurchaseReport
-                                        ? "Total Purchase Value"
-                                        : "Total Asset Value"
+                                        ? "Purchase Value"
+                                        : "Asset Value"
                                 }
-                                value={
-                                    formatCost(
-                                        analysis.totalCost
-                                    )
-                                }
+                                value={formatCost(analysis.totalCost)}
+                                icon="₹"
                             />
 
 
                             <AnalysisCard
                                 title="Average Cost"
-                                value={
-                                    formatCost(
-                                        analysis.averageCost
-                                    )
-                                }
+                                value={formatCost(analysis.averageCost)}
+                                icon="↗"
                             />
 
 
@@ -2587,31 +1712,29 @@ function Reports() {
                                             )
                                     )
                                 }
+                                icon="★"
                             />
 
                         </div>
 
 
-                        <div
-                            style={{
-                                marginTop:
-                                    "18px",
-                                padding:
-                                    "15px",
-                                background:
-                                    "#eff6ff",
-                                borderRadius:
-                                    "8px",
-                                color:
-                                    "#1e40af"
-                            }}
-                        >
+                        <div className="insight-box">
 
-                            <strong>
-                                Management Insight:
-                            </strong>{" "}
+                            <div className="insight-icon">
+                                ✦
+                            </div>
 
-                            {getInsight()}
+                            <div>
+
+                                <strong>
+                                    Management Insight
+                                </strong>
+
+                                <p>
+                                    {getInsight()}
+                                </p>
+
+                            </div>
 
                         </div>
 
@@ -2623,18 +1746,11 @@ function Reports() {
                     ================================================= */}
 
                     <div
-                        style={{
-                            display:
-                                "grid",
-                            gridTemplateColumns:
-                                isPurchaseReport
-                                    ? "minmax(0, 1fr)"
-                                    : "repeat(auto-fit, minmax(260px, 1fr))",
-                            gap:
-                                "20px",
-                            marginBottom:
-                                "20px"
-                        }}
+                        className={
+                            isPurchaseReport
+                                ? "breakdown-grid single"
+                                : "breakdown-grid"
+                        }
                     >
 
                         <BreakdownCard
@@ -2643,9 +1759,7 @@ function Reports() {
                                     ? "Payment Status Distribution"
                                     : "Status Distribution"
                             }
-                            data={
-                                statusAnalysis
-                            }
+                            data={statusAnalysis}
                         />
 
 
@@ -2655,17 +1769,13 @@ function Reports() {
 
                                 <BreakdownCard
                                     title="Category Distribution"
-                                    data={
-                                        categoryAnalysis
-                                    }
+                                    data={categoryAnalysis}
                                 />
 
 
                                 <BreakdownCard
                                     title="Department Distribution"
-                                    data={
-                                        departmentAnalysis
-                                    }
+                                    data={departmentAnalysis}
                                 />
 
                             </>
@@ -2676,238 +1786,128 @@ function Reports() {
 
 
                     {/* =================================================
-                        ACTIONS
+                        REPORT HEADER
                     ================================================= */}
 
-                    <div
-                        className="no-print"
-                        style={{
-                            display:
-                                "flex",
-                            justifyContent:
-                                "space-between",
-                            alignItems:
-                                "center",
-                            background:
-                                "#fff",
-                            padding:
-                                "15px 20px",
-                            borderRadius:
-                                "10px 10px 0 0",
-                            border:
-                                "1px solid #e5e7eb",
-                            borderBottom:
-                                "none"
-                        }}
-                    >
+                    <section className="report-section">
 
-                        <div>
+                        <div className="report-section-header no-print">
 
-                            <h2
-                                style={{
-                                    margin: 0,
-                                    fontSize:
-                                        "20px"
-                                }}
-                            >
-                                {
-                                    getReportTitle()
-                                }
-                            </h2>
+                            <div>
+
+                                <span className="mini-label">
+                                    DATA TABLE
+                                </span>
+
+                                <h2>
+                                    {getReportTitle()}
+                                </h2>
+
+                                <p>
+                                    {data.length} record(s) found
+                                </p>
+
+                            </div>
 
 
-                            <span
-                                style={{
-                                    color:
-                                        "#6b7280",
-                                    fontSize:
-                                        "13px"
-                                }}
-                            >
-                                {
-                                    data.length
-                                }{" "}
-                                record(s)
-                            </span>
+                            <div className="report-actions">
+
+                                <button
+                                    disabled={!data.length}
+                                    onClick={exportExcel}
+                                    className={
+                                        data.length
+                                            ? "export-button excel"
+                                            : "export-button disabled"
+                                    }
+                                    type="button"
+                                >
+                                    ↓ Excel
+                                </button>
+
+
+                                <button
+                                    disabled={!data.length}
+                                    onClick={printReport}
+                                    className={
+                                        data.length
+                                            ? "export-button print"
+                                            : "export-button disabled"
+                                    }
+                                    type="button"
+                                >
+                                    ⎙ PDF / Print
+                                </button>
+
+                            </div>
 
                         </div>
 
 
-                        <div
-                            style={{
-                                display:
-                                    "flex",
-                                gap:
-                                    "8px"
-                            }}
-                        >
+                        {/* =================================================
+                            PRINT HEADER
+                        ================================================= */}
 
-                            <button
-                                disabled={
-                                    !data.length
-                                }
-                                onClick={
-                                    exportExcel
-                                }
-                                style={
-                                    actionButton(
-                                        "#16a34a",
-                                        !data.length
-                                    )
-                                }
-                            >
-                                Excel
-                            </button>
-
-
-                            <button
-                                disabled={
-                                    !data.length
-                                }
-                                onClick={
-                                    printReport
-                                }
-                                style={
-                                    actionButton(
-                                        "#dc2626",
-                                        !data.length
-                                    )
-                                }
-                            >
-                                PDF / Print
-                            </button>
-
-                        </div>
-
-                    </div>
-
-
-                    {/* =================================================
-                        REPORT TABLE
-                    ================================================= */}
-
-                    <section
-                        id="report-print-area"
-                        style={{
-                            background:
-                                "#fff",
-                            borderRadius:
-                                "0 0 10px 10px",
-                            overflow:
-                                "hidden",
-                            border:
-                                "1px solid #e5e7eb"
-                        }}
-                    >
-
-                        <div
-                            className="print-only"
-                            style={{
-                                padding:
-                                    "20px"
-                            }}
-                        >
+                        <div className="print-only print-header">
 
                             <h1>
                                 AssetSphere
                             </h1>
 
-
                             <h2>
-                                {
-                                    getReportTitle()
-                                }
+                                {getReportTitle()}
                             </h2>
-
 
                             <p>
                                 Generated:{" "}
-                                {new Date()
-                                    .toLocaleString(
-                                        "en-IN"
-                                    )}
+                                {new Date().toLocaleString(
+                                    "en-IN"
+                                )}
                             </p>
 
                         </div>
 
 
+                        {/* =================================================
+                            STATES
+                        ================================================= */}
+
                         {loading ? (
 
-                            <div
-                                style={{
-                                    padding:
-                                        "60px",
-                                    textAlign:
-                                        "center"
-                                }}
-                            >
+                            <div className="state-container">
 
-                                <div
-                                    style={{
-                                        fontSize:
-                                            "18px",
-                                        fontWeight:
-                                            600,
-                                        color:
-                                            "#374151"
-                                    }}
-                                >
+                                <div className="loader"></div>
+
+                                <h3>
                                     Loading report...
-                                </div>
+                                </h3>
 
-
-                                <p
-                                    style={{
-                                        color:
-                                            "#6b7280"
-                                    }}
-                                >
-                                    Please wait
+                                <p>
+                                    Please wait while the report is being generated.
                                 </p>
 
                             </div>
 
                         ) : error ? (
 
-                            <div
-                                style={{
-                                    padding:
-                                        "60px",
-                                    textAlign:
-                                        "center",
-                                    color:
-                                        "#dc2626"
-                                }}
-                            >
+                            <div className="state-container error-state">
+
+                                <div className="state-icon">
+                                    !
+                                </div>
 
                                 <h3>
-                                    Unable to load
-                                    report
+                                    Unable to load report
                                 </h3>
-
 
                                 <p>
                                     {error}
                                 </p>
 
-
                                 <button
-                                    className="no-print"
-                                    onClick={
-                                        loadReport
-                                    }
-                                    style={{
-                                        background:
-                                            "#2563eb",
-                                        color:
-                                            "#fff",
-                                        border:
-                                            "none",
-                                        padding:
-                                            "10px 18px",
-                                        borderRadius:
-                                            "6px"
-                                    }}
+                                    className="primary-button"
+                                    onClick={loadReport}
+                                    type="button"
                                 >
                                     Try Again
                                 </button>
@@ -2916,47 +1916,25 @@ function Reports() {
 
                         ) : !data.length ? (
 
-                            <div
-                                style={{
-                                    padding:
-                                        "60px",
-                                    textAlign:
-                                        "center"
-                                }}
-                            >
+                            <div className="state-container">
 
-                                <h3
-                                    style={{
-                                        marginBottom:
-                                            "5px"
-                                    }}
-                                >
+                                <div className="state-icon empty">
+                                    ▦
+                                </div>
+
+                                <h3>
                                     No records found
                                 </h3>
 
-
-                                <p
-                                    style={{
-                                        color:
-                                            "#6b7280"
-                                    }}
-                                >
-                                    Try changing
-                                    the filters
-                                    and generate
-                                    the report again.
+                                <p>
+                                    Try changing the filters and generate the report again.
                                 </p>
 
                             </div>
 
                         ) : (
 
-                            <div
-                                style={{
-                                    overflowX:
-                                        "auto"
-                                }}
-                            >
+                            <div className="table-wrapper">
 
                                 {/* =================================================
                                     PURCHASE TABLE
@@ -2964,100 +1942,21 @@ function Reports() {
 
                                 {isPurchaseReport ? (
 
-                                    <table
-                                        style={{
-                                            width:
-                                                "100%",
-                                            borderCollapse:
-                                                "collapse",
-                                            minWidth:
-                                                "1300px"
-                                        }}
-                                    >
+                                    <table>
 
                                         <thead>
 
                                             <tr>
 
-                                                <th
-                                                    style={
-                                                        thStyle
-                                                    }
-                                                >
-                                                    Purchase ID
-                                                </th>
-
-
-                                                <th
-                                                    style={
-                                                        thStyle
-                                                    }
-                                                >
-                                                    PO Number
-                                                </th>
-
-
-                                                <th
-                                                    style={
-                                                        thStyle
-                                                    }
-                                                >
-                                                    Invoice Number
-                                                </th>
-
-
-                                                <th
-                                                    style={
-                                                        thStyle
-                                                    }
-                                                >
-                                                    Vendor
-                                                </th>
-
-
-                                                <th
-                                                    style={
-                                                        thStyle
-                                                    }
-                                                >
-                                                    Purchase Date
-                                                </th>
-
-
-                                                <th
-                                                    style={
-                                                        thStyle
-                                                    }
-                                                >
-                                                    Amount
-                                                </th>
-
-
-                                                <th
-                                                    style={
-                                                        thStyle
-                                                    }
-                                                >
-                                                    Payment
-                                                </th>
-
-
-                                                <th
-                                                    style={
-                                                        thStyle
-                                                    }
-                                                >
-                                                    Warranty Expiry
-                                                </th>
-
-
-                                                <th
-                                                    style={
-                                                        thStyle
-                                                    }
-                                                >
-                                                    Remarks
-                                                </th>
+                                                <th>Purchase ID</th>
+                                                <th>PO Number</th>
+                                                <th>Invoice</th>
+                                                <th>Vendor</th>
+                                                <th>Purchase Date</th>
+                                                <th>Amount</th>
+                                                <th>Payment</th>
+                                                <th>Warranty</th>
+                                                <th>Remarks</th>
 
                                             </tr>
 
@@ -3079,192 +1978,95 @@ function Reports() {
                                                         }
                                                     >
 
-                                                        {/* PURCHASE ID */}
-
-                                                        <td
-                                                            style={
-                                                                tdStyle
-                                                            }
-                                                        >
-                                                            {
-                                                                item.purchase_id ??
-                                                                "-"
-                                                            }
-                                                        </td>
-
-
-                                                        {/* PO NUMBER */}
-
-                                                        <td
-                                                            style={
-                                                                tdStyle
-                                                            }
-                                                        >
-
-                                                            <span
-                                                                style={{
-                                                                    color:
-                                                                        "#2563eb",
-                                                                    fontWeight:
-                                                                        600
-                                                                }}
-                                                            >
-                                                                {
-                                                                    item.po_number ||
-                                                                    "-"
-                                                                }
+                                                        <td>
+                                                            <span className="id-badge">
+                                                                {item.purchase_id ?? "-"}
                                                             </span>
-
                                                         </td>
 
 
-                                                        {/* INVOICE */}
-
-                                                        <td
-                                                            style={
-                                                                tdStyle
-                                                            }
-                                                        >
-                                                            {
-                                                                item.invoice_number ||
-                                                                "-"
-                                                            }
+                                                        <td>
+                                                            <span className="po-number">
+                                                                {item.po_number || "-"}
+                                                            </span>
                                                         </td>
 
 
-                                                        {/* VENDOR */}
-
-                                                        <td
-                                                            style={
-                                                                tdStyle
-                                                            }
-                                                        >
-
-                                                            <div>
-
-                                                                <div
-                                                                    style={{
-                                                                        fontWeight:
-                                                                            600,
-                                                                        color:
-                                                                            "#334155"
-                                                                    }}
-                                                                >
-                                                                    {
-                                                                        item.vendor_name ||
-                                                                        "-"
-                                                                    }
-                                                                </div>
+                                                        <td>
+                                                            {item.invoice_number || "-"}
+                                                        </td>
 
 
-                                                                <div
-                                                                    style={{
-                                                                        fontSize:
-                                                                            "11px",
-                                                                        color:
-                                                                            "#64748b",
-                                                                        marginTop:
-                                                                            "2px"
-                                                                    }}
-                                                                >
+                                                        <td>
+
+                                                            <div className="vendor-cell">
+
+                                                                <strong>
+                                                                    {item.vendor_name || "-"}
+                                                                </strong>
+
+                                                                <small>
 
                                                                     {item.vendor_id
                                                                         ? `ID: ${item.vendor_id}`
                                                                         : ""}
 
                                                                     {item.vendor_code
-                                                                        ? ` ${item.vendor_code}`
+                                                                        ? ` • ${item.vendor_code}`
                                                                         : ""}
 
-                                                                </div>
+                                                                </small>
 
                                                             </div>
 
                                                         </td>
 
 
-                                                        {/* PURCHASE DATE */}
-
-                                                        <td
-                                                            style={
-                                                                tdStyle
-                                                            }
-                                                        >
-                                                            {
-                                                                formatDate(
-                                                                    item.purchase_date
-                                                                )
-                                                            }
+                                                        <td>
+                                                            {formatDate(
+                                                                item.purchase_date
+                                                            )}
                                                         </td>
 
 
-                                                        {/* AMOUNT */}
+                                                        <td>
 
-                                                        <td
-                                                            style={
-                                                                tdStyle
-                                                            }
-                                                        >
-                                                            {
-                                                                formatCost(
+                                                            <strong className="amount-text">
+                                                                {formatCost(
                                                                     item.amount ??
                                                                     item.purchase_amount ??
                                                                     item.total_amount
-                                                                )
-                                                            }
+                                                                )}
+                                                            </strong>
+
                                                         </td>
 
 
-                                                        {/* PAYMENT STATUS */}
-
-                                                        <td
-                                                            style={
-                                                                tdStyle
-                                                            }
-                                                        >
+                                                        <td>
 
                                                             <span
+                                                                className="status-badge"
                                                                 style={
                                                                     purchasePaymentStyle(
                                                                         item.payment_status
                                                                     )
                                                                 }
                                                             >
-                                                                {
-                                                                    item.payment_status ||
-                                                                    "-"
-                                                                }
+                                                                {item.payment_status || "-"}
                                                             </span>
 
                                                         </td>
 
 
-                                                        {/* WARRANTY */}
-
-                                                        <td
-                                                            style={
-                                                                tdStyle
-                                                            }
-                                                        >
-                                                            {
-                                                                formatDate(
-                                                                    item.warranty_expiry
-                                                                )
-                                                            }
+                                                        <td>
+                                                            {formatDate(
+                                                                item.warranty_expiry
+                                                            )}
                                                         </td>
 
 
-                                                        {/* REMARKS */}
-
-                                                        <td
-                                                            style={
-                                                                tdStyle
-                                                            }
-                                                        >
-                                                            {
-                                                                item.remarks ||
-                                                                "-"
-                                                            }
+                                                        <td>
+                                                            {item.remarks || "-"}
                                                         </td>
 
                                                     </tr>
@@ -3278,122 +2080,23 @@ function Reports() {
 
                                 ) : (
 
-                                    /* =================================================
-                                        ASSET TABLE
-                                    ================================================= */
-
-                                    <table
-                                        style={{
-                                            width:
-                                                "100%",
-                                            borderCollapse:
-                                                "collapse",
-                                            minWidth:
-                                                "1200px"
-                                        }}
-                                    >
+                                    <table>
 
                                         <thead>
 
                                             <tr>
 
-                                                <th
-                                                    style={
-                                                        thStyle
-                                                    }
-                                                >
-                                                    ID
-                                                </th>
-
-
-                                                <th
-                                                    style={
-                                                        thStyle
-                                                    }
-                                                >
-                                                    Asset Code
-                                                </th>
-
-
-                                                <th
-                                                    style={
-                                                        thStyle
-                                                    }
-                                                >
-                                                    Asset Name
-                                                </th>
-
-
-                                                <th
-                                                    style={
-                                                        thStyle
-                                                    }
-                                                >
-                                                    Category
-                                                </th>
-
-
-                                                <th
-                                                    style={
-                                                        thStyle
-                                                    }
-                                                >
-                                                    Employee
-                                                </th>
-
-
-                                                <th
-                                                    style={
-                                                        thStyle
-                                                    }
-                                                >
-                                                    Department
-                                                </th>
-
-
-                                                <th
-                                                    style={
-                                                        thStyle
-                                                    }
-                                                >
-                                                    Vendor
-                                                </th>
-
-
-                                                <th
-                                                    style={
-                                                        thStyle
-                                                    }
-                                                >
-                                                    Location
-                                                </th>
-
-
-                                                <th
-                                                    style={
-                                                        thStyle
-                                                    }
-                                                >
-                                                    Purchase Date
-                                                </th>
-
-
-                                                <th
-                                                    style={
-                                                        thStyle
-                                                    }
-                                                >
-                                                    Cost
-                                                </th>
-
-
-                                                <th
-                                                    style={
-                                                        thStyle
-                                                    }
-                                                >
-                                                    Status
-                                                </th>
+                                                <th>ID</th>
+                                                <th>Asset Code</th>
+                                                <th>Asset Name</th>
+                                                <th>Category</th>
+                                                <th>Employee</th>
+                                                <th>Department</th>
+                                                <th>Vendor</th>
+                                                <th>Location</th>
+                                                <th>Purchase Date</th>
+                                                <th>Cost</th>
+                                                <th>Status</th>
 
                                             </tr>
 
@@ -3415,145 +2118,87 @@ function Reports() {
                                                         }
                                                     >
 
-                                                        <td
-                                                            style={
-                                                                tdStyle
-                                                            }
-                                                        >
-                                                            {
-                                                                item.asset_id ??
-                                                                "-"
-                                                            }
+                                                        <td>
+
+                                                            <span className="id-badge">
+                                                                {item.asset_id ?? "-"}
+                                                            </span>
+
                                                         </td>
 
 
-                                                        <td
-                                                            style={
-                                                                tdStyle
-                                                            }
-                                                        >
-                                                            {
-                                                                item.asset_code ||
-                                                                "-"
-                                                            }
+                                                        <td>
+
+                                                            <span className="asset-code">
+                                                                {item.asset_code || "-"}
+                                                            </span>
+
                                                         </td>
 
 
-                                                        <td
-                                                            style={
-                                                                tdStyle
-                                                            }
-                                                        >
-                                                            {
-                                                                item.asset_name ||
-                                                                "-"
-                                                            }
+                                                        <td>
+
+                                                            <strong>
+                                                                {item.asset_name || "-"}
+                                                            </strong>
+
                                                         </td>
 
 
-                                                        <td
-                                                            style={
-                                                                tdStyle
-                                                            }
-                                                        >
-                                                            {
-                                                                item.category_name ||
-                                                                "-"
-                                                            }
+                                                        <td>
+                                                            {item.category_name || "-"}
                                                         </td>
 
 
-                                                        <td
-                                                            style={
-                                                                tdStyle
-                                                            }
-                                                        >
-                                                            {
-                                                                item.employee_name ||
-                                                                "-"
-                                                            }
+                                                        <td>
+                                                            {item.employee_name || "-"}
                                                         </td>
 
 
-                                                        <td
-                                                            style={
-                                                                tdStyle
-                                                            }
-                                                        >
-                                                            {
-                                                                item.department_name ||
-                                                                "-"
-                                                            }
+                                                        <td>
+                                                            {item.department_name || "-"}
                                                         </td>
 
 
-                                                        <td
-                                                            style={
-                                                                tdStyle
-                                                            }
-                                                        >
-                                                            {
-                                                                item.vendor_name ||
-                                                                "-"
-                                                            }
+                                                        <td>
+                                                            {item.vendor_name || "-"}
                                                         </td>
 
 
-                                                        <td
-                                                            style={
-                                                                tdStyle
-                                                            }
-                                                        >
-                                                            {
-                                                                item.location_name ||
-                                                                "-"
-                                                            }
+                                                        <td>
+                                                            {item.location_name || "-"}
                                                         </td>
 
 
-                                                        <td
-                                                            style={
-                                                                tdStyle
-                                                            }
-                                                        >
-                                                            {
-                                                                formatDate(
-                                                                    item.purchase_date
-                                                                )
-                                                            }
+                                                        <td>
+                                                            {formatDate(
+                                                                item.purchase_date
+                                                            )}
                                                         </td>
 
 
-                                                        <td
-                                                            style={
-                                                                tdStyle
-                                                            }
-                                                        >
-                                                            {
-                                                                formatCost(
+                                                        <td>
+
+                                                            <strong className="amount-text">
+                                                                {formatCost(
                                                                     item.purchase_cost
-                                                                )
-                                                            }
+                                                                )}
+                                                            </strong>
+
                                                         </td>
 
 
-                                                        <td
-                                                            style={
-                                                                tdStyle
-                                                            }
-                                                        >
+                                                        <td>
 
                                                             <span
+                                                                className="status-badge"
                                                                 style={
                                                                     statusStyle(
                                                                         item.asset_status
                                                                     )
                                                                 }
                                                             >
-                                                                {
-                                                                    item.asset_status ||
-                                                                    "-"
-                                                                }
+                                                                {item.asset_status || "-"}
                                                             </span>
 
                                                         </td>
@@ -3581,11 +2226,968 @@ function Reports() {
 
 
             {/* =========================================================
-                PRINT CSS
+                DESIGN + PRINT CSS
             ========================================================= */}
 
             <style>
                 {`
+
+                    * {
+                        box-sizing: border-box;
+                    }
+
+
+                    body {
+                        margin: 0;
+                        font-family:
+                            Inter,
+                            -apple-system,
+                            BlinkMacSystemFont,
+                            "Segoe UI",
+                            sans-serif;
+                        background: #f6f8fc;
+                        color: #111827;
+                    }
+
+
+                    .reports-page {
+                        display: flex;
+                        min-height: 100vh;
+                        background:
+                            linear-gradient(
+                                135deg,
+                                #f8fafc 0%,
+                                #f1f5f9 100%
+                            );
+                    }
+
+
+                    .reports-main {
+                        flex: 1;
+                        min-width: 0;
+                        width: calc(100vw - 180px);
+                        max-width: calc(100vw - 180px);
+                    }
+
+
+                    .reports-content {
+                        width: 100%;
+                        max-width: 1600px;
+                        margin: 0 auto;
+                        padding: 30px;
+                    }
+
+
+                    /* =================================================
+                       HERO
+                    ================================================= */
+
+                    .reports-hero {
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                        gap: 20px;
+                        padding: 28px 30px;
+                        margin-bottom: 18px;
+                        border-radius: 18px;
+                        background:
+                            linear-gradient(
+                                135deg,
+                                #111827,
+                                #1e3a8a
+                            );
+                        color: #fff;
+                        box-shadow:
+                            0 12px 30px
+                            rgba(15, 23, 42, 0.12);
+                    }
+
+
+                    .eyebrow,
+                    .mini-label {
+                        font-size: 11px;
+                        font-weight: 800;
+                        letter-spacing: 1.3px;
+                        text-transform: uppercase;
+                    }
+
+
+                    .eyebrow {
+                        color: #bfdbfe;
+                        margin-bottom: 8px;
+                    }
+
+
+                    /* FIX:
+                       Reports & Analytics white color
+                    */
+
+                    .reports-hero h1 {
+                        margin: 0;
+                        font-size: 32px;
+                        line-height: 1.2;
+                        font-weight: 800;
+                        color: #ffffff !important;
+                    }
+
+
+                    .reports-hero p {
+                        margin:
+                            8px 0 0;
+                        color: #dbeafe;
+                        font-size: 14px;
+                        max-width: 650px;
+                    }
+
+
+                    .refresh-button {
+                        border: 1px solid
+                            rgba(255,255,255,0.22);
+                        background:
+                            rgba(255,255,255,0.12);
+                        color: #fff;
+                        padding: 11px 17px;
+                        border-radius: 9px;
+                        cursor: pointer;
+                        font-weight: 700;
+                        display: flex;
+                        align-items: center;
+                        gap: 8px;
+                        transition: 0.2s ease;
+                    }
+
+
+                    .refresh-button:hover {
+                        background:
+                            rgba(255,255,255,0.2);
+                        transform:
+                            translateY(-1px);
+                    }
+
+
+                    .refresh-button span {
+                        font-size: 19px;
+                    }
+
+
+                    /* =================================================
+                       REPORT SELECTOR
+                    ================================================= */
+
+                    .report-selector {
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                        gap: 20px;
+                        background: #fff;
+                        padding: 15px 18px;
+                        margin-bottom: 18px;
+                        border:
+                            1px solid #e2e8f0;
+                        border-radius: 12px;
+                        box-shadow:
+                            0 3px 10px
+                            rgba(15,23,42,0.035);
+                    }
+
+
+                    .selector-label {
+                        display: block;
+                        color: #94a3b8;
+                        font-size: 10px;
+                        text-transform: uppercase;
+                        letter-spacing: 1px;
+                        font-weight: 800;
+                        margin-bottom: 4px;
+                    }
+
+
+                    .report-selector strong {
+                        color: #1e293b;
+                        font-size: 15px;
+                    }
+
+
+                    .report-type-select {
+                        min-width: 220px;
+                        border:
+                            1px solid #cbd5e1;
+                        background: #fff;
+                        color: #1e293b;
+                        padding: 10px 12px;
+                        border-radius: 8px;
+                        outline: none;
+                        font-weight: 600;
+                        cursor: pointer;
+                    }
+
+
+                    .report-type-select:focus {
+                        border-color: #2563eb;
+                        box-shadow:
+                            0 0 0 3px
+                            rgba(37,99,235,0.1);
+                    }
+
+
+                    /* =================================================
+                       SUMMARY
+                    ================================================= */
+
+                    .summary-grid {
+                        display: grid;
+                        grid-template-columns:
+                            repeat(
+                                auto-fit,
+                                minmax(190px, 1fr)
+                            );
+                        gap: 14px;
+                        margin-bottom: 20px;
+                    }
+
+
+                    .summary-card {
+                        position: relative;
+                        overflow: hidden;
+                        background: #fff;
+                        border:
+                            1px solid #e2e8f0;
+                        border-radius: 14px;
+                        padding: 18px;
+                        box-shadow:
+                            0 3px 12px
+                            rgba(15,23,42,0.04);
+                        transition:
+                            transform 0.2s ease,
+                            box-shadow 0.2s ease;
+                    }
+
+
+                    .summary-card:hover {
+                        transform:
+                            translateY(-2px);
+                        box-shadow:
+                            0 10px 25px
+                            rgba(15,23,42,0.08);
+                    }
+
+
+                    .summary-card::after {
+                        content: "";
+                        position: absolute;
+                        right: -25px;
+                        top: -25px;
+                        width: 85px;
+                        height: 85px;
+                        border-radius: 50%;
+                        background:
+                            var(--card-bg);
+                    }
+
+
+                    .summary-top {
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: flex-start;
+                        position: relative;
+                        z-index: 1;
+                    }
+
+
+                    .summary-icon {
+                        width: 40px;
+                        height: 40px;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        border-radius: 10px;
+                        font-weight: 800;
+                        font-size: 17px;
+                    }
+
+
+                    .summary-title {
+                        color: #64748b;
+                        font-size: 12px;
+                        font-weight: 700;
+                        margin-bottom: 8px;
+                    }
+
+
+                    .summary-value {
+                        color: #0f172a;
+                        font-size: 25px;
+                        font-weight: 800;
+                        letter-spacing: -0.4px;
+                    }
+
+
+                    /* =================================================
+                       FILTER CARD
+                    ================================================= */
+
+                    .filter-card,
+                    .analysis-card,
+                    .report-section,
+                    .breakdown-card {
+                        background: #fff;
+                        border:
+                            1px solid #e2e8f0;
+                        box-shadow:
+                            0 4px 14px
+                            rgba(15,23,42,0.035);
+                    }
+
+
+                    .filter-card {
+                        border-radius: 14px;
+                        padding: 20px;
+                        margin-bottom: 20px;
+                    }
+
+
+                    .section-heading {
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                        gap: 20px;
+                        margin-bottom: 18px;
+                    }
+
+
+                    .section-heading > div:first-child {
+                        display: flex;
+                        align-items: center;
+                        gap: 12px;
+                    }
+
+
+                    .section-icon {
+                        width: 42px;
+                        height: 42px;
+                        border-radius: 11px;
+                        background: #eff6ff;
+                        color: #2563eb;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        font-size: 18px;
+                    }
+
+
+                    .section-heading h2,
+                    .section-title-row h2,
+                    .report-section-header h2 {
+                        margin: 0;
+                        color: #0f172a;
+                        font-size: 18px;
+                        font-weight: 800;
+                    }
+
+
+                    .section-heading p,
+                    .section-title-row p,
+                    .report-section-header p {
+                        margin:
+                            4px 0 0;
+                        color: #64748b;
+                        font-size: 12px;
+                    }
+
+
+                    .filter-actions {
+                        display: flex;
+                        gap: 8px;
+                    }
+
+
+                    .primary-button,
+                    .secondary-button {
+                        padding: 10px 15px;
+                        border-radius: 8px;
+                        cursor: pointer;
+                        font-weight: 700;
+                        font-size: 13px;
+                        transition: 0.2s ease;
+                    }
+
+
+                    .primary-button {
+                        background: #2563eb;
+                        color: #fff;
+                        border: 1px solid #2563eb;
+                    }
+
+
+                    .primary-button:hover {
+                        background: #1d4ed8;
+                    }
+
+
+                    .secondary-button {
+                        background: #fff;
+                        color: #475569;
+                        border:
+                            1px solid #cbd5e1;
+                    }
+
+
+                    .secondary-button:hover {
+                        background: #f8fafc;
+                    }
+
+
+                    .filter-grid {
+                        display: grid;
+                        grid-template-columns:
+                            repeat(
+                                3,
+                                minmax(0, 1fr)
+                            );
+                        gap: 14px;
+                    }
+
+
+                    .filter-field label,
+                    .filter-search label {
+                        display: block;
+                        color: #475569;
+                        font-size: 12px;
+                        font-weight: 700;
+                        margin-bottom: 6px;
+                    }
+
+
+                    .filter-field input,
+                    .filter-field select {
+                        width: 100%;
+                        padding: 10px 11px;
+                        border:
+                            1px solid #cbd5e1;
+                        border-radius: 8px;
+                        background: #fff;
+                        color: #0f172a;
+                        outline: none;
+                        font-size: 13px;
+                        transition: 0.2s ease;
+                    }
+
+
+                    .filter-field input:focus,
+                    .filter-field select:focus,
+                    .search-wrapper:focus-within {
+                        border-color: #2563eb;
+                        box-shadow:
+                            0 0 0 3px
+                            rgba(37,99,235,0.09);
+                    }
+
+
+                    .filter-search {
+                        grid-column: 1 / -1;
+                    }
+
+
+                    .search-wrapper {
+                        display: flex;
+                        align-items: center;
+                        gap: 8px;
+                        width: 100%;
+                        padding: 0 11px;
+                        border:
+                            1px solid #cbd5e1;
+                        border-radius: 8px;
+                        background: #fff;
+                    }
+
+
+                    .search-wrapper span {
+                        color: #64748b;
+                        font-size: 19px;
+                    }
+
+
+                    .search-wrapper input {
+                        flex: 1;
+                        min-width: 0;
+                        padding: 10px 0;
+                        border: none;
+                        outline: none;
+                        color: #0f172a;
+                    }
+
+
+                    /* =================================================
+                       ANALYSIS
+                    ================================================= */
+
+                    .analysis-card {
+                        border-radius: 14px;
+                        padding: 20px;
+                        margin-bottom: 20px;
+                    }
+
+
+                    .section-title-row {
+                        margin-bottom: 16px;
+                    }
+
+
+                    .mini-label {
+                        color: #2563eb;
+                        display: block;
+                        margin-bottom: 5px;
+                    }
+
+
+                    .analysis-grid {
+                        display: grid;
+                        grid-template-columns:
+                            repeat(
+                                4,
+                                minmax(0, 1fr)
+                            );
+                        gap: 12px;
+                    }
+
+
+                    .analysis-item {
+                        padding: 15px;
+                        border-radius: 11px;
+                        background: #f8fafc;
+                        border:
+                            1px solid #e2e8f0;
+                    }
+
+
+                    .analysis-item-top {
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                    }
+
+
+                    .analysis-item-icon {
+                        width: 32px;
+                        height: 32px;
+                        border-radius: 8px;
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                        background: #eff6ff;
+                        color: #2563eb;
+                        font-weight: 800;
+                    }
+
+
+                    .analysis-item-title {
+                        color: #64748b;
+                        font-size: 11px;
+                        font-weight: 700;
+                        margin-top: 9px;
+                    }
+
+
+                    .analysis-item-value {
+                        color: #0f172a;
+                        font-size: 19px;
+                        font-weight: 800;
+                        margin-top: 4px;
+                    }
+
+
+                    .insight-box {
+                        display: flex;
+                        align-items: flex-start;
+                        gap: 12px;
+                        margin-top: 16px;
+                        padding: 14px 16px;
+                        background:
+                            linear-gradient(
+                                135deg,
+                                #eff6ff,
+                                #f8faff
+                            );
+                        border:
+                            1px solid #bfdbfe;
+                        border-radius: 10px;
+                        color: #1e40af;
+                    }
+
+
+                    .insight-icon {
+                        width: 34px;
+                        height: 34px;
+                        min-width: 34px;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        border-radius: 9px;
+                        background: #dbeafe;
+                        color: #2563eb;
+                    }
+
+
+                    .insight-box strong {
+                        font-size: 13px;
+                    }
+
+
+                    .insight-box p {
+                        margin: 3px 0 0;
+                        font-size: 12px;
+                        line-height: 1.5;
+                    }
+
+
+                    /* =================================================
+                       BREAKDOWN
+                    ================================================= */
+
+                    .breakdown-grid {
+                        display: grid;
+                        grid-template-columns:
+                            repeat(
+                                3,
+                                minmax(0, 1fr)
+                            );
+                        gap: 18px;
+                        margin-bottom: 20px;
+                    }
+
+
+                    .breakdown-grid.single {
+                        grid-template-columns:
+                            minmax(0, 1fr);
+                    }
+
+
+                    .breakdown-card {
+                        border-radius: 14px;
+                        padding: 18px;
+                    }
+
+
+                    .breakdown-header {
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                        margin-bottom: 17px;
+                    }
+
+
+                    .breakdown-header h3 {
+                        margin: 0;
+                        color: #0f172a;
+                        font-size: 15px;
+                        font-weight: 800;
+                    }
+
+
+                    .breakdown-total {
+                        color: #94a3b8;
+                        font-size: 11px;
+                        font-weight: 700;
+                    }
+
+
+                    .breakdown-row {
+                        margin-bottom: 14px;
+                    }
+
+
+                    .breakdown-label {
+                        display: flex;
+                        justify-content: space-between;
+                        gap: 10px;
+                        color: #475569;
+                        font-size: 12px;
+                        margin-bottom: 6px;
+                    }
+
+
+                    .breakdown-label strong {
+                        color: #0f172a;
+                    }
+
+
+                    .progress-track {
+                        height: 7px;
+                        background: #e2e8f0;
+                        border-radius: 20px;
+                        overflow: hidden;
+                    }
+
+
+                    .progress-fill {
+                        height: 100%;
+                        min-width: 2px;
+                        background:
+                            linear-gradient(
+                                90deg,
+                                #2563eb,
+                                #60a5fa
+                            );
+                        border-radius: 20px;
+                        transition: width 0.4s ease;
+                    }
+
+
+                    /* =================================================
+                       REPORT SECTION
+                    ================================================= */
+
+                    .report-section {
+                        border-radius: 14px;
+                        overflow: hidden;
+                        margin-bottom: 25px;
+                    }
+
+
+                    .report-section-header {
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                        gap: 20px;
+                        padding: 18px 20px;
+                        border-bottom:
+                            1px solid #e2e8f0;
+                        background:
+                            linear-gradient(
+                                180deg,
+                                #ffffff,
+                                #fbfdff
+                            );
+                    }
+
+
+                    .report-actions {
+                        display: flex;
+                        gap: 8px;
+                    }
+
+
+                    .export-button {
+                        border: none;
+                        color: #fff;
+                        padding: 9px 14px;
+                        border-radius: 8px;
+                        font-weight: 700;
+                        cursor: pointer;
+                        font-size: 12px;
+                    }
+
+
+                    .export-button.excel {
+                        background: #16a34a;
+                    }
+
+
+                    .export-button.excel:hover {
+                        background: #15803d;
+                    }
+
+
+                    .export-button.print {
+                        background: #dc2626;
+                    }
+
+
+                    .export-button.print:hover {
+                        background: #b91c1c;
+                    }
+
+
+                    .export-button.disabled {
+                        background: #cbd5e1;
+                        cursor: not-allowed;
+                    }
+
+
+                    /* =================================================
+                       TABLE
+                    ================================================= */
+
+                    .table-wrapper {
+                        width: 100%;
+                        overflow-x: auto;
+                    }
+
+
+                    table {
+                        width: 100%;
+                        min-width: 1200px;
+                        border-collapse: collapse;
+                    }
+
+
+                    th {
+                        padding: 13px 14px;
+                        text-align: left;
+                        background: #f8fafc;
+                        color: #475569;
+                        border-bottom:
+                            1px solid #e2e8f0;
+                        font-size: 11px;
+                        font-weight: 800;
+                        text-transform: uppercase;
+                        letter-spacing: 0.4px;
+                        white-space: nowrap;
+                    }
+
+
+                    td {
+                        padding: 13px 14px;
+                        color: #475569;
+                        border-bottom:
+                            1px solid #f1f5f9;
+                        font-size: 12px;
+                        white-space: nowrap;
+                        background: #fff;
+                    }
+
+
+                    tbody tr {
+                        transition: background 0.15s ease;
+                    }
+
+
+                    tbody tr:hover td {
+                        background: #f8fbff;
+                    }
+
+
+                    tbody tr:last-child td {
+                        border-bottom: none;
+                    }
+
+
+                    .id-badge {
+                        display: inline-flex;
+                        align-items: center;
+                        padding: 4px 7px;
+                        border-radius: 6px;
+                        background: #f1f5f9;
+                        color: #475569;
+                        font-size: 11px;
+                        font-weight: 700;
+                    }
+
+
+                    .po-number,
+                    .asset-code {
+                        color: #2563eb;
+                        font-weight: 700;
+                    }
+
+
+                    .vendor-cell {
+                        display: flex;
+                        flex-direction: column;
+                        gap: 2px;
+                    }
+
+
+                    .vendor-cell strong {
+                        color: #334155;
+                        font-size: 12px;
+                    }
+
+
+                    .vendor-cell small {
+                        color: #94a3b8;
+                        font-size: 10px;
+                    }
+
+
+                    .amount-text {
+                        color: #0f172a;
+                    }
+
+
+                    .status-badge {
+                        display: inline-flex;
+                        align-items: center;
+                        padding: 5px 9px;
+                        border-radius: 999px;
+                        font-size: 10px;
+                        font-weight: 800;
+                        white-space: nowrap;
+                    }
+
+
+                    /* =================================================
+                       STATES
+                    ================================================= */
+
+                    .state-container {
+                        min-height: 360px;
+                        display: flex;
+                        flex-direction: column;
+                        justify-content: center;
+                        align-items: center;
+                        text-align: center;
+                        padding: 50px 20px;
+                    }
+
+
+                    .state-container h3 {
+                        margin:
+                            15px 0 5px;
+                        color: #1e293b;
+                    }
+
+
+                    .state-container p {
+                        margin:
+                            0 0 18px;
+                        color: #94a3b8;
+                        font-size: 13px;
+                    }
+
+
+                    .state-icon {
+                        width: 52px;
+                        height: 52px;
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                        border-radius: 14px;
+                        background: #fee2e2;
+                        color: #dc2626;
+                        font-size: 24px;
+                        font-weight: 800;
+                    }
+
+
+                    .state-icon.empty {
+                        background: #eff6ff;
+                        color: #2563eb;
+                    }
+
+
+                    .loader {
+                        width: 34px;
+                        height: 34px;
+                        border-radius: 50%;
+                        border:
+                            3px solid #dbeafe;
+                        border-top-color: #2563eb;
+                        animation:
+                            reportSpin 0.8s linear infinite;
+                    }
+
+
+                    @keyframes reportSpin {
+                        to {
+                            transform: rotate(360deg);
+                        }
+                    }
+
+
+                    /* =================================================
+                       PRINT
+                    ================================================= */
 
                     .print-only {
                         display: none;
@@ -3596,7 +3198,7 @@ function Reports() {
 
                         @page {
                             size: landscape;
-                            margin: 12mm;
+                            margin: 10mm;
                         }
 
 
@@ -3615,29 +3217,119 @@ function Reports() {
                         }
 
 
-                        #report-print-area {
+                        .reports-page,
+                        .reports-main,
+                        .reports-content {
+                            display: block !important;
+                            width: 100% !important;
+                            max-width: none !important;
+                            padding: 0 !important;
+                            background: #fff !important;
+                        }
+
+
+                        .reports-hero,
+                        .report-selector,
+                        .summary-grid,
+                        .filter-card,
+                        .analysis-card,
+                        .breakdown-grid {
+                            display: none !important;
+                        }
+
+
+                        .report-section {
                             border: none !important;
-                            border-radius: 0 !important;
+                            box-shadow: none !important;
+                            margin: 0 !important;
+                        }
+
+
+                        .report-section-header {
+                            display: none !important;
+                        }
+
+
+                        .print-header {
+                            padding: 10px 0 18px;
+                        }
+
+
+                        .print-header h1 {
+                            margin: 0;
+                            font-size: 22px;
+                        }
+
+
+                        .print-header h2 {
+                            margin:
+                                5px 0;
+                            font-size: 16px;
+                        }
+
+
+                        .print-header p {
+                            margin: 0;
+                            color: #475569;
+                            font-size: 11px;
+                        }
+
+
+                        .table-wrapper {
+                            overflow: visible !important;
                         }
 
 
                         table {
-                            font-size: 10px !important;
+                            min-width: 0 !important;
+                            width: 100% !important;
+                            font-size: 8px !important;
                         }
 
 
                         th {
-                            background: #f3f4f6 !important;
+                            background: #f1f5f9 !important;
                             color: #111827 !important;
+                            font-size: 8px !important;
+                            padding: 6px !important;
+                        }
+
+
+                        td {
+                            color: #111827 !important;
+                            font-size: 8px !important;
+                            padding: 6px !important;
+                        }
+
+
+                        .status-badge {
+                            print-color-adjust: exact;
+                            -webkit-print-color-adjust: exact;
                         }
 
                     }
 
 
-                    @media (max-width: 1100px) {
+                    /* =================================================
+                       RESPONSIVE
+                    ================================================= */
 
-                        main {
-                            padding: 18px !important;
+                    @media (max-width: 1200px) {
+
+                        .reports-content {
+                            padding: 22px;
+                        }
+
+
+                        .analysis-grid {
+                            grid-template-columns:
+                                repeat(2, 1fr);
+                        }
+
+
+                        .breakdown-grid {
+                            grid-template-columns:
+                                repeat(2, 1fr);
                         }
 
                     }
@@ -3645,8 +3337,41 @@ function Reports() {
 
                     @media (max-width: 900px) {
 
-                        main {
-                            padding: 15px !important;
+                        .reports-main {
+                            width: 100%;
+                            max-width: 100%;
+                        }
+
+
+                        .reports-content {
+                            padding: 16px;
+                        }
+
+
+                        .reports-hero {
+                            padding: 22px;
+                        }
+
+
+                        .filter-grid {
+                            grid-template-columns:
+                                repeat(2, minmax(0, 1fr));
+                        }
+
+
+                        .section-heading {
+                            align-items: flex-start;
+                            flex-direction: column;
+                        }
+
+
+                        .filter-actions {
+                            width: 100%;
+                        }
+
+
+                        .filter-actions button {
+                            flex: 1;
                         }
 
                     }
@@ -3654,8 +3379,102 @@ function Reports() {
 
                     @media (max-width: 700px) {
 
-                        main {
-                            padding: 12px !important;
+                        .reports-content {
+                            padding: 12px;
+                        }
+
+
+                        .reports-hero {
+                            flex-direction: column;
+                            align-items: flex-start;
+                            padding: 20px;
+                        }
+
+
+                        .reports-hero h1 {
+                            font-size: 26px;
+                            color: #ffffff !important;
+                        }
+
+
+                        .hero-actions {
+                            width: 100%;
+                        }
+
+
+                        .refresh-button {
+                            width: 100%;
+                            justify-content: center;
+                        }
+
+
+                        .report-selector {
+                            flex-direction: column;
+                            align-items: stretch;
+                        }
+
+
+                        .report-type-select {
+                            width: 100%;
+                        }
+
+
+                        .filter-grid {
+                            grid-template-columns: 1fr;
+                        }
+
+
+                        .analysis-grid {
+                            grid-template-columns: 1fr;
+                        }
+
+
+                        .breakdown-grid,
+                        .breakdown-grid.single {
+                            grid-template-columns: 1fr;
+                        }
+
+
+                        .report-section-header {
+                            flex-direction: column;
+                            align-items: flex-start;
+                        }
+
+
+                        .report-actions {
+                            width: 100%;
+                        }
+
+
+                        .export-button {
+                            flex: 1;
+                        }
+
+
+                        .summary-grid {
+                            grid-template-columns:
+                                repeat(2, minmax(0, 1fr));
+                        }
+
+                    }
+
+
+                    @media (max-width: 450px) {
+
+                        .summary-grid {
+                            grid-template-columns: 1fr;
+                        }
+
+
+                        .reports-hero h1 {
+                            font-size: 23px;
+                            color: #ffffff !important;
+                        }
+
+
+                        .filter-card,
+                        .analysis-card {
+                            padding: 15px;
                         }
 
                     }
@@ -3664,9 +3483,83 @@ function Reports() {
             </style>
 
         </div>
-
     );
+}
 
+
+// =====================================================
+// FILTER FIELD
+// =====================================================
+
+function FilterField({
+    label,
+    type = "text",
+    placeholder = "",
+    value,
+    onChange
+}) {
+
+    return (
+
+        <div className="filter-field">
+
+            <label>
+                {label}
+            </label>
+
+            <input
+                type={type}
+                placeholder={placeholder}
+                value={value}
+                onChange={onChange}
+            />
+
+        </div>
+    );
+}
+
+
+// =====================================================
+// FILTER SELECT
+// =====================================================
+
+function FilterSelect({
+    label,
+    value,
+    onChange,
+    options
+}) {
+
+    return (
+
+        <div className="filter-field">
+
+            <label>
+                {label}
+            </label>
+
+            <select
+                value={value}
+                onChange={onChange}
+            >
+
+                {options.map(
+                    ([optionValue, optionLabel]) => (
+
+                        <option
+                            key={optionValue}
+                            value={optionValue}
+                        >
+                            {optionLabel}
+                        </option>
+
+                    )
+                )}
+
+            </select>
+
+        </div>
+    );
 }
 
 
@@ -3677,68 +3570,49 @@ function Reports() {
 function SummaryCard({
     title,
     value,
-    color
+    icon,
+    color,
+    background
 }) {
 
     return (
 
         <div
+            className="summary-card"
             style={{
-                background: "#fff",
-                borderRadius: "10px",
-                padding: "20px",
-                border:
-                    "1px solid #e5e7eb",
-                boxShadow:
-                    "0 2px 5px rgba(0,0,0,0.04)"
+                "--card-bg": background
             }}
         >
 
-            <div
-                style={{
-                    color: "#6b7280",
-                    fontSize: "14px",
-                    marginBottom: "8px"
-                }}
-            >
-                {title}
-            </div>
+            <div className="summary-top">
 
+                <div>
 
-            <div
-                style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "10px"
-                }}
-            >
+                    <div className="summary-title">
+                        {title}
+                    </div>
+
+                    <div className="summary-value">
+                        {value}
+                    </div>
+
+                </div>
+
 
                 <div
+                    className="summary-icon"
                     style={{
-                        width: "5px",
-                        height: "38px",
-                        background: color,
-                        borderRadius: "4px"
-                    }}
-                />
-
-
-                <h2
-                    style={{
-                        margin: 0,
-                        fontSize: "28px",
-                        color: "#111827"
+                        color,
+                        background
                     }}
                 >
-                    {value}
-                </h2>
+                    {icon}
+                </div>
 
             </div>
 
         </div>
-
     );
-
 }
 
 
@@ -3748,46 +3622,34 @@ function SummaryCard({
 
 function AnalysisCard({
     title,
-    value
+    value,
+    icon
 }) {
 
     return (
 
-        <div
-            style={{
-                background: "#f9fafb",
-                padding: "15px",
-                borderRadius: "8px",
-                border:
-                    "1px solid #e5e7eb"
-            }}
-        >
+        <div className="analysis-item">
 
-            <div
-                style={{
-                    color: "#6b7280",
-                    fontSize: "13px"
-                }}
-            >
+            <div className="analysis-item-top">
+
+                <div className="analysis-item-icon">
+                    {icon}
+                </div>
+
+            </div>
+
+
+            <div className="analysis-item-title">
                 {title}
             </div>
 
 
-            <div
-                style={{
-                    fontWeight: 700,
-                    fontSize: "20px",
-                    marginTop: "5px",
-                    color: "#111827"
-                }}
-            >
+            <div className="analysis-item-value">
                 {value}
             </div>
 
         </div>
-
     );
-
 }
 
 
@@ -3810,35 +3672,30 @@ function BreakdownCard({
 
     return (
 
-        <div
-            style={{
-                background: "#fff",
-                padding: "18px",
-                borderRadius: "10px",
-                border:
-                    "1px solid #e5e7eb"
-            }}
-        >
+        <div className="breakdown-card">
 
-            <h3
-                style={{
-                    marginTop: 0,
-                    marginBottom: "15px"
-                }}
-            >
-                {title}
-            </h3>
+            <div className="breakdown-header">
+
+                <h3>
+                    {title}
+                </h3>
+
+                <span className="breakdown-total">
+                    {total} total
+                </span>
+
+            </div>
 
 
             {!data.length ? (
 
                 <p
                     style={{
-                        color:
-                            "#9ca3af"
+                        color: "#94a3b8",
+                        fontSize: "12px"
                     }}
                 >
-                    No data
+                    No data available
                 </p>
 
             ) : (
@@ -3859,29 +3716,14 @@ function BreakdownCard({
 
                             <div
                                 key={name}
-                                style={{
-                                    marginBottom:
-                                        "12px"
-                                }}
+                                className="breakdown-row"
                             >
 
-                                <div
-                                    style={{
-                                        display:
-                                            "flex",
-                                        justifyContent:
-                                            "space-between",
-                                        fontSize:
-                                            "13px",
-                                        marginBottom:
-                                            "5px"
-                                    }}
-                                >
+                                <div className="breakdown-label">
 
                                     <span>
                                         {name}
                                     </span>
-
 
                                     <strong>
                                         {count}
@@ -3890,127 +3732,27 @@ function BreakdownCard({
                                 </div>
 
 
-                                <div
-                                    style={{
-                                        height:
-                                            "7px",
-                                        background:
-                                            "#e5e7eb",
-                                        borderRadius:
-                                            "10px",
-                                        overflow:
-                                            "hidden"
-                                    }}
-                                >
+                                <div className="progress-track">
 
                                     <div
+                                        className="progress-fill"
                                         style={{
                                             width:
-                                                `${percentage}%`,
-                                            height:
-                                                "100%",
-                                            background:
-                                                "#2563eb",
-                                            borderRadius:
-                                                "10px"
+                                                `${percentage}%`
                                         }}
                                     />
 
                                 </div>
 
                             </div>
-
                         );
-
                     }
                 )
-
             )}
 
         </div>
-
     );
-
 }
-
-
-// =====================================================
-// STYLES
-// =====================================================
-
-const labelStyle = {
-
-    display: "block",
-
-    fontSize: "13px",
-
-    fontWeight: 600,
-
-    color: "#374151",
-
-    marginBottom: "6px"
-
-};
-
-
-const inputStyle = {
-
-    width: "100%",
-
-    boxSizing: "border-box",
-
-    padding: "10px 12px",
-
-    border:
-        "1px solid #d1d5db",
-
-    borderRadius: "6px",
-
-    background: "#fff",
-
-    color: "#111827",
-
-    outline: "none"
-
-};
-
-
-const thStyle = {
-
-    padding: "13px 12px",
-
-    textAlign: "left",
-
-    background: "#f9fafb",
-
-    color: "#4b5563",
-
-    fontSize: "13px",
-
-    fontWeight: 700,
-
-    borderBottom:
-        "1px solid #e5e7eb",
-
-    whiteSpace: "nowrap"
-
-};
-
-
-const tdStyle = {
-
-    padding: "13px 12px",
-
-    color: "#4b5563",
-
-    fontSize: "13px",
-
-    borderBottom:
-        "1px solid #f0f0f0",
-
-    whiteSpace: "nowrap"
-
-};
 
 
 // =====================================================
@@ -4019,15 +3761,13 @@ const tdStyle = {
 
 const statusStyle = (status) => {
 
-    let background = "#f3f4f6";
-
-    let color = "#374151";
+    let background = "#f1f5f9";
+    let color = "#475569";
 
 
     if (status === "Assigned") {
 
         background = "#dcfce7";
-
         color = "#166534";
 
     }
@@ -4036,7 +3776,6 @@ const statusStyle = (status) => {
     if (status === "In Stock") {
 
         background = "#dbeafe";
-
         color = "#1d4ed8";
 
     }
@@ -4045,7 +3784,6 @@ const statusStyle = (status) => {
     if (status === "Repair") {
 
         background = "#fef3c7";
-
         color = "#92400e";
 
     }
@@ -4053,9 +3791,8 @@ const statusStyle = (status) => {
 
     if (status === "Scrap") {
 
-        background = "#e5e7eb";
-
-        color = "#374151";
+        background = "#e2e8f0";
+        color = "#475569";
 
     }
 
@@ -4063,7 +3800,6 @@ const statusStyle = (status) => {
     if (status === "Lost") {
 
         background = "#fee2e2";
-
         color = "#991b1b";
 
     }
@@ -4071,22 +3807,10 @@ const statusStyle = (status) => {
 
     return {
 
-        display: "inline-block",
-
-        padding: "4px 9px",
-
-        borderRadius: "20px",
-
         background,
-
-        color,
-
-        fontSize: "12px",
-
-        fontWeight: 600
+        color
 
     };
-
 };
 
 
@@ -4098,22 +3822,14 @@ const purchasePaymentStyle = (
     status
 ) => {
 
-    let background =
-        "#f3f4f6";
-
-    let color =
-        "#374151";
+    let background = "#f1f5f9";
+    let color = "#475569";
 
 
-    if (
-        status === "Paid"
-    ) {
+    if (status === "Paid") {
 
-        background =
-            "#dcfce7";
-
-        color =
-            "#166534";
+        background = "#dcfce7";
+        color = "#166534";
 
     }
 
@@ -4122,11 +3838,8 @@ const purchasePaymentStyle = (
         status === "Pending"
     ) {
 
-        background =
-            "#fff7ed";
-
-        color =
-            "#9a3412";
+        background = "#ffedd5";
+        color = "#9a3412";
 
     }
 
@@ -4135,11 +3848,8 @@ const purchasePaymentStyle = (
         status === "Partially Paid"
     ) {
 
-        background =
-            "#fef3c7";
-
-        color =
-            "#92400e";
+        background = "#fef3c7";
+        color = "#92400e";
 
     }
 
@@ -4148,69 +3858,19 @@ const purchasePaymentStyle = (
         status === "Cancelled"
     ) {
 
-        background =
-            "#fee2e2";
-
-        color =
-            "#991b1b";
+        background = "#fee2e2";
+        color = "#991b1b";
 
     }
 
 
     return {
 
-        display:
-            "inline-block",
-
-        padding:
-            "4px 9px",
-
-        borderRadius:
-            "20px",
-
         background,
-
-        color,
-
-        fontSize:
-            "12px",
-
-        fontWeight:
-            600
+        color
 
     };
-
 };
-
-
-// =====================================================
-// ACTION BUTTON
-// =====================================================
-
-const actionButton = (
-    color,
-    disabled
-) => ({
-
-    background: disabled
-        ? "#d1d5db"
-        : color,
-
-    color: "#fff",
-
-    border: "none",
-
-    padding: "8px 14px",
-
-    borderRadius: "6px",
-
-    cursor: disabled
-        ? "not-allowed"
-        : "pointer",
-
-    fontWeight: 600
-
-});
 
 
 export default Reports;

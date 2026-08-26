@@ -56,15 +56,10 @@ function Assets() {
         try {
 
             if (showRefresh) {
-
-                // Full content loading
                 setRefreshing(true);
                 setLoading(true);
-
             } else {
-
                 setLoading(true);
-
             }
 
             const response =
@@ -168,9 +163,7 @@ function Assets() {
     const handleClearFilter = () => {
 
         setStatus("All");
-
         setSearch("");
-
         setSearchParams({});
 
     };
@@ -527,7 +520,9 @@ function Assets() {
 
                 <main style={contentStyle}>
 
-                    {/* HEADER */}
+                    {/* =================================================
+                        PAGE HEADER - SAME REPORTS & ANALYTICS DESIGN
+                    ================================================= */}
 
                     <div style={headerStyle}>
 
@@ -569,12 +564,7 @@ function Assets() {
                                     cursor:
                                         refreshing
                                             ? "not-allowed"
-                                            : "pointer",
-
-                                    transform:
-                                        refreshing
-                                            ? "scale(0.98)"
-                                            : "scale(1)"
+                                            : "pointer"
                                 }}
                             >
 
@@ -632,7 +622,9 @@ function Assets() {
                     </div>
 
 
-                    {/* SUMMARY */}
+                    {/* =================================================
+                        SUMMARY
+                    ================================================= */}
 
                     <div
                         style={{
@@ -701,7 +693,9 @@ function Assets() {
                     </div>
 
 
-                    {/* DASHBOARD FILTER */}
+                    {/* =================================================
+                        DASHBOARD FILTER
+                    ================================================= */}
 
                     {status !== "All" && (
 
@@ -747,7 +741,9 @@ function Assets() {
                     )}
 
 
-                    {/* TABLE CARD */}
+                    {/* =================================================
+                        TABLE CARD
+                    ================================================= */}
 
                     <div
                         style={{
@@ -762,8 +758,6 @@ function Assets() {
                                 "opacity 0.2s ease"
                         }}
                     >
-
-                        {/* TOP */}
 
                         <div style={tableTopStyle}>
 
@@ -901,51 +895,27 @@ function Assets() {
 
                                     <tr>
 
-                                        <th
-                                            style={
-                                                thStyle
-                                            }
-                                        >
+                                        <th style={thStyle}>
                                             Asset
                                         </th>
 
-                                        <th
-                                            style={
-                                                thStyle
-                                            }
-                                        >
+                                        <th style={thStyle}>
                                             Category
                                         </th>
 
-                                        <th
-                                            style={
-                                                thStyle
-                                            }
-                                        >
+                                        <th style={thStyle}>
                                             Employee
                                         </th>
 
-                                        <th
-                                            style={
-                                                thStyle
-                                            }
-                                        >
+                                        <th style={thStyle}>
                                             Vendor
                                         </th>
 
-                                        <th
-                                            style={
-                                                thStyle
-                                            }
-                                        >
+                                        <th style={thStyle}>
                                             Location
                                         </th>
 
-                                        <th
-                                            style={
-                                                thStyle
-                                            }
-                                        >
+                                        <th style={thStyle}>
                                             Status
                                         </th>
 
@@ -1130,11 +1100,7 @@ function Assets() {
 
                                                     {/* CATEGORY */}
 
-                                                    <td
-                                                        style={
-                                                            tdStyle
-                                                        }
-                                                    >
+                                                    <td style={tdStyle}>
                                                         {
                                                             asset.category_name ||
                                                             "-"
@@ -1144,11 +1110,7 @@ function Assets() {
 
                                                     {/* EMPLOYEE */}
 
-                                                    <td
-                                                        style={
-                                                            tdStyle
-                                                        }
-                                                    >
+                                                    <td style={tdStyle}>
 
                                                         <div
                                                             style={
@@ -1166,11 +1128,7 @@ function Assets() {
 
                                                     {/* VENDOR */}
 
-                                                    <td
-                                                        style={
-                                                            tdStyle
-                                                        }
-                                                    >
+                                                    <td style={tdStyle}>
                                                         {
                                                             asset.vendor_name ||
                                                             "-"
@@ -1180,11 +1138,7 @@ function Assets() {
 
                                                     {/* LOCATION */}
 
-                                                    <td
-                                                        style={
-                                                            tdStyle
-                                                        }
-                                                    >
+                                                    <td style={tdStyle}>
 
                                                         <span
                                                             style={
@@ -1203,11 +1157,7 @@ function Assets() {
 
                                                     {/* STATUS */}
 
-                                                    <td
-                                                        style={
-                                                            tdStyle
-                                                        }
-                                                    >
+                                                    <td style={tdStyle}>
 
                                                         <select
                                                             value={
@@ -1270,8 +1220,6 @@ function Assets() {
                                                             }
                                                         >
 
-                                                            {/* VIEW */}
-
                                                             <button
                                                                 type="button"
                                                                 title="View Asset"
@@ -1288,8 +1236,6 @@ function Assets() {
                                                                 👁
                                                             </button>
 
-
-                                                            {/* EDIT */}
 
                                                             <button
                                                                 type="button"
@@ -1308,8 +1254,6 @@ function Assets() {
                                                             </button>
 
 
-                                                            {/* DELETE */}
-
                                                             <button
                                                                 type="button"
                                                                 title="Delete Asset"
@@ -1326,8 +1270,6 @@ function Assets() {
                                                                 🗑
                                                             </button>
 
-
-                                                            {/* ASSIGN */}
 
                                                             {
                                                                 asset.asset_status !==
@@ -1357,8 +1299,6 @@ function Assets() {
                                                             }
 
 
-                                                            {/* RETURN */}
-
                                                             {
                                                                 asset.asset_status ===
                                                                     "Assigned" && (
@@ -1382,8 +1322,6 @@ function Assets() {
                                                                 )
                                                             }
 
-
-                                                            {/* SCRAP */}
 
                                                             {
                                                                 asset.asset_status !==
@@ -1953,7 +1891,7 @@ const contentStyle = {
 
 
 // =====================================================
-// HEADER
+// HEADER - REPORTS & ANALYTICS STYLE
 // =====================================================
 
 const headerStyle = {
@@ -1968,20 +1906,34 @@ const headerStyle = {
 
     flexWrap: "wrap",
 
-    marginBottom: "25px"
+    minHeight: "116px",
+
+    padding: "22px 24px",
+
+    marginBottom: "25px",
+
+    boxSizing: "border-box",
+
+    borderRadius: "15px",
+
+    background:
+        "linear-gradient(135deg, #111c38 0%, #203d89 100%)",
+
+    boxShadow:
+        "0 8px 20px rgba(15,23,42,0.12)"
 
 };
 
 
 const eyebrowStyle = {
 
-    color: "#2563eb",
+    color: "#93c5fd",
 
-    fontSize: "11px",
+    fontSize: "10px",
 
     fontWeight: "700",
 
-    letterSpacing: "1.5px",
+    letterSpacing: "1.4px",
 
     marginBottom: "7px"
 
@@ -1992,22 +1944,28 @@ const titleStyle = {
 
     margin: 0,
 
-    fontSize: "32px",
+    fontSize: "28px",
 
-    fontWeight: "750",
+    lineHeight: "1.2",
 
-    letterSpacing: "-0.8px"
+    fontWeight: "800",
+
+    letterSpacing: "-0.7px",
+
+    color: "#ffffff"
 
 };
 
 
 const subtitleStyle = {
 
-    margin: "7px 0 0",
+    margin: "6px 0 0",
 
-    color: "#64748b",
+    color: "#dbeafe",
 
-    fontSize: "14px"
+    fontSize: "12px",
+
+    lineHeight: "1.5"
 
 };
 
@@ -2016,7 +1974,9 @@ const headerButtonsStyle = {
 
     display: "flex",
 
-    gap: "10px",
+    alignItems: "center",
+
+    gap: "9px",
 
     flexWrap: "wrap"
 
@@ -2024,26 +1984,28 @@ const headerButtonsStyle = {
 
 
 // =====================================================
-// BUTTONS
+// HEADER BUTTONS
 // =====================================================
 
 const refreshButtonStyle = {
 
     height: "42px",
 
-    padding: "0 16px",
+    padding: "0 15px",
 
-    border: "1px solid #dbe2ea",
+    border: "1px solid rgba(255,255,255,0.24)",
 
-    borderRadius: "9px",
+    borderRadius: "8px",
 
-    background: "#ffffff",
+    background: "rgba(255,255,255,0.08)",
 
-    color: "#334155",
+    color: "#ffffff",
 
-    fontSize: "13px",
+    fontSize: "12px",
 
     fontWeight: "600",
+
+    cursor: "pointer",
 
     transition: "all 0.2s ease"
 
@@ -2052,9 +2014,9 @@ const refreshButtonStyle = {
 
 const refreshIconStyle = {
 
-    fontSize: "18px",
+    fontSize: "17px",
 
-    marginRight: "7px",
+    marginRight: "6px",
 
     verticalAlign: "middle"
 
@@ -2065,33 +2027,33 @@ const addButtonStyle = {
 
     height: "42px",
 
-    padding: "0 18px",
+    padding: "0 17px",
 
-    border: "none",
+    border: "1px solid rgba(255,255,255,0.18)",
 
-    borderRadius: "9px",
+    borderRadius: "8px",
 
-    background: "#2563eb",
+    background: "#ffffff",
 
-    color: "#ffffff",
+    color: "#1d4ed8",
 
-    fontSize: "13px",
+    fontSize: "12px",
 
-    fontWeight: "600",
+    fontWeight: "700",
 
     cursor: "pointer",
 
     boxShadow:
-        "0 4px 10px rgba(37,99,235,0.18)"
+        "0 4px 10px rgba(0,0,0,0.12)"
 
 };
 
 
 const plusStyle = {
 
-    fontSize: "18px",
+    fontSize: "17px",
 
-    marginRight: "6px"
+    marginRight: "5px"
 
 };
 
@@ -3050,7 +3012,7 @@ const saveButtonStyle = {
 
 
 // =====================================================
-// ANIMATION
+// RESPONSIVE + ANIMATION
 // =====================================================
 
 if (
@@ -3086,6 +3048,36 @@ if (
 
             to {
                 opacity: 1;
+            }
+
+        }
+
+        .assets-header-button:hover {
+            background: rgba(255,255,255,0.14);
+        }
+
+        .assets-add-button:hover {
+            background: #eff6ff;
+        }
+
+        @media (max-width: 900px) {
+
+            .assets-summary-grid {
+                grid-template-columns:
+                    repeat(2, minmax(0, 1fr)) !important;
+            }
+
+        }
+
+        @media (max-width: 600px) {
+
+            .assets-summary-grid {
+                grid-template-columns:
+                    1fr !important;
+            }
+
+            .assets-content {
+                padding: 18px !important;
             }
 
         }
