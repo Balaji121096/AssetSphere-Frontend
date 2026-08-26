@@ -1,3 +1,5 @@
+// Dashboard.jsx
+
 import Sidebar from "../components/Sidebar";
 import Navbar from "../components/Navbar";
 import DashboardCards from "../components/DashboardCards";
@@ -10,7 +12,8 @@ function Dashboard() {
         <div
             style={{
                 display: "flex",
-                background: "#f5f5f5"
+                minHeight: "100vh",
+                background: "#f8fafc"
             }}
         >
 
@@ -18,30 +21,61 @@ function Dashboard() {
 
             <div
                 style={{
-                    flex: 1
+                    flex: 1,
+                    minWidth: 0
                 }}
             >
 
                 <Navbar />
 
-                <div
+                <main
                     style={{
-                        padding: "20px"
+                        padding: "30px",
+                        boxSizing: "border-box",
+                        width: "100%"
                     }}
                 >
 
+                    <div
+                        style={{
+                            marginBottom: "28px"
+                        }}
+                    >
+
+                        <h1
+                            style={{
+                                margin: 0,
+                                fontSize: "30px",
+                                fontWeight: "700",
+                                color: "#111827"
+                            }}
+                        >
+                            Dashboard
+                        </h1>
+
+                        <p
+                            style={{
+                                margin: "6px 0 0",
+                                color: "#64748b",
+                                fontSize: "14px"
+                            }}
+                        >
+                            Overview of your IT assets, software licenses and recent activities
+                        </p>
+
+                    </div>
+
                     <DashboardCards />
-                    
+
                     <RecentActivity />
 
-                </div>
+                </main>
 
             </div>
 
         </div>
 
     );
-
 }
 
 export default Dashboard;

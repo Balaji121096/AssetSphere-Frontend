@@ -5,15 +5,12 @@ import Sidebar from "../components/Sidebar";
 import Navbar from "../components/Navbar";
 import API from "../api/axios";
 
-
 function AddVendor() {
-
     const navigate = useNavigate();
 
     const [loading, setLoading] = useState(false);
 
     const [form, setForm] = useState({
-
         vendor_code: "",
         vendor_name: "",
         contact_person: "",
@@ -25,426 +22,174 @@ function AddVendor() {
         country: "India",
         gst_number: "",
         status: "Active"
-
     });
 
-
-    // =====================================================
-    // HANDLE INPUT
-    // =====================================================
-
     const handleChange = (e) => {
-
-        const {
-            name,
-            value
-        } = e.target;
+        const { name, value } = e.target;
 
         setForm((previous) => ({
-
             ...previous,
-
             [name]: value
-
         }));
-
     };
 
-
-    // =====================================================
-    // SUBMIT
-    // =====================================================
-
     const handleSubmit = async (e) => {
-
         e.preventDefault();
 
-
         if (!form.vendor_code.trim()) {
-
             alert("Vendor code is required");
-
             return;
-
         }
-
 
         if (!form.vendor_name.trim()) {
-
             alert("Vendor name is required");
-
             return;
-
         }
 
-
         try {
-
             setLoading(true);
 
-
-            const response =
-                await API.post(
-                    "/vendors",
-                    form
-                );
-
+            const response = await API.post(
+                "/vendors",
+                form
+            );
 
             if (response.data.success) {
-
-                alert(
-                    "Vendor added successfully"
-                );
-
-
+                alert("Vendor added successfully");
                 navigate("/vendors");
-
             }
-
         } catch (error) {
-
             console.error(
                 "Add Vendor Error:",
                 error
             );
 
-
             alert(
                 error.response?.data?.message ||
                 "Failed to add vendor"
             );
-
         } finally {
-
             setLoading(false);
-
         }
-
     };
 
-
-    // =====================================================
-    // UI
-    // =====================================================
-
     return (
-
-        <div
-            style={{
-                display: "flex",
-                minHeight: "100vh",
-                background: "#f5f5f5"
-            }}
-        >
-
+        <div style={pageStyle}>
             <Sidebar />
 
-
-            <div
-                style={{
-                    flex: 1
-                }}
-            >
-
+            <div style={mainStyle}>
                 <Navbar />
 
+                <main style={contentStyle}>
+                    <div style={headerStyle}>
+                        <h1 style={titleStyle}>
+                            Add Vendor
+                        </h1>
 
-                <div
-                    style={{
-                        padding: "25px",
-                        maxWidth: "1000px"
-                    }}
-                >
-
-                    {/* HEADER */}
-
-                    <div
-    style={{
-        marginBottom: "25px",
-        display: "flex",
-        flexDirection: "column",
-        gap: "6px"
-    }}
->
-    <h1
-        style={{
-            margin: 0,
-            padding: 0,
-            fontSize: "40px",
-            lineHeight: "1.1",
-            fontWeight: "700",
-            color: "#111827"
-        }}
-    >
-        Add Vendor
-    </h1>
-
-    <p
-        style={{
-            margin: 0,
-            padding: 0,
-            color: "#666",
-            fontSize: "15px",
-            lineHeight: "1.4"
-        }}
-    >
-        Add a new vendor
-    </p>
-</div>
-
-
-                    {/* FORM */}
+                        <p style={subtitleStyle}>
+                            Add a new vendor
+                        </p>
+                    </div>
 
                     <form
                         onSubmit={handleSubmit}
-                        style={{
-                            background: "#ffffff",
-                            padding: "25px",
-                            borderRadius: "10px",
-                            boxShadow:
-                                "0 1px 3px rgba(0,0,0,0.08)"
-                        }}
+                        style={formCardStyle}
                     >
+                        <div style={sectionHeaderStyle}>
+                            <h2 style={sectionTitleStyle}>
+                                Vendor Details
+                            </h2>
 
-                        <div
-                            style={gridStyle}
-                        >
+                            <p style={sectionSubtitleStyle}>
+                                Enter the vendor information below.
+                            </p>
+                        </div>
 
-                            {/* Vendor Code */}
+                        <div style={gridStyle}>
+                            <FormField
+                                label="Vendor Code *"
+                                name="vendor_code"
+                                value={form.vendor_code}
+                                onChange={handleChange}
+                                placeholder="VEN001"
+                            />
 
-                            <div>
+                            <FormField
+                                label="Vendor Name *"
+                                name="vendor_name"
+                                value={form.vendor_name}
+                                onChange={handleChange}
+                                placeholder="Enter vendor name"
+                            />
 
-                                <label style={labelStyle}>
-                                    Vendor Code *
-                                </label>
+                            <FormField
+                                label="Contact Person"
+                                name="contact_person"
+                                value={form.contact_person}
+                                onChange={handleChange}
+                                placeholder="Enter contact person"
+                            />
 
-                                <input
-                                    type="text"
-                                    name="vendor_code"
-                                    value={
-                                        form.vendor_code
-                                    }
-                                    onChange={
-                                        handleChange
-                                    }
-                                    placeholder="Enter vendor code"
-                                    style={inputStyle}
-                                />
+                            <FormField
+                                label="Email"
+                                type="email"
+                                name="email"
+                                value={form.email}
+                                onChange={handleChange}
+                                placeholder="vendor@company.com"
+                            />
 
-                            </div>
+                            <FormField
+                                label="Mobile"
+                                name="mobile"
+                                value={form.mobile}
+                                onChange={handleChange}
+                                placeholder="9876543210"
+                            />
 
+                            <FormField
+                                label="GST Number"
+                                name="gst_number"
+                                value={form.gst_number}
+                                onChange={handleChange}
+                                placeholder="Enter GST number"
+                            />
 
-                            {/* Vendor Name */}
+                            <FormField
+                                label="City"
+                                name="city"
+                                value={form.city}
+                                onChange={handleChange}
+                                placeholder="Enter city"
+                            />
 
-                            <div>
+                            <FormField
+                                label="State"
+                                name="state"
+                                value={form.state}
+                                onChange={handleChange}
+                                placeholder="Enter state"
+                            />
 
-                                <label style={labelStyle}>
-                                    Vendor Name *
-                                </label>
+                            <FormField
+                                label="Country"
+                                name="country"
+                                value={form.country}
+                                onChange={handleChange}
+                                placeholder="Enter country"
+                            />
 
-                                <input
-                                    type="text"
-                                    name="vendor_name"
-                                    value={
-                                        form.vendor_name
-                                    }
-                                    onChange={
-                                        handleChange
-                                    }
-                                    placeholder="Enter vendor name"
-                                    style={inputStyle}
-                                />
-
-                            </div>
-
-
-                            {/* Contact Person */}
-
-                            <div>
-
-                                <label style={labelStyle}>
-                                    Contact Person
-                                </label>
-
-                                <input
-                                    type="text"
-                                    name="contact_person"
-                                    value={
-                                        form.contact_person
-                                    }
-                                    onChange={
-                                        handleChange
-                                    }
-                                    placeholder="Enter contact person"
-                                    style={inputStyle}
-                                />
-
-                            </div>
-
-
-                            {/* Email */}
-
-                            <div>
-
-                                <label style={labelStyle}>
-                                    Email
-                                </label>
-
-                                <input
-                                    type="email"
-                                    name="email"
-                                    value={
-                                        form.email
-                                    }
-                                    onChange={
-                                        handleChange
-                                    }
-                                    placeholder="Enter email"
-                                    style={inputStyle}
-                                />
-
-                            </div>
-
-
-                            {/* Mobile */}
-
-                            <div>
-
-                                <label style={labelStyle}>
-                                    Mobile
-                                </label>
-
-                                <input
-                                    type="text"
-                                    name="mobile"
-                                    value={
-                                        form.mobile
-                                    }
-                                    onChange={
-                                        handleChange
-                                    }
-                                    placeholder="Enter mobile number"
-                                    style={inputStyle}
-                                />
-
-                            </div>
-
-
-                            {/* GST */}
-
-                            <div>
-
-                                <label style={labelStyle}>
-                                    GST Number
-                                </label>
-
-                                <input
-                                    type="text"
-                                    name="gst_number"
-                                    value={
-                                        form.gst_number
-                                    }
-                                    onChange={
-                                        handleChange
-                                    }
-                                    placeholder="Enter GST number"
-                                    style={inputStyle}
-                                />
-
-                            </div>
-
-
-                            {/* City */}
-
-                            <div>
-
-                                <label style={labelStyle}>
-                                    City
-                                </label>
-
-                                <input
-                                    type="text"
-                                    name="city"
-                                    value={
-                                        form.city
-                                    }
-                                    onChange={
-                                        handleChange
-                                    }
-                                    placeholder="Enter city"
-                                    style={inputStyle}
-                                />
-
-                            </div>
-
-
-                            {/* State */}
-
-                            <div>
-
-                                <label style={labelStyle}>
-                                    State
-                                </label>
-
-                                <input
-                                    type="text"
-                                    name="state"
-                                    value={
-                                        form.state
-                                    }
-                                    onChange={
-                                        handleChange
-                                    }
-                                    placeholder="Enter state"
-                                    style={inputStyle}
-                                />
-
-                            </div>
-
-
-                            {/* Country */}
-
-                            <div>
-
-                                <label style={labelStyle}>
-                                    Country
-                                </label>
-
-                                <input
-                                    type="text"
-                                    name="country"
-                                    value={
-                                        form.country
-                                    }
-                                    onChange={
-                                        handleChange
-                                    }
-                                    placeholder="Enter country"
-                                    style={inputStyle}
-                                />
-
-                            </div>
-
-
-                            {/* Status */}
-
-                            <div>
-
+                            <div style={fieldStyle}>
                                 <label style={labelStyle}>
                                     Status
                                 </label>
 
                                 <select
                                     name="status"
-                                    value={
-                                        form.status
-                                    }
-                                    onChange={
-                                        handleChange
-                                    }
+                                    value={form.status}
+                                    onChange={handleChange}
                                     style={inputStyle}
                                 >
-
                                     <option value="Active">
                                         Active
                                     </option>
@@ -452,177 +197,238 @@ function AddVendor() {
                                     <option value="Inactive">
                                         Inactive
                                     </option>
-
                                 </select>
-
                             </div>
-
-
-                            {/* Address */}
 
                             <div
                                 style={{
-                                    gridColumn:
-                                        "1 / -1"
+                                    ...fieldStyle,
+                                    gridColumn: "1 / -1"
                                 }}
                             >
-
                                 <label style={labelStyle}>
                                     Address
                                 </label>
 
                                 <textarea
                                     name="address"
-                                    value={
-                                        form.address
-                                    }
-                                    onChange={
-                                        handleChange
-                                    }
+                                    value={form.address}
+                                    onChange={handleChange}
                                     placeholder="Enter vendor address"
                                     rows="4"
                                     style={{
-                                        ...inputStyle,
-                                        resize: "vertical"
+                                        ...textareaStyle
                                     }}
                                 />
-
                             </div>
-
                         </div>
 
-
-                        {/* BUTTONS */}
-
-                        <div
-                            style={{
-                                display: "flex",
-                                justifyContent: "flex-end",
-                                gap: "10px",
-                                marginTop: "25px"
-                            }}
-                        >
-
+                        <div style={buttonContainerStyle}>
                             <button
                                 type="button"
                                 onClick={() =>
                                     navigate("/vendors")
                                 }
-                                style={secondaryButton}
+                                disabled={loading}
+                                style={secondaryButtonStyle}
                             >
                                 Cancel
                             </button>
 
-
                             <button
                                 type="submit"
                                 disabled={loading}
-                                style={primaryButton}
+                                style={{
+                                    ...primaryButtonStyle,
+                                    opacity: loading ? 0.7 : 1,
+                                    cursor: loading
+                                        ? "not-allowed"
+                                        : "pointer"
+                                }}
                             >
                                 {loading
                                     ? "Saving..."
                                     : "Save Vendor"}
                             </button>
-
                         </div>
-
                     </form>
-
-                </div>
-
+                </main>
             </div>
-
         </div>
-
     );
-
 }
 
+function FormField({
+    label,
+    type = "text",
+    name,
+    value,
+    onChange,
+    placeholder
+}) {
+    return (
+        <div style={fieldStyle}>
+            <label style={labelStyle}>
+                {label}
+            </label>
 
-// =====================================================
-// STYLES
-// =====================================================
+            <input
+                type={type}
+                name={name}
+                value={value}
+                onChange={onChange}
+                placeholder={placeholder}
+                style={inputStyle}
+            />
+        </div>
+    );
+}
+
+const pageStyle = {
+    display: "flex",
+    minHeight: "100vh",
+    background: "#f5f7fb"
+};
+
+const mainStyle = {
+    flex: 1,
+    minWidth: 0
+};
+
+const contentStyle = {
+    width: "100%",
+    maxWidth: "1150px",
+    margin: "0 auto",
+    padding: "32px",
+    boxSizing: "border-box"
+};
+
+const headerStyle = {
+    marginBottom: "24px"
+};
+
+const titleStyle = {
+    margin: 0,
+    fontSize: "32px",
+    lineHeight: "1.2",
+    fontWeight: "700",
+    color: "#111827"
+};
+
+const subtitleStyle = {
+    margin: "8px 0 0",
+    color: "#6b7280",
+    fontSize: "15px",
+    lineHeight: "1.5"
+};
+
+const formCardStyle = {
+    width: "100%",
+    background: "#ffffff",
+    padding: "30px",
+    borderRadius: "12px",
+    border: "1px solid #e5e7eb",
+    boxShadow: "0 2px 8px rgba(15, 23, 42, 0.06)",
+    boxSizing: "border-box"
+};
+
+const sectionHeaderStyle = {
+    marginBottom: "24px",
+    paddingBottom: "18px",
+    borderBottom: "1px solid #eef0f3"
+};
+
+const sectionTitleStyle = {
+    margin: 0,
+    fontSize: "20px",
+    fontWeight: "700",
+    color: "#111827"
+};
+
+const sectionSubtitleStyle = {
+    margin: "5px 0 0",
+    fontSize: "14px",
+    color: "#6b7280"
+};
 
 const gridStyle = {
-
     display: "grid",
-
     gridTemplateColumns:
         "repeat(2, minmax(0, 1fr))",
-
-    gap: "18px"
-
+    columnGap: "22px",
+    rowGap: "20px"
 };
 
+const fieldStyle = {
+    minWidth: 0
+};
 
 const labelStyle = {
-
     display: "block",
-
-    marginBottom: "6px",
-
-    fontSize: "13px",
-
+    marginBottom: "7px",
+    fontSize: "14px",
     fontWeight: "600",
-
-    color: "#334155"
-
+    color: "#374151"
 };
-
 
 const inputStyle = {
-
     width: "100%",
-
-    boxSizing: "border-box",
-
-    padding: "10px 12px",
-
-    border:
-        "1px solid #cbd5e1",
-
-    borderRadius: "6px",
-
+    height: "44px",
+    padding: "0 12px",
+    border: "1px solid #d1d5db",
+    borderRadius: "7px",
     outline: "none",
-
-    fontSize: "14px"
-
-};
-
-
-const primaryButton = {
-
-    padding: "10px 18px",
-
-    border: "none",
-
-    background: "#2563eb",
-
-    color: "#ffffff",
-
-    borderRadius: "6px",
-
-    cursor: "pointer"
-
-};
-
-
-const secondaryButton = {
-
-    padding: "10px 18px",
-
-    border:
-        "1px solid #cbd5e1",
-
     background: "#ffffff",
-
-    color: "#334155",
-
-    borderRadius: "6px",
-
-    cursor: "pointer"
-
+    color: "#111827",
+    fontSize: "14px",
+    boxSizing: "border-box"
 };
 
+const textareaStyle = {
+    width: "100%",
+    minHeight: "105px",
+    padding: "11px 12px",
+    border: "1px solid #d1d5db",
+    borderRadius: "7px",
+    outline: "none",
+    background: "#ffffff",
+    color: "#111827",
+    fontSize: "14px",
+    boxSizing: "border-box",
+    resize: "vertical",
+    fontFamily: "inherit"
+};
+
+const buttonContainerStyle = {
+    display: "flex",
+    justifyContent: "flex-end",
+    alignItems: "center",
+    gap: "12px",
+    marginTop: "30px",
+    paddingTop: "22px",
+    borderTop: "1px solid #eef0f3"
+};
+
+const primaryButtonStyle = {
+    padding: "11px 22px",
+    border: "none",
+    borderRadius: "7px",
+    background: "#2563eb",
+    color: "#ffffff",
+    fontSize: "14px",
+    fontWeight: "600",
+    cursor: "pointer"
+};
+
+const secondaryButtonStyle = {
+    padding: "10px 22px",
+    border: "1px solid #d1d5db",
+    borderRadius: "7px",
+    background: "#ffffff",
+    color: "#374151",
+    fontSize: "14px",
+    fontWeight: "600",
+    cursor: "pointer"
+};
 
 export default AddVendor;

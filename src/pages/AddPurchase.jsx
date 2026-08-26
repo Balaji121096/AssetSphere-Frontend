@@ -6,7 +6,6 @@ import Navbar from "../components/Navbar";
 import API from "../api/axios";
 
 function AddPurchase() {
-
     const navigate = useNavigate();
 
     const [vendors, setVendors] = useState([]);
@@ -15,6 +14,11 @@ function AddPurchase() {
         po_number: "",
         invoice_number: "",
         vendor_id: "",
+
+        product_category: "",
+        product_name: "",
+        product_description: "",
+
         purchase_date: "",
         amount: "",
         payment_status: "Pending",
@@ -28,76 +32,51 @@ function AddPurchase() {
     const [loading, setLoading] = useState(false);
     const [vendorLoading, setVendorLoading] = useState(true);
 
-
     // =====================================================
     // LOAD VENDORS
     // =====================================================
 
     useEffect(() => {
-
         const loadVendors = async () => {
-
             try {
-
                 setVendorLoading(true);
 
-                const response =
-                    await API.get("/vendors");
+                const response = await API.get("/vendors");
 
-                setVendors(
-                    response.data.data || []
-                );
-
+                setVendors(response.data?.data || []);
             } catch (error) {
-
-                console.error(
-                    "Vendor Load Error:",
-                    error
-                );
+                console.error("Vendor Load Error:", error);
 
                 alert(
                     error.response?.data?.message ||
                     "Failed to load vendors"
                 );
-
             } finally {
-
                 setVendorLoading(false);
-
             }
-
         };
 
         loadVendors();
-
     }, []);
 
-
     // =====================================================
-    // HANDLE INPUT
+    // HANDLE CHANGE
     // =====================================================
 
     const handleChange = (e) => {
-
-        const {
-            name,
-            value
-        } = e.target;
+        const { name, value } = e.target;
 
         setFormData((previous) => ({
             ...previous,
             [name]: value
         }));
-
     };
-
 
     // =====================================================
     // FILE VALIDATION
     // =====================================================
 
     const validateFile = (file) => {
-
         if (!file) {
             return true;
         }
@@ -108,11 +87,9 @@ function AddPurchase() {
             "image/png"
         ];
 
-        const maxSize =
-            10 * 1024 * 1024;
+        const maxSize = 10 * 1024 * 1024;
 
         if (!allowedTypes.includes(file.type)) {
-
             alert(
                 "Only PDF, JPG, JPEG and PNG files are allowed."
             );
@@ -121,7 +98,6 @@ function AddPurchase() {
         }
 
         if (file.size > maxSize) {
-
             alert(
                 "File size must be 10 MB or less."
             );
@@ -132,149 +108,111 @@ function AddPurchase() {
         return true;
     };
 
-
     // =====================================================
     // PO FILE
     // =====================================================
 
     const handlePoFileChange = (e) => {
-
-        const file =
-            e.target.files?.[0];
+        const file = e.target.files?.[0];
 
         if (!file) {
-
             setPoFile(null);
-
             return;
         }
 
         if (!validateFile(file)) {
-
             e.target.value = "";
             setPoFile(null);
-
             return;
         }
 
         setPoFile(file);
-
     };
-
 
     // =====================================================
     // INVOICE FILE
     // =====================================================
 
     const handleInvoiceFileChange = (e) => {
-
-        const file =
-            e.target.files?.[0];
+        const file = e.target.files?.[0];
 
         if (!file) {
-
             setInvoiceFile(null);
-
             return;
         }
 
         if (!validateFile(file)) {
-
             e.target.value = "";
             setInvoiceFile(null);
-
             return;
         }
 
         setInvoiceFile(file);
-
     };
 
-
     // =====================================================
-    // FORMAT FILE SIZE
+    // FILE SIZE
     // =====================================================
 
     const formatFileSize = (bytes) => {
-
         if (!bytes) {
             return "";
         }
 
         if (bytes < 1024) {
-
             return `${bytes} B`;
-
         }
 
         if (bytes < 1024 * 1024) {
-
-            return `${(
-                bytes / 1024
-            ).toFixed(1)} KB`;
-
+            return `${(bytes / 1024).toFixed(1)} KB`;
         }
 
         return `${(
             bytes /
             (1024 * 1024)
         ).toFixed(1)} MB`;
-
     };
 
-
     // =====================================================
-    // VALIDATION
+    // VALIDATE FORM
     // =====================================================
 
     const validateForm = () => {
-
         if (!formData.po_number.trim()) {
-
-            alert(
-                "PO Number is required"
-            );
-
+            alert("PO Number is required");
             return false;
         }
-
 
         if (!formData.vendor_id) {
-
-            alert(
-                "Please select a vendor"
-            );
-
+            alert("Please select a vendor");
             return false;
         }
 
+        if (!formData.product_category) {
+            alert("Please select a product category");
+            return false;
+        }
+
+        if (!formData.product_name.trim()) {
+            alert("Product Name is required");
+            return false;
+        }
 
         if (!formData.purchase_date) {
-
-            alert(
-                "Purchase Date is required"
-            );
-
+            alert("Purchase Date is required");
             return false;
         }
-
 
         if (
             formData.amount === "" ||
             Number(formData.amount) < 0
         ) {
-
-            alert(
-                "Please enter a valid purchase amount"
-            );
-
+            alert("Please enter a valid purchase amount");
             return false;
         }
 
-
         return true;
     };
-
 
     // =====================================================
     // UPLOAD DOCUMENT
@@ -284,18 +222,13 @@ function AddPurchase() {
         file,
         documentType
     ) => {
-
         if (!file) {
             return;
         }
 
-        const uploadData =
-            new FormData();
+        const uploadData = new FormData();
 
-        uploadData.append(
-            "file",
-            file
-        );
+        uploadData.append("file", file);
 
         uploadData.append(
             "vendor_id",
@@ -307,7 +240,6 @@ function AddPurchase() {
             documentType
         );
 
-
         await API.post(
             "/vendor-documents/upload",
             uploadData,
@@ -318,30 +250,23 @@ function AddPurchase() {
                 }
             }
         );
-
     };
-
 
     // =====================================================
     // SUBMIT
     // =====================================================
 
     const handleSubmit = async (e) => {
-
         e.preventDefault();
 
         if (!validateForm()) {
             return;
         }
 
-
         try {
-
             setLoading(true);
 
-
             const payload = {
-
                 po_number:
                     formData.po_number.trim(),
 
@@ -351,6 +276,17 @@ function AddPurchase() {
 
                 vendor_id:
                     Number(formData.vendor_id),
+
+                // PRODUCT DETAILS
+                product_category:
+                    formData.product_category,
+
+                product_name:
+                    formData.product_name.trim(),
+
+                product_description:
+                    formData.product_description.trim() ||
+                    null,
 
                 purchase_date:
                     formData.purchase_date,
@@ -370,23 +306,20 @@ function AddPurchase() {
                     null
             };
 
+            console.log(
+                "Add Purchase Payload:",
+                payload
+            );
 
-            // =============================================
-            // SAVE PURCHASE
-            // =============================================
-
-            const response =
-                await API.post(
-                    "/purchases",
-                    payload
-                );
-
+            const response = await API.post(
+                "/purchases",
+                payload
+            );
 
             if (
                 !response.data ||
                 !response.data.success
             ) {
-
                 alert(
                     response.data?.message ||
                     "Failed to add purchase"
@@ -395,47 +328,28 @@ function AddPurchase() {
                 return;
             }
 
-
-            // =============================================
-            // UPLOAD PO
-            // =============================================
-
+            // Upload PO
             if (poFile) {
-
                 await uploadDocument(
                     poFile,
                     "Purchase Order"
                 );
-
             }
 
-
-            // =============================================
-            // UPLOAD INVOICE
-            // =============================================
-
+            // Upload Invoice
             if (invoiceFile) {
-
                 await uploadDocument(
                     invoiceFile,
                     "Invoice"
                 );
-
             }
-
 
             alert(
                 "Purchase added successfully"
             );
 
-
-            navigate(
-                "/purchases"
-            );
-
-
+            navigate("/purchases");
         } catch (error) {
-
             console.error(
                 "Add Purchase Error:",
                 error
@@ -445,208 +359,109 @@ function AddPurchase() {
                 error.response?.data?.message ||
                 "Failed to add purchase"
             );
-
         } finally {
-
             setLoading(false);
-
         }
-
     };
-
 
     // =====================================================
     // CANCEL
     // =====================================================
 
     const handleCancel = () => {
-
-        navigate(
-            "/purchases"
-        );
-
+        navigate("/purchases");
     };
 
+    // =====================================================
+    // RENDER
+    // =====================================================
 
     return (
-
-        <div
-            style={{
-                display: "flex",
-                minHeight: "100vh",
-                background: "#f3f4f6"
-            }}
-        >
-
-            {/* =================================================
-                SIDEBAR
-            ================================================= */}
+        <div style={pageStyle}>
 
             <Sidebar />
 
-
-            {/* =================================================
-                MAIN AREA
-            ================================================= */}
-
-            <div
-                style={{
-                    flex: 1,
-                    minWidth: 0
-                }}
-            >
+            <div style={mainStyle}>
 
                 <Navbar />
 
+                <main style={contentStyle}>
 
-                {/* =================================================
-                    PAGE CONTENT
-                ================================================= */}
+                    {/* HEADER */}
 
-                <main
-                    style={{
-                        padding: "35px",
-                        width: "100%",
-                        boxSizing: "border-box"
-                    }}
-                >
+                    <div style={headerStyle}>
 
-                    {/* =================================================
-                        HEADER
-                    ================================================= */}
+                        <div>
+                            <div style={eyebrowStyle}>
+                                PURCHASE MANAGEMENT
+                            </div>
 
-                    <div
-                        style={{
-                            marginBottom: "28px"
-                        }}
-                    >
+                            <h1 style={titleStyle}>
+                                Add Purchase
+                            </h1>
 
-                        <h1
-                            style={{
-                                margin: 0,
-                                fontSize: "32px",
-                                fontWeight: "700",
-                                color: "#111827"
-                            }}
-                        >
-                            Add Purchase
-                        </h1>
-
-
-                        <p
-                            style={{
-                                margin:
-                                    "8px 0 0 0",
-                                color: "#6b7280",
-                                fontSize: "15px"
-                            }}
-                        >
-                            Add a new company purchase
-                        </p>
+                            <p style={subtitleStyle}>
+                                Add a new company purchase
+                            </p>
+                        </div>
 
                     </div>
 
 
-                    {/* =================================================
-                        FORM CARD
-                    ================================================= */}
+                    {/* FORM CARD */}
 
-                    <div
-                        style={{
-                            background: "#ffffff",
-                            borderRadius: "12px",
-                            padding: "30px",
-                            boxShadow:
-                                "0 2px 10px rgba(0,0,0,0.08)",
-                            width: "100%",
-                            maxWidth: "1000px",
-                            boxSizing: "border-box"
-                        }}
-                    >
+                    <div style={formCardStyle}>
 
-                        <form
-                            onSubmit={
-                                handleSubmit
-                            }
-                        >
+                        <form onSubmit={handleSubmit}>
 
                             {/* =================================================
-                                PURCHASE DETAILS
+                                BASIC PURCHASE DETAILS
                             ================================================= */}
 
-                            <h2
-                                style={{
-                                    margin:
-                                        "0 0 20px 0",
-                                    fontSize: "20px",
-                                    color: "#111827"
-                                }}
-                            >
-                                Purchase Details
-                            </h2>
+                            <div style={sectionHeaderStyle}>
+
+                                <h2 style={sectionTitleStyle}>
+                                    Purchase Details
+                                </h2>
+
+                                <p style={sectionSubtitleStyle}>
+                                    Enter purchase information below.
+                                </p>
+
+                            </div>
 
 
-                            <div
-                                style={{
-                                    display: "grid",
-                                    gridTemplateColumns:
-                                        "repeat(2, minmax(0, 1fr))",
-                                    gap: "20px"
-                                }}
-                            >
+                            <div style={gridStyle}>
 
-                                {/* PO NUMBER */}
+                                <FormField
+                                    label="PO Number *"
+                                    name="po_number"
+                                    value={
+                                        formData.po_number
+                                    }
+                                    onChange={
+                                        handleChange
+                                    }
+                                    placeholder="PO-2026-001"
+                                    required
+                                />
 
-                                <div>
-
-                                    <label style={labelStyle}>
-                                        PO Number *
-                                    </label>
-
-                                    <input
-                                        type="text"
-                                        name="po_number"
-                                        value={
-                                            formData.po_number
-                                        }
-                                        onChange={
-                                            handleChange
-                                        }
-                                        placeholder="PO-2026-001"
-                                        required
-                                        style={inputStyle}
-                                    />
-
-                                </div>
-
-
-                                {/* INVOICE NUMBER */}
-
-                                <div>
-
-                                    <label style={labelStyle}>
-                                        Invoice Number
-                                    </label>
-
-                                    <input
-                                        type="text"
-                                        name="invoice_number"
-                                        value={
-                                            formData.invoice_number
-                                        }
-                                        onChange={
-                                            handleChange
-                                        }
-                                        placeholder="INV-2026-001"
-                                        style={inputStyle}
-                                    />
-
-                                </div>
+                                <FormField
+                                    label="Invoice Number"
+                                    name="invoice_number"
+                                    value={
+                                        formData.invoice_number
+                                    }
+                                    onChange={
+                                        handleChange
+                                    }
+                                    placeholder="INV-2026-001"
+                                />
 
 
                                 {/* VENDOR */}
 
-                                <div>
+                                <div style={fieldStyle}>
 
                                     <label style={labelStyle}>
                                         Vendor *
@@ -664,7 +479,9 @@ function AddPurchase() {
                                             vendorLoading
                                         }
                                         required
-                                        style={inputStyle}
+                                        style={
+                                            inputStyle
+                                        }
                                     >
 
                                         <option value="">
@@ -673,10 +490,8 @@ function AddPurchase() {
                                                 : "Select Vendor"}
                                         </option>
 
-
                                         {vendors.map(
                                             (vendor) => (
-
                                                 <option
                                                     key={
                                                         vendor.vendor_id
@@ -689,7 +504,6 @@ function AddPurchase() {
                                                         vendor.vendor_name
                                                     }
                                                 </option>
-
                                             )
                                         )}
 
@@ -698,43 +512,197 @@ function AddPurchase() {
                                 </div>
 
 
-                                {/* PURCHASE DATE */}
+                                <FormField
+                                    label="Purchase Date *"
+                                    type="date"
+                                    name="purchase_date"
+                                    value={
+                                        formData.purchase_date
+                                    }
+                                    onChange={
+                                        handleChange
+                                    }
+                                    required
+                                />
 
-                                <div>
+                            </div>
 
-                                    <label style={labelStyle}>
-                                        Purchase Date *
-                                    </label>
 
-                                    <input
-                                        type="date"
-                                        name="purchase_date"
+                            {/* =================================================
+                                PRODUCT INFORMATION
+                            ================================================= */}
+
+                            <div
+                                style={
+                                    productSectionStyle
+                                }
+                            >
+
+                                <div
+                                    style={
+                                        sectionHeaderStyle
+                                    }
+                                >
+
+                                    <h2
+                                        style={
+                                            sectionTitleStyle
+                                        }
+                                    >
+                                        Product Information
+                                    </h2>
+
+                                    <p
+                                        style={
+                                            sectionSubtitleStyle
+                                        }
+                                    >
+                                        Specify what was purchased.
+                                    </p>
+
+                                </div>
+
+
+                                <div style={gridStyle}>
+
+                                    {/* PRODUCT CATEGORY */}
+
+                                    <div style={fieldStyle}>
+
+                                        <label style={labelStyle}>
+                                            Product Category *
+                                        </label>
+
+                                        <select
+                                            name="product_category"
+                                            value={
+                                                formData.product_category
+                                            }
+                                            onChange={
+                                                handleChange
+                                            }
+                                            required
+                                            style={
+                                                inputStyle
+                                            }
+                                        >
+
+                                            <option value="">
+                                                Select Category
+                                            </option>
+
+                                            <option value="Hardware">
+                                                Hardware
+                                            </option>
+
+                                            <option value="Software">
+                                                Software
+                                            </option>
+
+                                            <option value="Other">
+                                                Other
+                                            </option>
+
+                                        </select>
+
+                                    </div>
+
+
+                                    {/* PRODUCT NAME */}
+
+                                    <FormField
+                                        label="Product Name *"
+                                        name="product_name"
                                         value={
-                                            formData.purchase_date
+                                            formData.product_name
                                         }
                                         onChange={
                                             handleChange
                                         }
+                                        placeholder="e.g. Dell Latitude 5550"
                                         required
-                                        style={inputStyle}
                                     />
 
                                 </div>
 
 
-                                {/* AMOUNT */}
+                                {/* DESCRIPTION */}
 
-                                <div>
+                                <div
+                                    style={{
+                                        marginTop: "20px"
+                                    }}
+                                >
 
-                                    <label style={labelStyle}>
-                                        Amount *
+                                    <label
+                                        style={
+                                            labelStyle
+                                        }
+                                    >
+                                        Product Description
                                     </label>
 
-                                    <input
+                                    <textarea
+                                        name="product_description"
+                                        value={
+                                            formData.product_description
+                                        }
+                                        onChange={
+                                            handleChange
+                                        }
+                                        placeholder="Enter product details, specifications, license information, etc..."
+                                        rows="4"
+                                        style={
+                                            textareaStyle
+                                        }
+                                    />
+
+                                </div>
+
+                            </div>
+
+
+                            {/* =================================================
+                                PAYMENT DETAILS
+                            ================================================= */}
+
+                            <div
+                                style={
+                                    productSectionStyle
+                                }
+                            >
+
+                                <div
+                                    style={
+                                        sectionHeaderStyle
+                                    }
+                                >
+
+                                    <h2
+                                        style={
+                                            sectionTitleStyle
+                                        }
+                                    >
+                                        Payment & Warranty
+                                    </h2>
+
+                                    <p
+                                        style={
+                                            sectionSubtitleStyle
+                                        }
+                                    >
+                                        Enter amount, payment and warranty details.
+                                    </p>
+
+                                </div>
+
+
+                                <div style={gridStyle}>
+
+                                    <FormField
+                                        label="Amount *"
                                         type="number"
                                         name="amount"
-                                        min="0"
-                                        step="0.01"
                                         value={
                                             formData.amount
                                         }
@@ -742,62 +710,60 @@ function AddPurchase() {
                                             handleChange
                                         }
                                         placeholder="250000"
+                                        min="0"
+                                        step="0.01"
                                         required
-                                        style={inputStyle}
                                     />
 
-                                </div>
+
+                                    {/* PAYMENT STATUS */}
+
+                                    <div style={fieldStyle}>
+
+                                        <label
+                                            style={
+                                                labelStyle
+                                            }
+                                        >
+                                            Payment Status
+                                        </label>
+
+                                        <select
+                                            name="payment_status"
+                                            value={
+                                                formData.payment_status
+                                            }
+                                            onChange={
+                                                handleChange
+                                            }
+                                            style={
+                                                inputStyle
+                                            }
+                                        >
+
+                                            <option value="Pending">
+                                                Pending
+                                            </option>
+
+                                            <option value="Paid">
+                                                Paid
+                                            </option>
+
+                                            <option value="Partially Paid">
+                                                Partially Paid
+                                            </option>
+
+                                            <option value="Cancelled">
+                                                Cancelled
+                                            </option>
+
+                                        </select>
+
+                                    </div>
 
 
-                                {/* PAYMENT STATUS */}
-
-                                <div>
-
-                                    <label style={labelStyle}>
-                                        Payment Status
-                                    </label>
-
-                                    <select
-                                        name="payment_status"
-                                        value={
-                                            formData.payment_status
-                                        }
-                                        onChange={
-                                            handleChange
-                                        }
-                                        style={inputStyle}
-                                    >
-
-                                        <option value="Pending">
-                                            Pending
-                                        </option>
-
-                                        <option value="Paid">
-                                            Paid
-                                        </option>
-
-                                        <option value="Partially Paid">
-                                            Partially Paid
-                                        </option>
-
-                                        <option value="Cancelled">
-                                            Cancelled
-                                        </option>
-
-                                    </select>
-
-                                </div>
-
-
-                                {/* WARRANTY */}
-
-                                <div>
-
-                                    <label style={labelStyle}>
-                                        Warranty Expiry
-                                    </label>
-
-                                    <input
+                                    <FormField
+                                        label="Warranty Expiry"
                                         type="date"
                                         name="warranty_expiry"
                                         value={
@@ -806,7 +772,40 @@ function AddPurchase() {
                                         onChange={
                                             handleChange
                                         }
-                                        style={inputStyle}
+                                    />
+
+                                </div>
+
+
+                                {/* REMARKS */}
+
+                                <div
+                                    style={{
+                                        marginTop: "20px"
+                                    }}
+                                >
+
+                                    <label
+                                        style={
+                                            labelStyle
+                                        }
+                                    >
+                                        Remarks
+                                    </label>
+
+                                    <textarea
+                                        name="remarks"
+                                        value={
+                                            formData.remarks
+                                        }
+                                        onChange={
+                                            handleChange
+                                        }
+                                        placeholder="Enter purchase remarks..."
+                                        rows="4"
+                                        style={
+                                            textareaStyle
+                                        }
                                     />
 
                                 </div>
@@ -815,227 +814,66 @@ function AddPurchase() {
 
 
                             {/* =================================================
-                                REMARKS
+                                DOCUMENTS
                             ================================================= */}
 
                             <div
-                                style={{
-                                    marginTop: "20px"
-                                }}
+                                style={
+                                    documentSectionStyle
+                                }
                             >
 
-                                <label style={labelStyle}>
-                                    Remarks
-                                </label>
+                                <div
+                                    style={
+                                        sectionHeaderStyle
+                                    }
+                                >
 
-                                <textarea
-                                    name="remarks"
-                                    value={
-                                        formData.remarks
-                                    }
+                                    <h2
+                                        style={
+                                            sectionTitleStyle
+                                        }
+                                    >
+                                        Purchase Documents
+                                    </h2>
+
+                                    <p
+                                        style={
+                                            sectionSubtitleStyle
+                                        }
+                                    >
+                                        Upload PO and Invoice documents.
+                                        PDF, JPG, JPEG and PNG only.
+                                        Maximum 10 MB per file.
+                                    </p>
+
+                                </div>
+
+
+                                <DocumentUpload
+                                    title="PO Document"
+                                    description="Upload Purchase Order document"
+                                    file={poFile}
                                     onChange={
-                                        handleChange
+                                        handlePoFileChange
                                     }
-                                    placeholder="Enter purchase remarks..."
-                                    rows="4"
-                                    style={{
-                                        ...inputStyle,
-                                        resize: "vertical"
-                                    }}
+                                    formatFileSize={
+                                        formatFileSize
+                                    }
                                 />
 
-                            </div>
 
-
-                            {/* =================================================
-                                DOCUMENT SECTION
-                            ================================================= */}
-
-                            <div
-                                style={{
-                                    marginTop: "35px",
-                                    paddingTop: "25px",
-                                    borderTop:
-                                        "1px solid #e5e7eb"
-                                }}
-                            >
-
-                                <h2
-                                    style={{
-                                        margin:
-                                            "0 0 6px 0",
-                                        fontSize: "20px",
-                                        color: "#111827"
-                                    }}
-                                >
-                                    Purchase Documents
-                                </h2>
-
-
-                                <p
-                                    style={{
-                                        margin:
-                                            "0 0 22px 0",
-                                        color: "#6b7280",
-                                        fontSize: "14px"
-                                    }}
-                                >
-                                    Upload PO and Invoice documents.
-                                    PDF, JPG, JPEG and PNG only.
-                                    Maximum 10 MB per file.
-                                </p>
-
-
-                                {/* =================================================
-                                    PO DOCUMENT
-                                ================================================= */}
-
-                                <div
-                                    style={
-                                        documentBoxStyle
+                                <DocumentUpload
+                                    title="Invoice Document"
+                                    description="Upload vendor invoice document"
+                                    file={invoiceFile}
+                                    onChange={
+                                        handleInvoiceFileChange
                                     }
-                                >
-
-                                    <div>
-
-                                        <div
-                                            style={{
-                                                fontWeight:
-                                                    "600",
-                                                color:
-                                                    "#111827",
-                                                marginBottom:
-                                                    "5px"
-                                            }}
-                                        >
-                                            PO Document
-                                        </div>
-
-                                        <div
-                                            style={{
-                                                color:
-                                                    "#6b7280",
-                                                fontSize:
-                                                    "13px",
-                                                marginBottom:
-                                                    "12px"
-                                            }}
-                                        >
-                                            Upload Purchase
-                                            Order document
-                                        </div>
-
-                                    </div>
-
-
-                                    <input
-                                        type="file"
-                                        accept=".pdf,.jpg,.jpeg,.png"
-                                        onChange={
-                                            handlePoFileChange
-                                        }
-                                    />
-
-
-                                    {poFile && (
-
-                                        <div
-                                            style={
-                                                selectedFileStyle
-                                            }
-                                        >
-                                            ✓{" "}
-                                            {poFile.name}
-                                            {" "}
-                                            (
-                                            {
-                                                formatFileSize(
-                                                    poFile.size
-                                                )
-                                            }
-                                            )
-                                        </div>
-
-                                    )}
-
-                                </div>
-
-
-                                {/* =================================================
-                                    INVOICE DOCUMENT
-                                ================================================= */}
-
-                                <div
-                                    style={
-                                        documentBoxStyle
+                                    formatFileSize={
+                                        formatFileSize
                                     }
-                                >
-
-                                    <div>
-
-                                        <div
-                                            style={{
-                                                fontWeight:
-                                                    "600",
-                                                color:
-                                                    "#111827",
-                                                marginBottom:
-                                                    "5px"
-                                            }}
-                                        >
-                                            Invoice Document
-                                        </div>
-
-                                        <div
-                                            style={{
-                                                color:
-                                                    "#6b7280",
-                                                fontSize:
-                                                    "13px",
-                                                marginBottom:
-                                                    "12px"
-                                            }}
-                                        >
-                                            Upload vendor
-                                            invoice document
-                                        </div>
-
-                                    </div>
-
-
-                                    <input
-                                        type="file"
-                                        accept=".pdf,.jpg,.jpeg,.png"
-                                        onChange={
-                                            handleInvoiceFileChange
-                                        }
-                                    />
-
-
-                                    {invoiceFile && (
-
-                                        <div
-                                            style={
-                                                selectedFileStyle
-                                            }
-                                        >
-                                            ✓{" "}
-                                            {
-                                                invoiceFile.name
-                                            }
-                                            {" "}
-                                            (
-                                            {
-                                                formatFileSize(
-                                                    invoiceFile.size
-                                                )
-                                            }
-                                            )
-                                        </div>
-
-                                    )}
-
-                                </div>
+                                />
 
                             </div>
 
@@ -1045,48 +883,10 @@ function AddPurchase() {
                             ================================================= */}
 
                             <div
-                                style={{
-                                    display: "flex",
-                                    gap: "12px",
-                                    marginTop: "30px",
-                                    paddingTop: "20px",
-                                    borderTop:
-                                        "1px solid #e5e7eb"
-                                }}
+                                style={
+                                    buttonContainerStyle
+                                }
                             >
-
-                                <button
-                                    type="submit"
-                                    disabled={loading}
-                                    style={{
-                                        padding:
-                                            "11px 24px",
-                                        border: "none",
-                                        borderRadius:
-                                            "7px",
-                                        background:
-                                            "#2563eb",
-                                        color:
-                                            "#ffffff",
-                                        fontSize:
-                                            "14px",
-                                        fontWeight:
-                                            "600",
-                                        cursor:
-                                            loading
-                                                ? "not-allowed"
-                                                : "pointer",
-                                        opacity:
-                                            loading
-                                                ? 0.7
-                                                : 1
-                                    }}
-                                >
-                                    {loading
-                                        ? "Saving..."
-                                        : "Save Purchase"}
-                                </button>
-
 
                                 <button
                                     type="button"
@@ -1094,28 +894,34 @@ function AddPurchase() {
                                         handleCancel
                                     }
                                     disabled={loading}
+                                    style={
+                                        secondaryButtonStyle
+                                    }
+                                >
+                                    Cancel
+                                </button>
+
+
+                                <button
+                                    type="submit"
+                                    disabled={loading}
                                     style={{
-                                        padding:
-                                            "11px 24px",
-                                        border:
-                                            "1px solid #d1d5db",
-                                        borderRadius:
-                                            "7px",
-                                        background:
-                                            "#ffffff",
-                                        color:
-                                            "#374151",
-                                        fontSize:
-                                            "14px",
-                                        fontWeight:
-                                            "600",
+                                        ...primaryButtonStyle,
+                                        opacity:
+                                            loading
+                                                ? 0.7
+                                                : 1,
                                         cursor:
                                             loading
                                                 ? "not-allowed"
                                                 : "pointer"
                                     }}
                                 >
-                                    Cancel
+
+                                    {loading
+                                        ? "Saving..."
+                                        : "Save Purchase"}
+
                                 </button>
 
                             </div>
@@ -1129,7 +935,113 @@ function AddPurchase() {
             </div>
 
         </div>
+    );
+}
 
+
+// =====================================================
+// FORM FIELD
+// =====================================================
+
+function FormField({
+    label,
+    type = "text",
+    name,
+    value,
+    onChange,
+    placeholder,
+    required,
+    min,
+    step
+}) {
+    return (
+        <div style={fieldStyle}>
+
+            <label style={labelStyle}>
+                {label}
+            </label>
+
+            <input
+                type={type}
+                name={name}
+                value={value}
+                onChange={onChange}
+                placeholder={placeholder}
+                required={required}
+                min={min}
+                step={step}
+                style={inputStyle}
+            />
+
+        </div>
+    );
+}
+
+
+// =====================================================
+// DOCUMENT UPLOAD
+// =====================================================
+
+function DocumentUpload({
+    title,
+    description,
+    file,
+    onChange,
+    formatFileSize
+}) {
+    return (
+        <div style={documentBoxStyle}>
+
+            <div>
+
+                <h3 style={documentTitleStyle}>
+                    {title}
+                </h3>
+
+                <p style={documentDescriptionStyle}>
+                    {description}
+                </p>
+
+                <p style={documentHintStyle}>
+                    PDF, JPG, JPEG or PNG • Maximum 10 MB
+                </p>
+
+            </div>
+
+
+            <label style={uploadButtonStyle}>
+
+                Choose File
+
+                <input
+                    type="file"
+                    accept=".pdf,.jpg,.jpeg,.png"
+                    onChange={onChange}
+                    style={{
+                        display: "none"
+                    }}
+                />
+
+            </label>
+
+
+            {file && (
+
+                <div style={selectedFileStyle}>
+
+                    <span>
+                        ✓ {file.name}
+                    </span>
+
+                    <span>
+                        {formatFileSize(file.size)}
+                    </span>
+
+                </div>
+
+            )}
+
+        </div>
     );
 }
 
@@ -1138,47 +1050,234 @@ function AddPurchase() {
 // STYLES
 // =====================================================
 
-const labelStyle = {
-    display: "block",
-    marginBottom: "7px",
-    fontWeight: "600",
-    color: "#374151",
+const pageStyle = {
+    display: "flex",
+    minHeight: "100vh",
+    background: "#f8fafc",
+    color: "#0f172a"
+};
+
+const mainStyle = {
+    flex: 1,
+    minWidth: 0
+};
+
+const contentStyle = {
+    width: "100%",
+    maxWidth: "1150px",
+    margin: "0 auto",
+    padding: "30px",
+    boxSizing: "border-box"
+};
+
+const headerStyle = {
+    marginBottom: "24px"
+};
+
+const eyebrowStyle = {
+    color: "#2563eb",
+    fontSize: "11px",
+    fontWeight: "700",
+    letterSpacing: "1.5px",
+    marginBottom: "7px"
+};
+
+const titleStyle = {
+    margin: 0,
+    fontSize: "32px",
+    fontWeight: "750",
+    letterSpacing: "-0.8px",
+    color: "#0f172a"
+};
+
+const subtitleStyle = {
+    margin: "7px 0 0",
+    color: "#64748b",
     fontSize: "14px"
 };
 
+const formCardStyle = {
+    width: "100%",
+    background: "#ffffff",
+    padding: "30px",
+    borderRadius: "14px",
+    border: "1px solid #e5e7eb",
+    boxShadow:
+        "0 4px 14px rgba(15,23,42,0.05)",
+    boxSizing: "border-box"
+};
+
+const sectionHeaderStyle = {
+    marginBottom: "22px",
+    paddingBottom: "16px",
+    borderBottom: "1px solid #eef0f3"
+};
+
+const sectionTitleStyle = {
+    margin: 0,
+    fontSize: "19px",
+    fontWeight: "700",
+    color: "#111827"
+};
+
+const sectionSubtitleStyle = {
+    margin: "5px 0 0",
+    fontSize: "13px",
+    color: "#6b7280"
+};
+
+const productSectionStyle = {
+    marginTop: "32px",
+    paddingTop: "26px",
+    borderTop: "1px solid #eef0f3"
+};
+
+const gridStyle = {
+    display: "grid",
+    gridTemplateColumns:
+        "repeat(2, minmax(0, 1fr))",
+    columnGap: "22px",
+    rowGap: "20px"
+};
+
+const fieldStyle = {
+    minWidth: 0
+};
+
+const labelStyle = {
+    display: "block",
+    marginBottom: "7px",
+    fontSize: "14px",
+    fontWeight: "600",
+    color: "#374151"
+};
 
 const inputStyle = {
     width: "100%",
-    minHeight: "42px",
-    padding: "10px 12px",
+    height: "44px",
+    padding: "0 12px",
     border: "1px solid #d1d5db",
     borderRadius: "7px",
-    boxSizing: "border-box",
-    fontSize: "14px",
-    color: "#111827",
+    outline: "none",
     background: "#ffffff",
-    outline: "none"
+    color: "#111827",
+    fontSize: "14px",
+    boxSizing: "border-box"
 };
 
+const textareaStyle = {
+    width: "100%",
+    minHeight: "105px",
+    padding: "11px 12px",
+    border: "1px solid #d1d5db",
+    borderRadius: "7px",
+    outline: "none",
+    background: "#ffffff",
+    color: "#111827",
+    fontSize: "14px",
+    boxSizing: "border-box",
+    resize: "vertical",
+    fontFamily: "inherit"
+};
+
+const documentSectionStyle = {
+    marginTop: "32px",
+    paddingTop: "26px",
+    borderTop: "1px solid #eef0f3"
+};
 
 const documentBoxStyle = {
+    display: "grid",
+    gridTemplateColumns: "1fr auto",
+    alignItems: "center",
+    gap: "16px",
     padding: "20px",
-    marginBottom: "15px",
-    border: "1px solid #d1d5db",
+    marginBottom: "14px",
+    border: "1px solid #dbe1e8",
     borderRadius: "9px",
-    background: "#f9fafb"
+    background: "#f8fafc",
+    boxSizing: "border-box"
 };
 
+const documentTitleStyle = {
+    margin: 0,
+    fontSize: "15px",
+    fontWeight: "700",
+    color: "#111827"
+};
+
+const documentDescriptionStyle = {
+    margin: "5px 0 4px",
+    fontSize: "13px",
+    color: "#4b5563"
+};
+
+const documentHintStyle = {
+    margin: 0,
+    fontSize: "12px",
+    color: "#9ca3af"
+};
+
+const uploadButtonStyle = {
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: "10px 16px",
+    borderRadius: "7px",
+    border: "1px solid #2563eb",
+    background: "#ffffff",
+    color: "#2563eb",
+    fontSize: "13px",
+    fontWeight: "600",
+    cursor: "pointer",
+    whiteSpace: "nowrap"
+};
 
 const selectedFileStyle = {
-    marginTop: "12px",
+    gridColumn: "1 / -1",
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    gap: "12px",
     padding: "9px 12px",
     borderRadius: "6px",
     background: "#eff6ff",
     color: "#1d4ed8",
     fontSize: "13px",
-    fontWeight: "500"
+    fontWeight: "500",
+    boxSizing: "border-box"
 };
 
+const buttonContainerStyle = {
+    display: "flex",
+    justifyContent: "flex-end",
+    alignItems: "center",
+    gap: "12px",
+    marginTop: "30px",
+    paddingTop: "22px",
+    borderTop: "1px solid #eef0f3"
+};
+
+const primaryButtonStyle = {
+    padding: "11px 22px",
+    border: "none",
+    borderRadius: "7px",
+    background: "#2563eb",
+    color: "#ffffff",
+    fontSize: "14px",
+    fontWeight: "600",
+    cursor: "pointer"
+};
+
+const secondaryButtonStyle = {
+    padding: "10px 22px",
+    border: "1px solid #d1d5db",
+    borderRadius: "7px",
+    background: "#ffffff",
+    color: "#374151",
+    fontSize: "14px",
+    fontWeight: "600",
+    cursor: "pointer"
+};
 
 export default AddPurchase;
