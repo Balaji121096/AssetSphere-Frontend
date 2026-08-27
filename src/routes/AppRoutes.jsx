@@ -1,7 +1,17 @@
 import { Routes, Route } from "react-router-dom";
 
+// =====================================================
+// AUTH
+// =====================================================
+
 import Login from "../pages/Login";
 import Dashboard from "../pages/Dashboard";
+
+import ProtectedRoute from "../components/ProtectedRoute";
+
+// =====================================================
+// ASSETS
+// =====================================================
 
 import Assets from "../pages/Assets";
 import AddAsset from "../pages/AddAsset";
@@ -9,9 +19,17 @@ import AssignAsset from "../pages/AssignAsset";
 import AssetHistory from "../pages/AssetHistory";
 import EditAsset from "../pages/EditAsset";
 
+// =====================================================
+// EMPLOYEES
+// =====================================================
+
 import Employees from "../pages/Employees";
 import AddEmployee from "../pages/AddEmployee";
 import EditEmployee from "../pages/EditEmployee";
+
+// =====================================================
+// VENDORS
+// =====================================================
 
 import Vendors from "../pages/Vendors";
 import AddVendor from "../pages/AddVendor";
@@ -19,22 +37,49 @@ import EditVendor from "../pages/EditVendor";
 import VendorDetails from "../pages/VendorDetails";
 import VendorDocuments from "../pages/VendorDocuments";
 
+// =====================================================
+// SOFTWARE
+// =====================================================
+
 import Software from "../pages/Software";
 import AddSoftware from "../pages/AddSoftware";
 import SoftwareEdit from "../pages/SoftwareEdit";
 
+// =====================================================
+// REPORTS
+// =====================================================
+
 import Reports from "../pages/Reports";
+
+// =====================================================
+// SETTINGS
+// =====================================================
 
 import Settings from "../pages/Settings";
 import SettingsProfile from "../pages/SettingsProfile";
 import SettingSecurity from "../pages/SettingSecurity";
 import ChangePassword from "../pages/ChangePassword";
+import UserManagement from "../pages/UserManagement";
+
+// =====================================================
+// OPTIONAL SETTINGS PAGES
+// =====================================================
+
+// IMPORTANT:
+// Indha 3 pages actual-ah create pannirundha mattum
+// imports uncomment pannu.
+//
+// import CompanySettings from "../pages/CompanySettings";
+// import MasterData from "../pages/MasterData";
+// import DocumentSettings from "../pages/DocumentSettings";
+
+// =====================================================
+// PURCHASE
+// =====================================================
 
 import Purchase from "../pages/Purchase";
 import AddPurchase from "../pages/AddPurchase";
 import EditPurchase from "../pages/EditPurchase";
-
-import ProtectedRoute from "../components/ProtectedRoute";
 
 
 function AppRoutes() {
@@ -43,9 +88,9 @@ function AppRoutes() {
 
         <Routes>
 
-            {/* =====================================================
+            {/* =================================================
                 LOGIN
-            ===================================================== */}
+            ================================================= */}
 
             <Route
                 path="/"
@@ -53,9 +98,9 @@ function AppRoutes() {
             />
 
 
-            {/* =====================================================
+            {/* =================================================
                 DASHBOARD
-            ===================================================== */}
+            ================================================= */}
 
             <Route
                 path="/dashboard"
@@ -67,9 +112,9 @@ function AppRoutes() {
             />
 
 
-            {/* =====================================================
-                HARDWARE ASSETS
-            ===================================================== */}
+            {/* =================================================
+                ASSETS
+            ================================================= */}
 
             <Route
                 path="/assets"
@@ -81,19 +126,19 @@ function AppRoutes() {
             />
 
             <Route
-                path="/assets/edit/:id"
+                path="/assets/add"
                 element={
                     <ProtectedRoute>
-                        <EditAsset />
+                        <AddAsset />
                     </ProtectedRoute>
                 }
             />
 
             <Route
-                path="/assets/add"
+                path="/assets/edit/:id"
                 element={
                     <ProtectedRoute>
-                        <AddAsset />
+                        <EditAsset />
                     </ProtectedRoute>
                 }
             />
@@ -117,9 +162,9 @@ function AppRoutes() {
             />
 
 
-            {/* =====================================================
+            {/* =================================================
                 EMPLOYEES
-            ===================================================== */}
+            ================================================= */}
 
             <Route
                 path="/employees"
@@ -149,9 +194,9 @@ function AppRoutes() {
             />
 
 
-            {/* =====================================================
+            {/* =================================================
                 VENDORS
-            ===================================================== */}
+            ================================================= */}
 
             <Route
                 path="/vendors"
@@ -199,9 +244,9 @@ function AppRoutes() {
             />
 
 
-            {/* =====================================================
+            {/* =================================================
                 SOFTWARE
-            ===================================================== */}
+            ================================================= */}
 
             <Route
                 path="/software"
@@ -231,9 +276,9 @@ function AppRoutes() {
             />
 
 
-            {/* =====================================================
+            {/* =================================================
                 REPORTS
-            ===================================================== */}
+            ================================================= */}
 
             <Route
                 path="/reports"
@@ -245,9 +290,9 @@ function AppRoutes() {
             />
 
 
-            {/* =====================================================
+            {/* =================================================
                 SETTINGS
-            ===================================================== */}
+            ================================================= */}
 
             <Route
                 path="/settings"
@@ -258,11 +303,6 @@ function AppRoutes() {
                 }
             />
 
-
-            {/* =====================================================
-                SETTINGS - PROFILE
-            ===================================================== */}
-
             <Route
                 path="/settings/profile"
                 element={
@@ -271,11 +311,6 @@ function AppRoutes() {
                     </ProtectedRoute>
                 }
             />
-
-
-            {/* =====================================================
-                SETTINGS - SECURITY
-                ===================================================== */}
 
             <Route
                 path="/settings/security"
@@ -286,11 +321,6 @@ function AppRoutes() {
                 }
             />
 
-
-            {/* =====================================================
-                SETTINGS - CHANGE PASSWORD
-            ===================================================== */}
-
             <Route
                 path="/settings/change-password"
                 element={
@@ -300,16 +330,73 @@ function AppRoutes() {
                 }
             />
 
-
-            {/* =====================================================
-                PURCHASES
-            ===================================================== */}
-
             <Route
-                path="/purchases/edit/:id"
+                path="/settings/users"
                 element={
                     <ProtectedRoute>
-                        <EditPurchase />
+                        <UserManagement />
+                    </ProtectedRoute>
+                }
+            />
+
+
+            {/* =================================================
+                COMPANY SETTINGS
+            ================================================= */}
+
+            {/*
+            <Route
+                path="/settings/company"
+                element={
+                    <ProtectedRoute>
+                        <CompanySettings />
+                    </ProtectedRoute>
+                }
+            />
+            */}
+
+
+            {/* =================================================
+                MASTER DATA
+            ================================================= */}
+
+            {/*
+            <Route
+                path="/settings/master-data"
+                element={
+                    <ProtectedRoute>
+                        <MasterData />
+                    </ProtectedRoute>
+                }
+            />
+            */}
+
+
+            {/* =================================================
+                DOCUMENT SETTINGS
+            ================================================= */}
+
+            {/*
+            <Route
+                path="/settings/documents"
+                element={
+                    <ProtectedRoute>
+                        <DocumentSettings />
+                    </ProtectedRoute>
+                }
+            />
+            */}
+
+
+            {/* =================================================
+                PURCHASE
+            ================================================= */}
+
+            <Route
+                path="/purchases"
+                element={
+                    <ProtectedRoute>
+                        <Purchase />
                     </ProtectedRoute>
                 }
             />
@@ -324,11 +411,59 @@ function AppRoutes() {
             />
 
             <Route
-                path="/purchases"
+                path="/purchases/edit/:id"
                 element={
                     <ProtectedRoute>
-                        <Purchase />
+                        <EditPurchase />
                     </ProtectedRoute>
+                }
+            />
+
+
+            {/* =================================================
+                FALLBACK
+            ================================================= */}
+
+            <Route
+                path="*"
+                element={
+                    <div
+                        style={{
+                            minHeight: "100vh",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            flexDirection: "column",
+                            gap: "12px",
+                            fontFamily: "Arial, sans-serif"
+                        }}
+                    >
+
+                        <h2>
+                            Page Not Found
+                        </h2>
+
+                        <p>
+                            The page you are looking for does not exist.
+                        </p>
+
+                        <button
+                            onClick={() =>
+                                window.location.href = "/settings"
+                            }
+                            style={{
+                                padding: "10px 16px",
+                                border: "none",
+                                borderRadius: "8px",
+                                background: "#2563eb",
+                                color: "#ffffff",
+                                cursor: "pointer"
+                            }}
+                        >
+                            Go to Settings
+                        </button>
+
+                    </div>
                 }
             />
 

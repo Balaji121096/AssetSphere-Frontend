@@ -19,9 +19,52 @@ function Sidebar() {
     const navigate = useNavigate();
 
 
+    // =====================================================
+    // GET CURRENT USER
+    // =====================================================
+
+    let currentUser = null;
+
+    try {
+
+        const storedUser =
+            localStorage.getItem("user");
+
+        if (storedUser) {
+
+            currentUser =
+                JSON.parse(storedUser);
+
+        }
+
+    } catch (error) {
+
+        console.error(
+            "User data parse error:",
+            error
+        );
+
+    }
+
+
+    // =====================================================
+    // CURRENT ROLE
+    // =====================================================
+
+    const currentRole =
+        currentUser?.role ||
+        currentUser?.user_role ||
+        "";
+
+
+    // =====================================================
+    // LOGOUT
+    // =====================================================
+
     const handleLogout = () => {
 
         localStorage.clear();
+
         sessionStorage.clear();
 
         navigate("/");
@@ -29,10 +72,16 @@ function Sidebar() {
     };
 
 
+    // =====================================================
+    // MENU STYLE
+    // =====================================================
+
     const menuStyle = ({ isActive }) => ({
 
         display: "flex",
+
         alignItems: "center",
+
         gap: "8px",
 
         padding: "7px 10px",
@@ -55,6 +104,10 @@ function Sidebar() {
     });
 
 
+    // =====================================================
+    // RENDER
+    // =====================================================
+
     return (
 
         <div
@@ -68,7 +121,9 @@ function Sidebar() {
             }}
         >
 
-            {/* Application Name */}
+            {/* =================================================
+                APPLICATION NAME
+            ================================================= */}
 
             <div
                 style={{
@@ -81,116 +136,214 @@ function Sidebar() {
                         "1px solid #ffffff"
                 }}
             >
+
                 AssetSphere
+
             </div>
 
 
-            {/* Navigation */}
+            {/* =================================================
+                NAVIGATION
+            ================================================= */}
 
             <nav>
 
-                {/* Dashboard */}
+                {/* =================================================
+                    DASHBOARD
+                ================================================= */}
 
                 <NavLink
                     to="/dashboard"
                     style={menuStyle}
                 >
+
                     <FaTachometerAlt />
+
                     Dashboard
+
                 </NavLink>
 
 
-                {/* Hardware */}
+                {/* =================================================
+                    HARDWARE
+                ================================================= */}
 
                 <NavLink
                     to="/assets"
                     style={menuStyle}
                 >
+
                     <FaDesktop />
+
                     Hardware
+
                 </NavLink>
 
 
-                {/* Software */}
+                {/* =================================================
+                    SOFTWARE
+                ================================================= */}
 
                 <NavLink
                     to="/software"
                     style={menuStyle}
                 >
+
                     <FaLaptop />
+
                     Software
+
                 </NavLink>
 
 
-                {/* Employees */}
+                {/* =================================================
+                    EMPLOYEES
+                ================================================= */}
 
                 <NavLink
                     to="/employees"
                     style={menuStyle}
                 >
+
                     <FaUsers />
+
                     Employees
+
                 </NavLink>
 
 
-                {/* Vendors */}
+                {/* =================================================
+                    VENDORS
+                ================================================= */}
 
                 <NavLink
                     to="/vendors"
                     style={menuStyle}
                 >
+
                     <FaBuilding />
+
                     Vendors
+
                 </NavLink>
 
 
-                {/* Purchase Management */}
+                {/* =================================================
+                    PURCHASE MANAGEMENT
+                ================================================= */}
 
                 <NavLink
                     to="/purchases"
                     style={menuStyle}
                 >
+
                     <FaShoppingCart />
+
                     Purchases
+
                 </NavLink>
 
 
-                {/* Reports */}
+                {/* =================================================
+                    REPORTS
+                ================================================= */}
 
                 <NavLink
                     to="/reports"
                     style={menuStyle}
                 >
+
                     <FaChartBar />
+
                     Reports
+
                 </NavLink>
 
 
-                {/* Asset History */}
+                {/* =================================================
+                    ASSET HISTORY
+                ================================================= */}
 
                 <NavLink
                     to="/asset-history"
                     style={menuStyle}
                 >
+
                     <FaHistory />
+
                     Asset History
+
                 </NavLink>
 
 
-                {/* Settings */}
+                {/* =================================================
+                    SETTINGS
+                ================================================= */}
 
                 <NavLink
                     to="/settings"
                     style={menuStyle}
                 >
+
                     <FaCog />
+
                     Settings
+
                 </NavLink>
 
             </nav>
 
 
-            {/* Logout */}
+            {/* =================================================
+                ACCOUNT ROLE INFO
+            ================================================= */}
+
+            {currentRole && (
+
+                <div
+                    style={{
+                        marginTop: "15px",
+                        paddingTop: "10px",
+                        borderTop:
+                            "1px solid rgba(255,255,255,0.25)",
+                        fontSize: "11px",
+                        color: "#cbd5e1"
+                    }}
+                >
+
+                    <div
+                        style={{
+                            marginBottom: "4px",
+                            fontSize: "9px",
+                            letterSpacing: "1px",
+                            color: "#94a3b8"
+                        }}
+                    >
+                        CURRENT ROLE
+                    </div>
+
+
+                    <div
+                        style={{
+                            fontWeight: "700",
+                            color:
+                                currentRole ===
+                                "Super Admin"
+                                    ? "#fca5a5"
+                                    : "#ffffff"
+                        }}
+                    >
+                        {currentRole}
+                    </div>
+
+                </div>
+
+            )}
+
+
+            {/* =================================================
+                LOGOUT
+            ================================================= */}
 
             <div
                 style={{
@@ -202,7 +355,9 @@ function Sidebar() {
             >
 
                 <button
+
                     onClick={handleLogout}
+
                     style={{
                         display: "flex",
                         alignItems: "center",
@@ -217,6 +372,7 @@ function Sidebar() {
                         fontSize: "14px",
                         textAlign: "left"
                     }}
+
                 >
 
                     <FaSignOutAlt />
