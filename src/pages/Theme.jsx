@@ -1,68 +1,342 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import Sidebar from "../components/Sidebar";
 import Navbar from "../components/Navbar";
 
-import {
-    useTheme
-} from "../context/ThemeContext";
 
+// =====================================================
+// THEME STORAGE KEY
+// =====================================================
+
+const THEME_STORAGE_KEY = "assetsphere_theme";
+
+
+// =====================================================
+// DEFAULT THEME
+// =====================================================
+
+const defaultTheme = {
+
+    name: "AssetSphere Blue",
+
+    primary: "#2563eb",
+
+    background: "#f8fafc",
+
+    sidebar: "#111827",
+
+    card: "#ffffff",
+
+    text: "#0f172a",
+
+    mutedText: "#64748b",
+
+    border: "#e5e7eb"
+
+};
+
+
+// =====================================================
+// SUGGESTED THEMES
+// =====================================================
+
+const suggestedThemes = [
+
+    {
+
+        name: "AssetSphere Blue",
+
+        primary: "#2563eb",
+
+        background: "#f8fafc",
+
+        sidebar: "#111827",
+
+        card: "#ffffff",
+
+        text: "#0f172a",
+
+        mutedText: "#64748b",
+
+        border: "#e5e7eb"
+
+    },
+
+    {
+
+        name: "Emerald",
+
+        primary: "#059669",
+
+        background: "#f0fdf4",
+
+        sidebar: "#064e3b",
+
+        card: "#ffffff",
+
+        text: "#064e3b",
+
+        mutedText: "#64748b",
+
+        border: "#d1fae5"
+
+    },
+
+    {
+
+        name: "Purple",
+
+        primary: "#7c3aed",
+
+        background: "#faf5ff",
+
+        sidebar: "#3b0764",
+
+        card: "#ffffff",
+
+        text: "#2e1065",
+
+        mutedText: "#6b7280",
+
+        border: "#e9d5ff"
+
+    },
+
+    {
+
+        name: "Orange",
+
+        primary: "#ea580c",
+
+        background: "#fff7ed",
+
+        sidebar: "#431407",
+
+        card: "#ffffff",
+
+        text: "#431407",
+
+        mutedText: "#78716c",
+
+        border: "#fed7aa"
+
+    },
+
+    {
+
+        name: "Dark",
+
+        primary: "#60a5fa",
+
+        background: "#0f172a",
+
+        sidebar: "#020617",
+
+        card: "#1e293b",
+
+        text: "#f8fafc",
+
+        mutedText: "#94a3b8",
+
+        border: "#334155"
+
+    }
+
+];
+
+
+// =====================================================
+// LOAD SAVED THEME
+// =====================================================
+
+const getSavedTheme = () => {
+
+    try {
+
+        const savedTheme =
+            localStorage.getItem(
+                THEME_STORAGE_KEY
+            );
+
+        if (savedTheme) {
+
+            return JSON.parse(savedTheme);
+
+        }
+
+    } catch (error) {
+
+        console.error(
+            "Theme load error:",
+            error
+        );
+
+    }
+
+    return defaultTheme;
+
+};
+
+
+// =====================================================
+// APPLY THEME TO DOCUMENT
+// =====================================================
+
+const applyTheme = (theme) => {
+
+    const root =
+        document.documentElement;
+
+
+    root.style.setProperty(
+        "--primary-color",
+        theme.primary
+    );
+
+    root.style.setProperty(
+        "--app-background",
+        theme.background
+    );
+
+    root.style.setProperty(
+        "--sidebar-color",
+        theme.sidebar
+    );
+
+    root.style.setProperty(
+        "--card-color",
+        theme.card
+    );
+
+    root.style.setProperty(
+        "--text-color",
+        theme.text
+    );
+
+    root.style.setProperty(
+        "--muted-text-color",
+        theme.mutedText
+    );
+
+    root.style.setProperty(
+        "--border-color",
+        theme.border
+    );
+
+
+    document.body.style.background =
+        theme.background;
+
+};
+
+
+// =====================================================
+// SAVE THEME
+// =====================================================
+
+const saveTheme = (theme) => {
+
+    try {
+
+        localStorage.setItem(
+            THEME_STORAGE_KEY,
+            JSON.stringify(theme)
+        );
+
+    } catch (error) {
+
+        console.error(
+            "Theme save error:",
+            error
+        );
+
+    }
+
+};
+
+
+// =====================================================
+// THEME PAGE
+// =====================================================
 
 function Theme() {
 
     const navigate =
         useNavigate();
 
-    const {
-        theme,
-        selectTheme,
-        applyCustomTheme,
-        resetTheme,
-        suggestedThemes
-    } = useTheme();
+
+    // =================================================
+    // STATE
+    // =================================================
+
+    const [selectedTheme, setSelectedTheme] =
+        useState(getSavedTheme);
 
 
     const [customPrimary, setCustomPrimary] =
-        useState(theme.primary);
+        useState(
+            getSavedTheme().primary
+        );
+
 
     const [customBackground, setCustomBackground] =
-        useState(theme.background);
+        useState(
+            getSavedTheme().background
+        );
+
 
     const [message, setMessage] =
         useState("");
 
 
     // =================================================
-    // SELECT SUGGESTED
+    // APPLY SAVED THEME ON PAGE LOAD
     // =================================================
 
-    const handleThemeSelect = (newTheme) => {
+    useEffect(() => {
 
-        selectTheme(newTheme);
+        applyTheme(selectedTheme);
+
+    }, [selectedTheme]);
+
+
+    // =================================================
+    // SELECT SUGGESTED THEME
+    // =================================================
+
+    const handleThemeSelect = (theme) => {
+
+        setSelectedTheme(theme);
 
         setCustomPrimary(
-            newTheme.primary
+            theme.primary
         );
 
         setCustomBackground(
-            newTheme.background
+            theme.background
         );
 
+        applyTheme(theme);
+
         setMessage(
-            `${newTheme.name} applied to entire application`
+            `${theme.name} selected`
         );
 
     };
 
 
     // =================================================
-    // CUSTOM
+    // APPLY CUSTOM THEME
     // =================================================
 
-    const handleApplyCustom = () => {
+    const handleApplyCustomTheme = () => {
 
-        applyCustomTheme({
+        const customTheme = {
+
+            ...selectedTheme,
+
+            name: "Custom Theme",
 
             primary:
                 customPrimary,
@@ -70,65 +344,154 @@ function Theme() {
             background:
                 customBackground
 
-        });
+        };
+
+
+        setSelectedTheme(
+            customTheme
+        );
+
+
+        applyTheme(
+            customTheme
+        );
+
+
+        saveTheme(
+            customTheme
+        );
+
 
         setMessage(
-            "Custom theme applied to entire application"
+            "Custom theme applied successfully"
         );
 
     };
 
 
     // =================================================
-    // RESET
+    // APPLY CURRENT THEME
+    // =================================================
+
+    const handleApply = () => {
+
+        applyTheme(
+            selectedTheme
+        );
+
+
+        saveTheme(
+            selectedTheme
+        );
+
+
+        setMessage(
+            "Theme applied successfully"
+        );
+
+    };
+
+
+    // =================================================
+    // RESET THEME
     // =================================================
 
     const handleReset = () => {
 
-        resetTheme();
+        setSelectedTheme(
+            defaultTheme
+        );
+
 
         setCustomPrimary(
-            "#2563eb"
+            defaultTheme.primary
         );
+
 
         setCustomBackground(
-            "#f8fafc"
+            defaultTheme.background
         );
 
+
+        applyTheme(
+            defaultTheme
+        );
+
+
+        saveTheme(
+            defaultTheme
+        );
+
+
         setMessage(
-            "Default theme restored"
+            "Theme reset to default"
         );
 
     };
 
 
+    // =================================================
+    // BACK
+    // =================================================
+
+    const handleBack = () => {
+
+        navigate("/settings");
+
+    };
+
+
+    // =================================================
+    // RENDER
+    // =================================================
+
     return (
 
         <div
-            className="theme-page"
             style={{
+                ...pageStyle,
+
                 background:
-                    "var(--app-background)",
+                    selectedTheme.background,
 
                 color:
-                    "var(--text-color)"
+                    selectedTheme.text
+
             }}
         >
+
+            {/* =================================================
+                SIDEBAR
+            ================================================= */}
 
             <Sidebar />
 
 
-            <div className="theme-main">
+            {/* =================================================
+                MAIN
+            ================================================= */}
+
+            <div
+                style={{
+                    ...mainStyle
+                }}
+            >
 
                 <Navbar />
 
 
-                <main className="theme-content">
+                {/* =================================================
+                    CONTENT
+                ================================================= */}
 
+                <main
+                    className="theme-content"
+                    style={contentStyle}
+                >
 
-                    {/* =========================================
+                    {/* =================================================
                         HERO
-                    ========================================= */}
+                    ================================================= */}
 
                     <section
                         className="theme-hero"
@@ -136,57 +499,79 @@ function Theme() {
                             background:
                                 `linear-gradient(
                                     135deg,
-                                    ${theme.sidebar},
-                                    ${theme.primary}
+                                    ${selectedTheme.sidebar},
+                                    ${selectedTheme.primary}
                                 )`
                         }}
                     >
 
                         <div>
 
-                            <div className="theme-eyebrow">
+                            <div
+                                className="theme-eyebrow"
+                            >
                                 ASSETSPHERE • APPEARANCE
                             </div>
+
 
                             <h1>
                                 Theme & Appearance
                             </h1>
 
+
                             <p>
-                                Choose a theme and apply it
-                                across the entire AssetSphere application.
+                                Customize the look and feel
+                                of your AssetSphere application.
                             </p>
 
                         </div>
 
-                        <div className="theme-hero-icon">
+
+                        <div
+                            className="theme-hero-icon"
+                        >
                             🎨
                         </div>
 
                     </section>
 
 
-                    {/* =========================================
-                        BACK
-                    ========================================= */}
+                    {/* =================================================
+                        BACK BUTTON
+                    ================================================= */}
 
                     <button
-                        className="theme-back"
-                        onClick={() =>
-                            navigate("/settings")
-                        }
+                        onClick={handleBack}
+                        style={{
+                            ...backButtonStyle,
+
+                            color:
+                                selectedTheme.primary
+                        }}
                     >
+
                         ← Back to Settings
+
                     </button>
 
 
-                    {/* =========================================
-                        MESSAGE
-                    ========================================= */}
+                    {/* =================================================
+                        SUCCESS MESSAGE
+                    ================================================= */}
 
                     {message && (
 
-                        <div className="theme-message">
+                        <div
+                            style={{
+                                ...messageStyle,
+
+                                borderColor:
+                                    selectedTheme.primary,
+
+                                color:
+                                    selectedTheme.primary
+                            }}
+                        >
 
                             ✓ {message}
 
@@ -195,23 +580,44 @@ function Theme() {
                     )}
 
 
-                    {/* =========================================
+                    {/* =================================================
                         SUGGESTED THEMES
-                    ========================================= */}
+                    ================================================= */}
 
-                    <section className="theme-section">
+                    <section
+                        style={sectionStyle}
+                    >
 
-                        <div className="theme-section-heading">
+                        <div
+                            style={
+                                sectionHeadingStyle
+                            }
+                        >
 
                             <div>
 
-                                <h2>
+                                <h2
+                                    style={{
+                                        ...sectionTitleStyle,
+
+                                        color:
+                                            selectedTheme.text
+                                    }}
+                                >
                                     Suggested Themes
                                 </h2>
 
-                                <p>
-                                    Select a theme to change the
-                                    entire AssetSphere interface.
+
+                                <p
+                                    style={{
+                                        ...sectionDescriptionStyle,
+
+                                        color:
+                                            selectedTheme.mutedText
+                                    }}
+                                >
+                                    Choose a ready-made theme
+                                    for your AssetSphere workspace.
                                 </p>
 
                             </div>
@@ -219,17 +625,22 @@ function Theme() {
                         </div>
 
 
-                        <div className="theme-grid">
+                        <div
+                            className="theme-grid"
+                            style={themeGridStyle}
+                        >
 
                             {suggestedThemes.map(
-                                (item) => (
+                                (theme) => (
 
                                     <ThemeCard
-                                        key={item.name}
-                                        theme={item}
+                                        key={
+                                            theme.name
+                                        }
+                                        theme={theme}
                                         selected={
-                                            theme.name ===
-                                            item.name
+                                            selectedTheme.name ===
+                                            theme.name
                                         }
                                         onSelect={
                                             handleThemeSelect
@@ -244,42 +655,78 @@ function Theme() {
                     </section>
 
 
-                    {/* =========================================
+                    {/* =================================================
                         CUSTOM THEME
-                    ========================================= */}
+                    ================================================= */}
 
-                    <section className="custom-theme-section">
+                    <section
+                        style={{
+                            ...customSectionStyle,
 
-                        <div className="custom-header">
+                            background:
+                                selectedTheme.card,
+
+                            borderColor:
+                                selectedTheme.border
+                        }}
+                    >
+
+                        <div
+                            style={
+                                customHeaderStyle
+                            }
+                        >
 
                             <div>
 
                                 <div
-                                    className="custom-eyebrow"
                                     style={{
+                                        ...customEyebrowStyle,
+
                                         color:
-                                            theme.primary
+                                            selectedTheme.primary
                                     }}
                                 >
                                     CUSTOMIZE
                                 </div>
 
-                                <h2>
+
+                                <h2
+                                    style={{
+                                        ...customTitleStyle,
+
+                                        color:
+                                            selectedTheme.text
+                                    }}
+                                >
                                     Custom Theme
                                 </h2>
 
-                                <p>
-                                    Create your own theme colors
-                                    for the complete application.
+
+                                <p
+                                    style={{
+                                        ...customDescriptionStyle,
+
+                                        color:
+                                            selectedTheme.mutedText
+                                    }}
+                                >
+                                    Create your own color
+                                    combination.
                                 </p>
 
                             </div>
 
+
                             <div
-                                className="custom-icon"
                                 style={{
+                                    ...customIconStyle,
+
+                                    background:
+                                        `${selectedTheme.primary}15`,
+
                                     color:
-                                        theme.primary
+                                        selectedTheme.primary
                                 }}
                             >
                                 ✨
@@ -288,20 +735,36 @@ function Theme() {
                         </div>
 
 
-                        {/* =====================================
-                            COLOR CONTROLS
-                        ===================================== */}
+                        <div
+                            className="custom-controls"
+                            style={customControlsStyle}
+                        >
 
-                        <div className="custom-controls">
+                            {/* PRIMARY COLOR */}
 
+                            <div
+                                style={
+                                    colorControlStyle
+                                }
+                            >
 
-                            <div className="color-control">
+                                <label
+                                    style={{
+                                        ...labelStyle,
 
-                                <label>
+                                        color:
+                                            selectedTheme.text
+                                    }}
+                                >
                                     Primary Color
                                 </label>
 
-                                <div className="color-row">
+
+                                <div
+                                    style={
+                                        colorInputRowStyle
+                                    }
+                                >
 
                                     <input
                                         type="color"
@@ -313,7 +776,11 @@ function Theme() {
                                                 e.target.value
                                             )
                                         }
+                                        style={
+                                            colorPickerStyle
+                                        }
                                     />
+
 
                                     <input
                                         type="text"
@@ -325,6 +792,18 @@ function Theme() {
                                                 e.target.value
                                             )
                                         }
+                                        style={{
+                                            ...textInputStyle,
+
+                                            background:
+                                                selectedTheme.background,
+
+                                            color:
+                                                selectedTheme.text,
+
+                                            borderColor:
+                                                selectedTheme.border
+                                        }}
                                     />
 
                                 </div>
@@ -332,13 +811,31 @@ function Theme() {
                             </div>
 
 
-                            <div className="color-control">
+                            {/* BACKGROUND COLOR */}
 
-                                <label>
+                            <div
+                                style={
+                                    colorControlStyle
+                                }
+                            >
+
+                                <label
+                                    style={{
+                                        ...labelStyle,
+
+                                        color:
+                                            selectedTheme.text
+                                    }}
+                                >
                                     Background Color
                                 </label>
 
-                                <div className="color-row">
+
+                                <div
+                                    style={
+                                        colorInputRowStyle
+                                    }
+                                >
 
                                     <input
                                         type="color"
@@ -350,7 +847,11 @@ function Theme() {
                                                 e.target.value
                                             )
                                         }
+                                        style={
+                                            colorPickerStyle
+                                        }
                                     />
+
 
                                     <input
                                         type="text"
@@ -362,6 +863,18 @@ function Theme() {
                                                 e.target.value
                                             )
                                         }
+                                        style={{
+                                            ...textInputStyle,
+
+                                            background:
+                                                selectedTheme.background,
+
+                                            color:
+                                                selectedTheme.text,
+
+                                            borderColor:
+                                                selectedTheme.border
+                                        }}
                                     />
 
                                 </div>
@@ -371,29 +884,35 @@ function Theme() {
                         </div>
 
 
-                        {/* =====================================
-                            PREVIEW
-                        ===================================== */}
+                        {/* =================================================
+                            CUSTOM PREVIEW
+                        ================================================= */}
 
                         <div
-                            className="theme-preview"
                             style={{
+                                ...previewStyle,
+
                                 background:
-                                    customBackground
+                                    customBackground,
+
+                                borderColor:
+                                    selectedTheme.border
                             }}
                         >
 
                             <div
-                                className="preview-sidebar"
                                 style={{
+                                    ...previewSidebarStyle,
+
                                     background:
-                                        theme.sidebar
+                                        selectedTheme.sidebar
                                 }}
                             >
 
                                 <div
-                                    className="preview-logo"
                                     style={{
+                                        ...previewLogoStyle,
+
                                         background:
                                             customPrimary
                                     }}
@@ -401,49 +920,116 @@ function Theme() {
                                     A
                                 </div>
 
-                                <div />
-                                <div />
-                                <div />
+
+                                <div
+                                    style={{
+                                        ...previewSidebarLineStyle
+                                    }}
+                                />
+
+                                <div
+                                    style={{
+                                        ...previewSidebarLineStyle
+                                    }}
+                                />
+
+                                <div
+                                    style={{
+                                        ...previewSidebarLineStyle
+                                    }}
+                                />
 
                             </div>
 
 
-                            <div className="preview-main">
+                            <div
+                                style={
+                                    previewMainStyle
+                                }
+                            >
 
                                 <div
-                                    className="preview-navbar"
                                     style={{
+                                        ...previewTopBarStyle,
+
                                         background:
-                                            theme.card,
+                                            selectedTheme.card,
 
                                         borderColor:
-                                            theme.border
+                                            selectedTheme.border
                                     }}
                                 />
 
-                                <div className="preview-cards">
+                                <div
+                                    style={
+                                        previewCardsStyle
+                                    }
+                                >
 
                                     <div
-                                        className="preview-card"
                                         style={{
+                                            ...previewCardStyle,
+
                                             background:
-                                                theme.card,
+                                                selectedTheme.card,
 
                                             borderColor:
-                                                theme.border
+                                                selectedTheme.border
                                         }}
-                                    />
+                                    >
+
+                                        <div
+                                            style={{
+                                                ...previewCircleStyle,
+
+                                                background:
+                                                    customPrimary
+                                            }}
+                                        />
+
+                                        <div
+                                            style={{
+                                                ...previewLineStyle,
+
+                                                background:
+                                                    selectedTheme.text
+                                            }}
+                                        />
+
+                                    </div>
+
 
                                     <div
-                                        className="preview-card"
                                         style={{
+                                            ...previewCardStyle,
+
                                             background:
-                                                theme.card,
+                                                selectedTheme.card,
 
                                             borderColor:
-                                                theme.border
+                                                selectedTheme.border
                                         }}
-                                    />
+                                    >
+
+                                        <div
+                                            style={{
+                                                ...previewCircleStyle,
+
+                                                background:
+                                                    customPrimary
+                                            }}
+                                        />
+
+                                        <div
+                                            style={{
+                                                ...previewLineStyle,
+
+                                                background:
+                                                    selectedTheme.text
+                                            }}
+                                        />
+
+                                    </div>
 
                                 </div>
 
@@ -452,47 +1038,47 @@ function Theme() {
                         </div>
 
 
-                        {/* =====================================
-                            BUTTONS
-                        ===================================== */}
+                        {/* =================================================
+                            ACTION BUTTONS
+                        ================================================= */}
 
-                        <div className="theme-actions">
+                        <div
+                            style={
+                                actionButtonsStyle
+                            }
+                        >
 
                             <button
-                                className="primary-button"
+                                onClick={
+                                    handleApplyCustomTheme
+                                }
                                 style={{
+                                    ...applyButtonStyle,
+
                                     background:
                                         customPrimary
                                 }}
-                                onClick={
-                                    handleApplyCustom
-                                }
                             >
                                 ✓ Apply Custom Theme
                             </button>
 
 
                             <button
-                                className="secondary-button"
-                                onClick={() => {
-
-                                    selectTheme(theme);
-
-                                    setMessage(
-                                        "Current theme applied"
-                                    );
-
-                                }}
-                            >
-                                ✓ Apply Theme
-                            </button>
-
-
-                            <button
-                                className="reset-button"
                                 onClick={
                                     handleReset
                                 }
+                                style={{
+                                    ...resetButtonStyle,
+
+                                    color:
+                                        selectedTheme.text,
+
+                                    borderColor:
+                                        selectedTheme.border,
+
+                                    background:
+                                        selectedTheme.background
+                                }}
                             >
                                 Reset to Default
                             </button>
@@ -502,413 +1088,305 @@ function Theme() {
                     </section>
 
 
-                    {/* =========================================
-                        CURRENT
-                    ========================================= */}
+                    {/* =================================================
+                        CURRENT THEME
+                    ================================================= */}
 
-                    <section className="current-theme">
+                    <section
+                        style={{
+                            ...currentThemeStyle,
+
+                            background:
+                                selectedTheme.card,
+
+                            borderColor:
+                                selectedTheme.border
+                        }}
+                    >
 
                         <div>
 
-                            <div className="current-label">
+                            <div
+                                style={{
+                                    ...currentThemeLabel,
+
+                                    color:
+                                        selectedTheme.mutedText
+                                }}
+                            >
                                 CURRENT THEME
                             </div>
 
-                            <div className="current-name">
-                                {theme.name}
+
+                            <div
+                                style={{
+                                    ...currentThemeName,
+
+                                    color:
+                                        selectedTheme.text
+                                }}
+                            >
+                                {selectedTheme.name}
                             </div>
 
                         </div>
 
+
                         <div
-                            className="current-color"
                             style={{
+                                ...currentColorPreview,
+
                                 background:
-                                    theme.primary
+                                    selectedTheme.primary
                             }}
                         />
 
                     </section>
 
+
                 </main>
+
 
             </div>
 
 
-            {/* =============================================
-                PAGE CSS
-            ============================================= */}
+            {/* =========================================================
+                CSS
+            ========================================================= */}
 
             <style>
                 {`
 
-                * {
-                    box-sizing: border-box;
-                }
-
-                body {
-                    margin: 0;
-                    background: var(--app-background);
-                    color: var(--text-color);
-                    transition:
-                        background-color .25s ease,
-                        color .25s ease;
-                }
-
-                .theme-page {
-                    min-height: 100vh;
-                    display: flex;
-                    background: var(--app-background);
-                    color: var(--text-color);
-                }
-
-                .theme-main {
-                    flex: 1;
-                    min-width: 0;
-                }
-
-                .theme-content {
-                    max-width: 1250px;
-                    margin: auto;
-                    padding: 32px;
-                }
-
-                .theme-hero {
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: center;
-                    padding: 28px 24px;
-                    border-radius: 16px;
-                    margin-bottom: 20px;
-                    color: white;
-                }
-
-                .theme-eyebrow {
-                    font-size: 10px;
-                    font-weight: 800;
-                    letter-spacing: 1.3px;
-                    margin-bottom: 8px;
-                    color: #dbeafe;
-                }
-
-                .theme-hero h1 {
-                    margin: 0;
-                    color: white;
-                    font-size: 28px;
-                }
-
-                .theme-hero p {
-                    margin: 7px 0 0;
-                    color: #dbeafe;
-                    font-size: 12px;
-                }
-
-                .theme-hero-icon {
-                    width: 50px;
-                    height: 50px;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    border-radius: 12px;
-                    background: rgba(255,255,255,.12);
-                    font-size: 23px;
-                }
-
-                .theme-back {
-                    border: none;
-                    background: transparent;
-                    color: var(--primary-color);
-                    cursor: pointer;
-                    font-size: 12px;
-                    font-weight: 700;
-                    margin-bottom: 18px;
-                }
-
-                .theme-message {
-                    padding: 11px 14px;
-                    border-radius: 9px;
-                    margin-bottom: 18px;
-                    border: 1px solid var(--primary-color);
-                    background: var(--card-color);
-                    color: var(--primary-color);
-                    font-size: 12px;
-                    font-weight: 700;
-                }
-
-                .theme-section {
-                    margin-bottom: 24px;
-                }
-
-                .theme-section-heading {
-                    margin-bottom: 16px;
-                }
-
-                .theme-section-heading h2 {
-                    margin: 0;
-                    color: var(--text-color);
-                    font-size: 18px;
-                }
-
-                .theme-section-heading p {
-                    margin: 5px 0 0;
-                    color: var(--muted-text-color);
-                    font-size: 13px;
-                }
-
-                .theme-grid {
-                    display: grid;
-                    grid-template-columns:
-                        repeat(4, minmax(0, 1fr));
-                    gap: 16px;
-                }
-
-                .theme-card {
-                    background: var(--card-color);
-                    border: 1px solid var(--border-color);
-                    border-radius: 14px;
-                    padding: 12px;
-                    cursor: pointer;
-                    transition: .18s ease;
-                }
-
-                .theme-card:hover {
-                    transform: translateY(-3px);
-                    box-shadow:
-                        0 10px 25px
-                        rgba(15,23,42,.10);
-                }
-
-                .custom-theme-section {
-                    background: var(--card-color);
-                    border: 1px solid var(--border-color);
-                    border-radius: 14px;
-                    padding: 22px;
-                    margin-bottom: 18px;
-                }
-
-                .custom-header {
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: center;
-                    margin-bottom: 22px;
-                }
-
-                .custom-eyebrow {
-                    font-size: 9px;
-                    font-weight: 800;
-                    letter-spacing: 1.2px;
-                }
-
-                .custom-header h2 {
-                    margin: 4px 0 0;
-                    color: var(--text-color);
-                    font-size: 17px;
-                }
-
-                .custom-header p {
-                    margin: 5px 0 0;
-                    color: var(--muted-text-color);
-                    font-size: 12px;
-                }
-
-                .custom-icon {
-                    font-size: 22px;
-                }
-
-                .custom-controls {
-                    display: grid;
-                    grid-template-columns: 1fr 1fr;
-                    gap: 18px;
-                    margin-bottom: 20px;
-                }
-
-                .color-control {
-                    display: flex;
-                    flex-direction: column;
-                    gap: 8px;
-                }
-
-                .color-control label {
-                    color: var(--text-color);
-                    font-size: 12px;
-                    font-weight: 700;
-                }
-
-                .color-row {
-                    display: flex;
-                    align-items: center;
-                    gap: 10px;
-                }
-
-                .color-row input[type="color"] {
-                    width: 48px;
-                    height: 40px;
-                    padding: 3px;
-                    border: 1px solid var(--border-color);
-                    border-radius: 8px;
-                    cursor: pointer;
-                }
-
-                .color-row input[type="text"] {
-                    flex: 1;
-                    height: 40px;
-                    padding: 0 12px;
-                    border: 1px solid var(--border-color);
-                    border-radius: 8px;
-                    outline: none;
-                    background: var(--background-color);
-                    color: var(--text-color);
-                }
-
-                .theme-preview {
-                    height: 190px;
-                    display: flex;
-                    border: 1px solid var(--border-color);
-                    border-radius: 10px;
-                    overflow: hidden;
-                    margin-bottom: 20px;
-                }
-
-                .preview-sidebar {
-                    width: 24%;
-                    padding: 14px;
-                }
-
-                .preview-sidebar > div:not(.preview-logo) {
-                    height: 6px;
-                    background: rgba(255,255,255,.2);
-                    border-radius: 5px;
-                    margin-bottom: 10px;
-                }
-
-                .preview-logo {
-                    width: 28px;
-                    height: 28px;
-                    border-radius: 7px;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    color: white;
-                    font-weight: 800;
-                    margin-bottom: 20px;
-                }
-
-                .preview-main {
-                    flex: 1;
-                    padding: 12px;
-                }
-
-                .preview-navbar {
-                    height: 28px;
-                    border: 1px solid;
-                    border-radius: 6px;
-                    margin-bottom: 12px;
-                }
-
-                .preview-cards {
-                    display: grid;
-                    grid-template-columns: 1fr 1fr;
-                    gap: 10px;
-                }
-
-                .preview-card {
-                    height: 105px;
-                    border: 1px solid;
-                    border-radius: 7px;
-                }
-
-                .theme-actions {
-                    display: flex;
-                    gap: 10px;
-                    flex-wrap: wrap;
-                }
-
-                .theme-actions button {
-                    padding: 10px 16px;
-                    border-radius: 8px;
-                    font-size: 12px;
-                    font-weight: 700;
-                    cursor: pointer;
-                }
-
-                .primary-button {
-                    border: none;
-                    color: white;
-                }
-
-                .secondary-button,
-                .reset-button {
-                    border: 1px solid var(--border-color);
-                    background: var(--app-background);
-                    color: var(--text-color);
-                }
-
-                .current-theme {
-                    display: flex;
-                    align-items: center;
-                    justify-content: space-between;
-                    padding: 16px 18px;
-                    border: 1px solid var(--border-color);
-                    background: var(--card-color);
-                    border-radius: 12px;
-                }
-
-                .current-label {
-                    color: var(--muted-text-color);
-                    font-size: 9px;
-                    font-weight: 800;
-                    letter-spacing: 1px;
-                    margin-bottom: 4px;
-                }
-
-                .current-name {
-                    color: var(--text-color);
-                    font-size: 13px;
-                    font-weight: 700;
-                }
-
-                .current-color {
-                    width: 32px;
-                    height: 32px;
-                    border-radius: 8px;
-                }
-
-                @media (max-width: 900px) {
-
-                    .theme-content {
-                        padding: 24px;
+                    * {
+                        box-sizing: border-box;
                     }
 
-                    .theme-grid {
-                        grid-template-columns:
-                            repeat(2, minmax(0, 1fr));
+
+                    .theme-hero {
+
+                        display: flex;
+
+                        justify-content:
+                            space-between;
+
+                        align-items:
+                            center;
+
+                        gap: 20px;
+
+                        padding:
+                            28px 24px;
+
+                        margin-bottom:
+                            20px;
+
+                        border-radius:
+                            16px;
+
+                        color:
+                            #ffffff;
+
+                        box-shadow:
+                            0 12px 30px
+                            rgba(
+                                15,
+                                23,
+                                42,
+                                0.12
+                            );
+
+                        transition:
+                            background 0.25s ease;
+
                     }
 
-                }
 
-                @media (max-width: 600px) {
+                    .theme-eyebrow {
 
-                    .theme-content {
-                        padding: 18px;
+                        color:
+                            #dbeafe;
+
+                        font-size:
+                            10px;
+
+                        font-weight:
+                            800;
+
+                        letter-spacing:
+                            1.3px;
+
+                        margin-bottom:
+                            8px;
+
                     }
 
-                    .theme-grid {
-                        grid-template-columns: 1fr;
+
+                    .theme-hero h1 {
+
+                        margin:
+                            0;
+
+                        color:
+                            #ffffff;
+
+                        font-size:
+                            28px;
+
+                        font-weight:
+                            800;
+
+                        letter-spacing:
+                            -0.5px;
+
                     }
 
-                    .custom-controls {
-                        grid-template-columns: 1fr;
+
+                    .theme-hero p {
+
+                        margin:
+                            7px 0 0;
+
+                        color:
+                            #dbeafe;
+
+                        font-size:
+                            12px;
+
                     }
+
 
                     .theme-hero-icon {
-                        display: none;
+
+                        width:
+                            50px;
+
+                        height:
+                            50px;
+
+                        border-radius:
+                            12px;
+
+                        display:
+                            flex;
+
+                        align-items:
+                            center;
+
+                        justify-content:
+                            center;
+
+                        background:
+                            rgba(
+                                255,
+                                255,
+                                255,
+                                0.12
+                            );
+
+                        border:
+                            1px solid
+                            rgba(
+                                255,
+                                255,
+                                255,
+                                0.2
+                            );
+
+                        font-size:
+                            23px;
+
                     }
 
-                    .theme-actions {
-                        flex-direction: column;
+
+                    .theme-card {
+
+                        transition:
+                            transform 0.18s ease,
+                            box-shadow 0.18s ease;
+
                     }
 
-                }
+
+                    .theme-card:hover {
+
+                        transform:
+                            translateY(-3px);
+
+                        box-shadow:
+                            0 10px 25px
+                            rgba(
+                                15,
+                                23,
+                                42,
+                                0.10
+                            );
+
+                    }
+
+
+                    @media (max-width: 800px) {
+
+                        .theme-grid {
+
+                            grid-template-columns:
+                                repeat(2, minmax(0, 1fr))
+                            !important;
+
+                        }
+
+                    }
+
+
+                    @media (max-width: 600px) {
+
+                        .theme-content {
+
+                            padding:
+                                20px !important;
+
+                        }
+
+
+                        .theme-grid {
+
+                            grid-template-columns:
+                                1fr !important;
+
+                        }
+
+
+                        .theme-hero {
+
+                            padding:
+                                22px 20px;
+
+                        }
+
+
+                        .theme-hero h1 {
+
+                            font-size:
+                                24px;
+
+                        }
+
+
+                        .theme-hero-icon {
+
+                            display:
+                                none;
+
+                        }
+
+
+                        .custom-controls {
+
+                            grid-template-columns:
+                                1fr !important;
+
+                        }
+
+                    }
 
                 `}
             </style>
@@ -938,24 +1416,29 @@ function ThemeCard({
                 onSelect(theme)
             }
             style={{
+                ...themeCardStyle,
+
+                background:
+                    theme.card,
+
                 borderColor:
                     selected
                         ? theme.primary
-                        : "var(--border-color)",
+                        : theme.border,
 
                 boxShadow:
                     selected
-                        ? `0 0 0 2px ${theme.primary}30`
+                        ? `0 0 0 2px ${theme.primary}25`
                         : "none"
             }}
         >
 
+            {/* COLOR PREVIEW */}
+
             <div
                 style={{
-                    height: 120,
-                    borderRadius: 9,
-                    overflow: "hidden",
-                    display: "flex",
+                    ...themePreviewStyle,
+
                     background:
                         theme.background
                 }}
@@ -963,94 +1446,89 @@ function ThemeCard({
 
                 <div
                     style={{
-                        width: "29%",
+                        ...themePreviewSidebar,
+
                         background:
-                            theme.sidebar,
-                        padding: 8
+                            theme.sidebar
                     }}
                 >
 
                     <div
                         style={{
-                            width: 17,
-                            height: 17,
-                            borderRadius: 5,
+                            ...themePreviewDot,
+
                             background:
-                                theme.primary,
-                            marginBottom: 13
+                                theme.primary
                         }}
                     />
 
                     <div
-                        style={{
-                            height: 5,
-                            background:
-                                "rgba(255,255,255,.22)",
-                            borderRadius: 4,
-                            marginBottom: 8
-                        }}
+                        style={
+                            themePreviewSidebarLine
+                        }
                     />
 
                     <div
-                        style={{
-                            height: 5,
-                            background:
-                                "rgba(255,255,255,.22)",
-                            borderRadius: 4,
-                            marginBottom: 8
-                        }}
+                        style={
+                            themePreviewSidebarLine
+                        }
+                    />
+
+                    <div
+                        style={
+                            themePreviewSidebarLine
+                        }
                     />
 
                 </div>
 
 
                 <div
-                    style={{
-                        flex: 1,
-                        padding: 8
-                    }}
+                    style={
+                        themePreviewContent
+                    }
                 >
 
                     <div
                         style={{
-                            height: 18,
-                            borderRadius: 5,
+                            ...themePreviewHeader,
+
                             background:
                                 theme.card,
-                            border:
-                                `1px solid ${theme.border}`,
-                            marginBottom: 10
+
+                            borderColor:
+                                theme.border
                         }}
                     />
 
+
                     <div
-                        style={{
-                            display: "grid",
-                            gridTemplateColumns:
-                                "1fr 1fr",
-                            gap: 7
-                        }}
+                        style={
+                            themePreviewContentRow
+                        }
                     >
 
                         <div
                             style={{
-                                height: 65,
+                                ...themePreviewSmallCard,
+
                                 background:
                                     theme.card,
-                                border:
-                                    `1px solid ${theme.border}`,
-                                borderRadius: 6
+
+                                borderColor:
+                                    theme.border
                             }}
                         />
 
                         <div
                             style={{
-                                height: 65,
+                                ...themePreviewSmallCard,
+
                                 background:
                                     theme.card,
-                                border:
-                                    `1px solid ${theme.border}`,
-                                borderRadius: 6
+
+                                borderColor:
+                                    theme.border
                             }}
                         />
 
@@ -1061,36 +1539,34 @@ function ThemeCard({
             </div>
 
 
+            {/* NAME */}
+
             <div
-                style={{
-                    display: "flex",
-                    justifyContent:
-                        "space-between",
-                    alignItems: "center",
-                    padding:
-                        "12px 3px 3px"
-                }}
+                style={
+                    themeCardBottomStyle
+                }
             >
 
                 <div>
 
                     <div
                         style={{
+                            ...themeNameStyle,
+
                             color:
-                                "var(--text-color)",
-                            fontSize: 13,
-                            fontWeight: 700
+                                theme.text
                         }}
                     >
                         {theme.name}
                     </div>
 
+
                     <div
                         style={{
+                            ...themeColorCodeStyle,
+
                             color:
-                                "var(--muted-text-color)",
-                            fontSize: 10,
-                            marginTop: 3
+                                theme.mutedText
                         }}
                     >
                         {theme.primary}
@@ -1103,16 +1579,10 @@ function ThemeCard({
 
                     <div
                         style={{
-                            width: 24,
-                            height: 24,
-                            borderRadius: "50%",
+                            ...selectedCheckStyle,
+
                             background:
-                                theme.primary,
-                            color: "white",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            fontWeight: 800
+                                theme.primary
                         }}
                     >
                         ✓
@@ -1128,5 +1598,945 @@ function ThemeCard({
 
 }
 
+
+// =====================================================
+// PAGE STYLE
+// =====================================================
+
+const pageStyle = {
+
+    display:
+        "flex",
+
+    minHeight:
+        "100vh",
+
+    transition:
+        "background 0.25s ease"
+
+};
+
+
+const mainStyle = {
+
+    flex:
+        1,
+
+    minWidth:
+        0
+
+};
+
+
+const contentStyle = {
+
+    width:
+        "100%",
+
+    maxWidth:
+        "1250px",
+
+    margin:
+        "0 auto",
+
+    padding:
+        "32px",
+
+    boxSizing:
+        "border-box"
+
+};
+
+
+// =====================================================
+// BACK BUTTON
+// =====================================================
+
+const backButtonStyle = {
+
+    border:
+        "none",
+
+    background:
+        "transparent",
+
+    padding:
+        "0",
+
+    marginBottom:
+        "18px",
+
+    fontSize:
+        "12px",
+
+    fontWeight:
+        "700",
+
+    cursor:
+        "pointer"
+
+};
+
+
+// =====================================================
+// MESSAGE
+// =====================================================
+
+const messageStyle = {
+
+    padding:
+        "10px 14px",
+
+    marginBottom:
+        "18px",
+
+    border:
+        "1px solid",
+
+    borderRadius:
+        "9px",
+
+    background:
+        "#ffffff",
+
+    fontSize:
+        "12px",
+
+    fontWeight:
+        "700"
+
+};
+
+
+// =====================================================
+// SECTION
+// =====================================================
+
+const sectionStyle = {
+
+    marginBottom:
+        "24px"
+
+};
+
+
+const sectionHeadingStyle = {
+
+    marginBottom:
+        "16px"
+
+};
+
+
+const sectionTitleStyle = {
+
+    margin:
+        0,
+
+    fontSize:
+        "18px",
+
+    fontWeight:
+        "700"
+
+};
+
+
+const sectionDescriptionStyle = {
+
+    margin:
+        "5px 0 0",
+
+    fontSize:
+        "13px"
+
+};
+
+
+// =====================================================
+// THEME GRID
+// =====================================================
+
+const themeGridStyle = {
+
+    display:
+        "grid",
+
+    gridTemplateColumns:
+        "repeat(3, minmax(0, 1fr))",
+
+    gap:
+        "16px"
+
+};
+
+
+// =====================================================
+// THEME CARD
+// =====================================================
+
+const themeCardStyle = {
+
+    border:
+        "1px solid",
+
+    borderRadius:
+        "14px",
+
+    padding:
+        "12px",
+
+    cursor:
+        "pointer",
+
+    overflow:
+        "hidden",
+
+    transition:
+        "all 0.18s ease"
+
+};
+
+
+// =====================================================
+// THEME PREVIEW
+// =====================================================
+
+const themePreviewStyle = {
+
+    height:
+        "135px",
+
+    borderRadius:
+        "9px",
+
+    overflow:
+        "hidden",
+
+    display:
+        "flex",
+
+    border:
+        "1px solid rgba(0,0,0,0.04)"
+
+};
+
+
+const themePreviewSidebar = {
+
+    width:
+        "29%",
+
+    padding:
+        "10px 7px"
+
+};
+
+
+const themePreviewDot = {
+
+    width:
+        "18px",
+
+    height:
+        "18px",
+
+    borderRadius:
+        "5px",
+
+    marginBottom:
+        "13px"
+
+};
+
+
+const themePreviewSidebarLine = {
+
+    height:
+        "5px",
+
+    borderRadius:
+        "4px",
+
+    background:
+        "rgba(255,255,255,0.22)",
+
+    marginBottom:
+        "8px"
+
+};
+
+
+const themePreviewContent = {
+
+    flex:
+        1,
+
+    padding:
+        "8px"
+
+};
+
+
+const themePreviewHeader = {
+
+    height:
+        "18px",
+
+    borderRadius:
+        "5px",
+
+    border:
+        "1px solid",
+
+    marginBottom:
+        "10px"
+
+};
+
+
+const themePreviewContentRow = {
+
+    display:
+        "grid",
+
+    gridTemplateColumns:
+        "1fr 1fr",
+
+    gap:
+        "7px"
+
+};
+
+
+const themePreviewSmallCard = {
+
+    height:
+        "72px",
+
+    borderRadius:
+        "6px",
+
+    border:
+        "1px solid"
+
+};
+
+
+// =====================================================
+// THEME CARD BOTTOM
+// =====================================================
+
+const themeCardBottomStyle = {
+
+    display:
+        "flex",
+
+    alignItems:
+        "center",
+
+    justifyContent:
+        "space-between",
+
+    padding:
+        "12px 3px 3px"
+
+};
+
+
+const themeNameStyle = {
+
+    fontSize:
+        "13px",
+
+    fontWeight:
+        "700"
+
+};
+
+
+const themeColorCodeStyle = {
+
+    marginTop:
+        "3px",
+
+    fontSize:
+        "10px",
+
+    textTransform:
+        "uppercase"
+
+};
+
+
+const selectedCheckStyle = {
+
+    width:
+        "24px",
+
+    height:
+        "24px",
+
+    borderRadius:
+        "50%",
+
+    color:
+        "#ffffff",
+
+    display:
+        "flex",
+
+    alignItems:
+        "center",
+
+    justifyContent:
+        "center",
+
+    fontSize:
+        "12px",
+
+    fontWeight:
+        "800"
+
+};
+
+
+// =====================================================
+// CUSTOM SECTION
+// =====================================================
+
+const customSectionStyle = {
+
+    border:
+        "1px solid",
+
+    borderRadius:
+        "14px",
+
+    padding:
+        "22px",
+
+    marginBottom:
+        "18px"
+
+};
+
+
+const customHeaderStyle = {
+
+    display:
+        "flex",
+
+    alignItems:
+        "center",
+
+    justifyContent:
+        "space-between",
+
+    marginBottom:
+        "22px"
+
+};
+
+
+const customEyebrowStyle = {
+
+    fontSize:
+        "9px",
+
+    fontWeight:
+        "800",
+
+    letterSpacing:
+        "1.2px",
+
+    marginBottom:
+        "5px"
+
+};
+
+
+const customTitleStyle = {
+
+    margin:
+        0,
+
+    fontSize:
+        "17px",
+
+    fontWeight:
+        "700"
+
+};
+
+
+const customDescriptionStyle = {
+
+    margin:
+        "5px 0 0",
+
+    fontSize:
+        "12px"
+
+};
+
+
+const customIconStyle = {
+
+    width:
+        "42px",
+
+    height:
+        "42px",
+
+    borderRadius:
+        "10px",
+
+    display:
+        "flex",
+
+    alignItems:
+        "center",
+
+    justifyContent:
+        "center",
+
+    fontSize:
+        "18px"
+
+};
+
+
+// =====================================================
+// CUSTOM CONTROLS
+// =====================================================
+
+const customControlsStyle = {
+
+    display:
+        "grid",
+
+    gridTemplateColumns:
+        "1fr 1fr",
+
+    gap:
+        "18px",
+
+    marginBottom:
+        "20px"
+
+};
+
+
+const colorControlStyle = {
+
+    display:
+        "flex",
+
+    flexDirection:
+        "column",
+
+    gap:
+        "8px"
+
+};
+
+
+const labelStyle = {
+
+    fontSize:
+        "12px",
+
+    fontWeight:
+        "700"
+
+};
+
+
+const colorInputRowStyle = {
+
+    display:
+        "flex",
+
+    alignItems:
+        "center",
+
+    gap:
+        "10px"
+
+};
+
+
+const colorPickerStyle = {
+
+    width:
+        "48px",
+
+    height:
+        "40px",
+
+    padding:
+        "3px",
+
+    border:
+        "1px solid #e5e7eb",
+
+    borderRadius:
+        "8px",
+
+    cursor:
+        "pointer"
+
+};
+
+
+const textInputStyle = {
+
+    flex:
+        1,
+
+    height:
+        "40px",
+
+    padding:
+        "0 12px",
+
+    border:
+        "1px solid",
+
+    borderRadius:
+        "8px",
+
+    outline:
+        "none",
+
+    fontSize:
+        "12px"
+
+};
+
+
+// =====================================================
+// PREVIEW
+// =====================================================
+
+const previewStyle = {
+
+    height:
+        "190px",
+
+    display:
+        "flex",
+
+    border:
+        "1px solid",
+
+    borderRadius:
+        "10px",
+
+    overflow:
+        "hidden",
+
+    marginBottom:
+        "20px"
+
+};
+
+
+const previewSidebarStyle = {
+
+    width:
+        "24%",
+
+    padding:
+        "14px"
+
+};
+
+
+const previewLogoStyle = {
+
+    width:
+        "28px",
+
+    height:
+        "28px",
+
+    borderRadius:
+        "7px",
+
+    display:
+        "flex",
+
+    alignItems:
+        "center",
+
+    justifyContent:
+        "center",
+
+    color:
+        "#ffffff",
+
+    fontWeight:
+        "800",
+
+    fontSize:
+        "13px",
+
+    marginBottom:
+        "20px"
+
+};
+
+
+const previewSidebarLineStyle = {
+
+    height:
+        "6px",
+
+    background:
+        "rgba(255,255,255,0.2)",
+
+    borderRadius:
+        "5px",
+
+    marginBottom:
+        "10px"
+
+};
+
+
+const previewMainStyle = {
+
+    flex:
+        1,
+
+    padding:
+        "12px"
+
+};
+
+
+const previewTopBarStyle = {
+
+    height:
+        "28px",
+
+    border:
+        "1px solid",
+
+    borderRadius:
+        "6px",
+
+    marginBottom:
+        "12px"
+
+};
+
+
+const previewCardsStyle = {
+
+    display:
+        "grid",
+
+    gridTemplateColumns:
+        "1fr 1fr",
+
+    gap:
+        "10px"
+
+};
+
+
+const previewCardStyle = {
+
+    height:
+        "105px",
+
+    border:
+        "1px solid",
+
+    borderRadius:
+        "7px",
+
+    padding:
+        "12px"
+
+};
+
+
+const previewCircleStyle = {
+
+    width:
+        "20px",
+
+    height:
+        "20px",
+
+    borderRadius:
+        "6px",
+
+    marginBottom:
+        "14px"
+
+};
+
+
+const previewLineStyle = {
+
+    height:
+        "6px",
+
+    width:
+        "65%",
+
+    borderRadius:
+        "5px",
+
+    opacity:
+        0.15
+
+};
+
+
+// =====================================================
+// ACTION BUTTONS
+// =====================================================
+
+const actionButtonsStyle = {
+
+    display:
+        "flex",
+
+    gap:
+        "10px",
+
+    flexWrap:
+        "wrap"
+
+};
+
+
+const applyButtonStyle = {
+
+    border:
+        "none",
+
+    color:
+        "#ffffff",
+
+    padding:
+        "10px 16px",
+
+    borderRadius:
+        "8px",
+
+    fontSize:
+        "12px",
+
+    fontWeight:
+        "700",
+
+    cursor:
+        "pointer"
+
+};
+
+
+const resetButtonStyle = {
+
+    padding:
+        "10px 16px",
+
+    border:
+        "1px solid",
+
+    borderRadius:
+        "8px",
+
+    fontSize:
+        "12px",
+
+    fontWeight:
+        "700",
+
+    cursor:
+        "pointer"
+
+};
+
+
+// =====================================================
+// CURRENT THEME
+// =====================================================
+
+const currentThemeStyle = {
+
+    display:
+        "flex",
+
+    alignItems:
+        "center",
+
+    justifyContent:
+        "space-between",
+
+    padding:
+        "16px 18px",
+
+    border:
+        "1px solid",
+
+    borderRadius:
+        "12px"
+
+};
+
+
+const currentThemeLabel = {
+
+    fontSize:
+        "9px",
+
+    fontWeight:
+        "800",
+
+    letterSpacing:
+        "1px",
+
+    marginBottom:
+        "4px"
+
+};
+
+
+const currentThemeName = {
+
+    fontSize:
+        "13px",
+
+    fontWeight:
+        "700"
+
+};
+
+
+const currentColorPreview = {
+
+    width:
+        "32px",
+
+    height:
+        "32px",
+
+    borderRadius:
+        "8px"
+
+};
+
+
+// =====================================================
+// EXPORT
+// =====================================================
 
 export default Theme;
