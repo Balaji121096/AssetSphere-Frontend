@@ -105,8 +105,8 @@ function AssetHistory() {
             value.includes("issue")
         ) {
             return {
-                background: "#dbeafe",
-                color: "#1d4ed8"
+                background: "color-mix(in srgb, var(--primary-color) 12%, var(--card-background))",
+                color: "var(--primary-color)"
             };
         }
 
@@ -115,8 +115,8 @@ function AssetHistory() {
             value.includes("receive")
         ) {
             return {
-                background: "#dcfce7",
-                color: "#15803d"
+                background: "color-mix(in srgb, var(--success-color) 12%, var(--card-background))",
+                color: "var(--success-color)"
             };
         }
 
@@ -125,8 +125,8 @@ function AssetHistory() {
             value.includes("maintenance")
         ) {
             return {
-                background: "#fef3c7",
-                color: "#b45309"
+                background: "color-mix(in srgb, var(--warning-color) 14%, var(--card-background))",
+                color: "var(--warning-color)"
             };
         }
 
@@ -135,14 +135,14 @@ function AssetHistory() {
             value.includes("remove")
         ) {
             return {
-                background: "#fee2e2",
-                color: "#b91c1c"
+                background: "color-mix(in srgb, var(--danger-color) 12%, var(--card-background))",
+                color: "var(--danger-color)"
             };
         }
 
         return {
-            background: "#f1f5f9",
-            color: "#475569"
+            background: "var(--muted-background)",
+            color: "var(--muted-text)"
         };
     };
 
@@ -160,12 +160,10 @@ function AssetHistory() {
                 <main style={mainStyle}>
 
                     {/* =================================================
-                        GRADIENT PAGE HEADER
+                        THEME CONTROLLED PAGE HEADER
                     ================================================= */}
 
                     <div style={heroHeader}>
-
-                        {/* LEFT SIDE */}
 
                         <div style={heroContent}>
 
@@ -198,8 +196,6 @@ function AssetHistory() {
 
                         </div>
 
-                        {/* RIGHT SIDE ACTION */}
-
                         <div style={headerActions}>
 
                             <button
@@ -219,7 +215,7 @@ function AssetHistory() {
                                         ...refreshIcon,
                                         display: "inline-block",
                                         animation: loading
-                                            ? "spin 0.8s linear infinite"
+                                            ? "assetHistorySpin 0.8s linear infinite"
                                             : "none"
                                     }}
                                 >
@@ -235,6 +231,7 @@ function AssetHistory() {
 
                     </div>
 
+
                     {/* =================================================
                         SUMMARY CARDS
                     ================================================= */}
@@ -245,16 +242,16 @@ function AssetHistory() {
                             title="Total Activities"
                             value={history.length}
                             icon="#"
-                            iconBackground="#eff6ff"
-                            iconColor="#2563eb"
+                            iconBackground="color-mix(in srgb, var(--primary-color) 10%, var(--card-background))"
+                            iconColor="var(--primary-color)"
                         />
 
                         <SummaryCard
                             title="Showing"
                             value={filteredHistory.length}
                             icon="✓"
-                            iconBackground="#f0fdf4"
-                            iconColor="#16a34a"
+                            iconBackground="color-mix(in srgb, var(--success-color) 10%, var(--card-background))"
+                            iconColor="var(--success-color)"
                         />
 
                         <SummaryCard
@@ -267,8 +264,8 @@ function AssetHistory() {
                                     : "-"
                             }
                             icon="↻"
-                            iconBackground="#fffbeb"
-                            iconColor="#d97706"
+                            iconBackground="color-mix(in srgb, var(--warning-color) 10%, var(--card-background))"
+                            iconColor="var(--warning-color)"
                             valueSmall
                         />
 
@@ -280,22 +277,19 @@ function AssetHistory() {
                                     : "All Records"
                             }
                             icon="⌕"
-                            iconBackground="#f5f3ff"
-                            iconColor="#7c3aed"
+                            iconBackground="color-mix(in srgb, var(--primary-color) 8%, var(--card-background))"
+                            iconColor="var(--primary-color)"
                             valueSmall
                         />
 
                     </div>
+
 
                     {/* =================================================
                         TABLE CARD
                     ================================================= */}
 
                     <div style={tableCard}>
-
-                        {/* =================================================
-                            TABLE HEADER
-                        ================================================= */}
 
                         <div style={tableHeader}>
 
@@ -312,6 +306,7 @@ function AssetHistory() {
                                     found
                                 </p>
                             </div>
+
 
                             {/* SEARCH */}
 
@@ -348,6 +343,7 @@ function AssetHistory() {
                             </div>
 
                         </div>
+
 
                         {/* =================================================
                             TABLE
@@ -389,11 +385,8 @@ function AssetHistory() {
 
                                 </thead>
 
-                                <tbody>
 
-                                    {/* =================================================
-                                        LOADING
-                                    ================================================= */}
+                                <tbody>
 
                                     {loading ? (
                                         <>
@@ -406,22 +399,16 @@ function AssetHistory() {
                                                         }).map(
                                                             (_, index) => (
                                                                 <td
-                                                                    key={
-                                                                        index
-                                                                    }
-                                                                    style={
-                                                                        tdStyle
-                                                                    }
+                                                                    key={index}
+                                                                    style={tdStyle}
                                                                 >
                                                                     <div
                                                                         style={{
                                                                             ...skeleton,
                                                                             width:
-                                                                                index ===
-                                                                                1
+                                                                                index === 1
                                                                                     ? "160px"
-                                                                                    : index ===
-                                                                                        5
+                                                                                    : index === 5
                                                                                         ? "190px"
                                                                                         : "90px"
                                                                         }}
@@ -436,10 +423,6 @@ function AssetHistory() {
                                         </>
                                     ) : filteredHistory.length === 0 ? (
 
-                                        /* =================================================
-                                            EMPTY
-                                        ================================================= */
-
                                         <tr>
 
                                             <td
@@ -447,21 +430,15 @@ function AssetHistory() {
                                                 style={emptyCell}
                                             >
 
-                                                <div
-                                                    style={emptyIcon}
-                                                >
+                                                <div style={emptyIcon}>
                                                     📋
                                                 </div>
 
-                                                <div
-                                                    style={emptyTitle}
-                                                >
+                                                <div style={emptyTitle}>
                                                     No history found
                                                 </div>
 
-                                                <div
-                                                    style={emptyText}
-                                                >
+                                                <div style={emptyText}>
                                                     {search
                                                         ? "Try changing your search."
                                                         : "No asset activities are available yet."}
@@ -472,10 +449,6 @@ function AssetHistory() {
                                         </tr>
 
                                     ) : (
-
-                                        /* =================================================
-                                            HISTORY ROWS
-                                        ================================================= */
 
                                         filteredHistory.map(
                                             (item, index) => {
@@ -491,64 +464,40 @@ function AssetHistory() {
                                                             item.history_id ||
                                                             `${item.asset_code}-${item.action_date}-${index}`
                                                         }
-                                                        style={
-                                                            rowStyle
-                                                        }
-                                                        onMouseEnter={(
-                                                            e
-                                                        ) => {
+                                                        style={rowStyle}
+                                                        onMouseEnter={(e) => {
                                                             e.currentTarget.style.background =
-                                                                "#f8fafc";
+                                                                "var(--table-row-hover)";
                                                         }}
-                                                        onMouseLeave={(
-                                                            e
-                                                        ) => {
+                                                        onMouseLeave={(e) => {
                                                             e.currentTarget.style.background =
-                                                                "#ffffff";
+                                                                "var(--card-background)";
                                                         }}
                                                     >
 
                                                         {/* ASSET CODE */}
 
-                                                        <td
-                                                            style={
-                                                                tdStyle
-                                                            }
-                                                        >
-                                                            <span
-                                                                style={
-                                                                    assetCode
-                                                                }
-                                                            >
+                                                        <td style={tdStyle}>
+                                                            <span style={assetCode}>
                                                                 {item.asset_code ||
                                                                     "-"}
                                                             </span>
                                                         </td>
 
+
                                                         {/* ASSET NAME */}
 
-                                                        <td
-                                                            style={
-                                                                tdStyle
-                                                            }
-                                                        >
-                                                            <div
-                                                                style={
-                                                                    assetName
-                                                                }
-                                                            >
+                                                        <td style={tdStyle}>
+                                                            <div style={assetName}>
                                                                 {item.asset_name ||
                                                                     "-"}
                                                             </div>
                                                         </td>
 
+
                                                         {/* EMPLOYEE */}
 
-                                                        <td
-                                                            style={
-                                                                tdStyle
-                                                            }
-                                                        >
+                                                        <td style={tdStyle}>
 
                                                             {item.employee_name ? (
                                                                 <div
@@ -594,13 +543,10 @@ function AssetHistory() {
 
                                                         </td>
 
+
                                                         {/* ACTION */}
 
-                                                        <td
-                                                            style={
-                                                                tdStyle
-                                                            }
-                                                        >
+                                                        <td style={tdStyle}>
 
                                                             <span
                                                                 style={{
@@ -630,19 +576,12 @@ function AssetHistory() {
 
                                                         </td>
 
+
                                                         {/* DATE */}
 
-                                                        <td
-                                                            style={
-                                                                tdStyle
-                                                            }
-                                                        >
+                                                        <td style={tdStyle}>
 
-                                                            <div
-                                                                style={
-                                                                    dateText
-                                                                }
-                                                            >
+                                                            <div style={dateText}>
                                                                 {formatDate(
                                                                     item.action_date
                                                                 )}
@@ -650,15 +589,14 @@ function AssetHistory() {
 
                                                         </td>
 
+
                                                         {/* REMARKS */}
 
                                                         <td
                                                             style={{
                                                                 ...tdStyle,
-                                                                maxWidth:
-                                                                    "320px",
-                                                                whiteSpace:
-                                                                    "normal"
+                                                                maxWidth: "320px",
+                                                                whiteSpace: "normal"
                                                             }}
                                                         >
 
@@ -666,10 +604,9 @@ function AssetHistory() {
                                                                 style={{
                                                                     color:
                                                                         item.remarks
-                                                                            ? "#475569"
-                                                                            : "#94a3b8",
-                                                                    lineHeight:
-                                                                        "1.5"
+                                                                            ? "var(--text-color)"
+                                                                            : "var(--muted-text)",
+                                                                    lineHeight: "1.5"
                                                                 }}
                                                             >
                                                                 {item.remarks ||
@@ -696,19 +633,30 @@ function AssetHistory() {
 
             </div>
 
+
             {/* =====================================================
                 GLOBAL ANIMATION
             ===================================================== */}
 
             <style>
                 {`
-                    @keyframes spin {
+                    @keyframes assetHistorySpin {
                         from {
                             transform: rotate(0deg);
                         }
 
                         to {
                             transform: rotate(360deg);
+                        }
+                    }
+
+                    @keyframes assetHistorySkeleton {
+                        0% {
+                            background-position: 200% 0;
+                        }
+
+                        100% {
+                            background-position: -200% 0;
                         }
                     }
 
@@ -722,6 +670,10 @@ function AssetHistory() {
                     @media (max-width: 600px) {
                         .asset-history-main {
                             padding: 18px !important;
+                        }
+
+                        .asset-history-stats {
+                            grid-template-columns: 1fr !important;
                         }
                     }
                 `}
@@ -788,7 +740,8 @@ function SummaryCard({
 const pageStyle = {
     display: "flex",
     minHeight: "100vh",
-    background: "#f8fafc"
+    background: "var(--app-background)",
+    color: "var(--text-color)"
 };
 
 const contentStyle = {
@@ -799,7 +752,8 @@ const contentStyle = {
 const mainStyle = {
     padding: "28px",
     maxWidth: "1800px",
-    margin: "0 auto"
+    margin: "0 auto",
+    boxSizing: "border-box"
 };
 
 
@@ -818,7 +772,7 @@ const heroHeader = {
     borderRadius: "16px",
     overflow: "hidden",
     background:
-        "linear-gradient(135deg, #0f172a 0%, #172554 42%, #2563eb 100%)",
+        "linear-gradient(135deg, var(--sidebar-color) 0%, var(--sidebar-color) 42%, var(--primary-color) 100%)",
     boxShadow:
         "0 10px 30px rgba(15,23,42,0.14)",
     boxSizing: "border-box"
@@ -928,8 +882,8 @@ const statsGrid = {
 };
 
 const summaryCard = {
-    background: "#ffffff",
-    border: "1px solid #e5eaf0",
+    background: "var(--card-background)",
+    border: "1px solid var(--border-color)",
     borderRadius: "11px",
     padding: "18px",
     display: "flex",
@@ -954,14 +908,14 @@ const summaryIcon = {
 };
 
 const summaryLabel = {
-    color: "#64748b",
+    color: "var(--muted-text)",
     fontSize: "12px",
     fontWeight: "600",
     marginBottom: "4px"
 };
 
 const summaryValue = {
-    color: "#0f172a",
+    color: "var(--heading-color)",
     fontWeight: "750",
     lineHeight: "1.25",
     wordBreak: "break-word"
@@ -973,8 +927,8 @@ const summaryValue = {
 // =====================================================
 
 const tableCard = {
-    background: "#ffffff",
-    border: "1px solid #e5eaf0",
+    background: "var(--card-background)",
+    border: "1px solid var(--border-color)",
     borderRadius: "11px",
     overflow: "hidden",
     boxShadow:
@@ -983,7 +937,7 @@ const tableCard = {
 
 const tableHeader = {
     padding: "18px 20px",
-    borderBottom: "1px solid #eef2f6",
+    borderBottom: "1px solid var(--border-color)",
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
@@ -994,13 +948,13 @@ const tableHeader = {
 const tableTitle = {
     margin: 0,
     fontSize: "16px",
-    color: "#0f172a",
+    color: "var(--heading-color)",
     fontWeight: "700"
 };
 
 const tableSubtitle = {
     margin: "4px 0 0",
-    color: "#94a3b8",
+    color: "var(--muted-text)",
     fontSize: "12px"
 };
 
@@ -1013,18 +967,18 @@ const searchWrapper = {
     width: "410px",
     maxWidth: "100%",
     height: "40px",
-    border: "1px solid #dbe2ea",
+    border: "1px solid var(--border-color)",
     borderRadius: "8px",
     display: "flex",
     alignItems: "center",
-    background: "#ffffff",
+    background: "var(--input-background)",
     boxSizing: "border-box",
     transition: "border-color .15s, box-shadow .15s"
 };
 
 const searchIcon = {
     marginLeft: "12px",
-    color: "#94a3b8",
+    color: "var(--muted-text)",
     fontSize: "20px",
     lineHeight: 1
 };
@@ -1036,7 +990,7 @@ const searchInput = {
     border: "none",
     outline: "none",
     padding: "0 10px",
-    color: "#334155",
+    color: "var(--text-color)",
     fontSize: "13px",
     background: "transparent"
 };
@@ -1046,7 +1000,7 @@ const clearSearch = {
     height: "28px",
     border: "none",
     background: "transparent",
-    color: "#94a3b8",
+    color: "var(--muted-text)",
     fontSize: "18px",
     cursor: "pointer",
     marginRight: "5px",
@@ -1079,9 +1033,9 @@ const thStyle = {
     fontSize: "11px",
     textTransform: "uppercase",
     letterSpacing: ".04em",
-    color: "#64748b",
-    background: "#f8fafc",
-    borderBottom: "1px solid #e2e8f0",
+    color: "var(--muted-text)",
+    background: "var(--table-header-background)",
+    borderBottom: "1px solid var(--border-color)",
     fontWeight: "700"
 };
 
@@ -1089,13 +1043,13 @@ const tdStyle = {
     padding: "14px 15px",
     textAlign: "left",
     fontSize: "13px",
-    color: "#475569",
-    borderBottom: "1px solid #f1f5f9",
+    color: "var(--text-color)",
+    borderBottom: "1px solid var(--border-color)",
     verticalAlign: "middle"
 };
 
 const rowStyle = {
-    background: "#ffffff",
+    background: "var(--card-background)",
     transition: "background .15s"
 };
 
@@ -1109,15 +1063,17 @@ const assetCode = {
     alignItems: "center",
     padding: "5px 8px",
     borderRadius: "6px",
-    background: "#eff6ff",
-    color: "#2563eb",
-    border: "1px solid #dbeafe",
+    background:
+        "color-mix(in srgb, var(--primary-color) 10%, var(--card-background))",
+    color: "var(--primary-color)",
+    border:
+        "1px solid color-mix(in srgb, var(--primary-color) 20%, var(--card-background))",
     fontSize: "11px",
     fontWeight: "700"
 };
 
 const assetName = {
-    color: "#0f172a",
+    color: "var(--heading-color)",
     fontWeight: "650",
     fontSize: "13px"
 };
@@ -1138,8 +1094,8 @@ const employeeAvatar = {
     height: "30px",
     borderRadius: "50%",
     background:
-        "linear-gradient(135deg, #eef2ff, #e0e7ff)",
-    color: "#4f46e5",
+        "color-mix(in srgb, var(--primary-color) 12%, var(--card-background))",
+    color: "var(--primary-color)",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
@@ -1149,12 +1105,12 @@ const employeeAvatar = {
 };
 
 const employeeName = {
-    color: "#334155",
+    color: "var(--text-color)",
     fontWeight: "500"
 };
 
 const mutedText = {
-    color: "#94a3b8"
+    color: "var(--muted-text)"
 };
 
 
@@ -1179,7 +1135,7 @@ const actionBadge = {
 // =====================================================
 
 const dateText = {
-    color: "#334155",
+    color: "var(--text-color)",
     fontWeight: "500",
     whiteSpace: "nowrap"
 };
@@ -1198,8 +1154,8 @@ const emptyIcon = {
     width: "48px",
     height: "48px",
     borderRadius: "12px",
-    background: "#f1f5f9",
-    color: "#94a3b8",
+    background: "var(--muted-background)",
+    color: "var(--muted-text)",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
@@ -1208,13 +1164,13 @@ const emptyIcon = {
 };
 
 const emptyTitle = {
-    color: "#334155",
+    color: "var(--heading-color)",
     fontWeight: "700",
     fontSize: "14px"
 };
 
 const emptyText = {
-    color: "#94a3b8",
+    color: "var(--muted-text)",
     fontSize: "12px",
     marginTop: "5px"
 };
@@ -1229,9 +1185,9 @@ const skeleton = {
     width: "75%",
     borderRadius: "5px",
     background:
-        "linear-gradient(90deg,#f1f5f9,#e2e8f0,#f1f5f9)",
+        "linear-gradient(90deg, var(--muted-background), var(--border-color), var(--muted-background))",
     backgroundSize: "200% 100%",
-    animation: "skeletonLoading 1.4s ease infinite"
+    animation: "assetHistorySkeleton 1.4s ease infinite"
 };
 
 

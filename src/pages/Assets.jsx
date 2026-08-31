@@ -454,8 +454,10 @@ function Assets() {
         if (assetStatus === "Assigned") {
 
             return {
-                background: "#dbeafe",
-                color: "#1d4ed8"
+                background:
+                    "var(--asset-status-assigned-bg)",
+                color:
+                    "var(--asset-status-assigned-color)"
             };
 
         }
@@ -463,8 +465,10 @@ function Assets() {
         if (assetStatus === "In Stock") {
 
             return {
-                background: "#dcfce7",
-                color: "#166534"
+                background:
+                    "var(--asset-status-stock-bg)",
+                color:
+                    "var(--asset-status-stock-color)"
             };
 
         }
@@ -472,8 +476,10 @@ function Assets() {
         if (assetStatus === "Repair") {
 
             return {
-                background: "#fef3c7",
-                color: "#92400e"
+                background:
+                    "var(--asset-status-repair-bg)",
+                color:
+                    "var(--asset-status-repair-color)"
             };
 
         }
@@ -481,8 +487,10 @@ function Assets() {
         if (assetStatus === "Scrap") {
 
             return {
-                background: "#fee2e2",
-                color: "#991b1b"
+                background:
+                    "var(--asset-status-scrap-bg)",
+                color:
+                    "var(--asset-status-scrap-color)"
             };
 
         }
@@ -490,15 +498,19 @@ function Assets() {
         if (assetStatus === "Lost") {
 
             return {
-                background: "#f3e8ff",
-                color: "#7e22ce"
+                background:
+                    "var(--asset-status-lost-bg)",
+                color:
+                    "var(--asset-status-lost-color)"
             };
 
         }
 
         return {
-            background: "#f1f5f9",
-            color: "#475569"
+            background:
+                "var(--asset-status-default-bg)",
+            color:
+                "var(--asset-status-default-color)"
         };
 
     };
@@ -521,12 +533,12 @@ function Assets() {
                 <main style={contentStyle}>
 
                     {/* =================================================
-                        PAGE HEADER - SAME REPORTS & ANALYTICS DESIGN
+                        PAGE HEADER
                     ================================================= */}
 
                     <div style={headerStyle}>
 
-                        <div>
+                        <div style={headerContentStyle}>
 
                             <div style={eyebrowStyle}>
                                 ASSET MANAGEMENT
@@ -644,8 +656,8 @@ function Assets() {
                             title="Total Assets"
                             value={assets.length}
                             icon="▣"
-                            color="#2563eb"
-                            background="#eff6ff"
+                            color="var(--primary-color)"
+                            background="var(--primary-light)"
                         />
 
                         <SummaryCard
@@ -658,8 +670,8 @@ function Assets() {
                                 ).length
                             }
                             icon="✓"
-                            color="#16a34a"
-                            background="#f0fdf4"
+                            color="var(--success-color)"
+                            background="var(--success-light)"
                         />
 
                         <SummaryCard
@@ -672,8 +684,8 @@ function Assets() {
                                 ).length
                             }
                             icon="◉"
-                            color="#7c3aed"
-                            background="#f5f3ff"
+                            color="var(--secondary-color)"
+                            background="var(--secondary-light)"
                         />
 
                         <SummaryCard
@@ -686,8 +698,8 @@ function Assets() {
                                 ).length
                             }
                             icon="!"
-                            color="#d97706"
-                            background="#fffbeb"
+                            color="var(--warning-color)"
+                            background="var(--warning-light)"
                         />
 
                     </div>
@@ -706,7 +718,7 @@ function Assets() {
                                 <strong
                                     style={{
                                         color:
-                                            "#1d4ed8"
+                                            "var(--primary-color)"
                                     }}
                                 >
                                     Dashboard Filter:
@@ -715,7 +727,9 @@ function Assets() {
                                 <span
                                     style={{
                                         marginLeft:
-                                            "8px"
+                                            "8px",
+                                        color:
+                                            "var(--text-color)"
                                     }}
                                 >
                                     {status}
@@ -1003,7 +1017,12 @@ function Assets() {
                                                     ▣
                                                 </div>
 
-                                                <strong>
+                                                <strong
+                                                    style={{
+                                                        color:
+                                                            "var(--text-color)"
+                                                    }}
+                                                >
                                                     No assets found
                                                 </strong>
 
@@ -1012,7 +1031,7 @@ function Assets() {
                                                         margin:
                                                             "6px 0 0",
                                                         color:
-                                                            "#94a3b8"
+                                                            "var(--muted-text-color)"
                                                     }}
                                                 >
                                                     Try changing your
@@ -1037,11 +1056,11 @@ function Assets() {
                                                     }
                                                     onMouseEnter={(e) => {
                                                         e.currentTarget.style.background =
-                                                            "#f8fafc";
+                                                            "var(--table-row-hover)";
                                                     }}
                                                     onMouseLeave={(e) => {
                                                         e.currentTarget.style.background =
-                                                            "#ffffff";
+                                                            "var(--card-background)";
                                                     }}
                                                 >
 
@@ -1859,9 +1878,11 @@ const pageStyle = {
 
     minHeight: "100vh",
 
-    background: "#f8fafc",
+    background:
+        "var(--app-background)",
 
-    color: "#0f172a"
+    color:
+        "var(--text-color)"
 
 };
 
@@ -1891,10 +1912,18 @@ const contentStyle = {
 
 
 // =====================================================
-// HEADER - REPORTS & ANALYTICS STYLE
+// HEADER
 // =====================================================
 
 const headerStyle = {
+
+    width: "100%",
+
+    minHeight: "116px",
+
+    padding: "22px 24px",
+
+    boxSizing: "border-box",
 
     display: "flex",
 
@@ -1906,21 +1935,28 @@ const headerStyle = {
 
     flexWrap: "wrap",
 
-    minHeight: "116px",
-
-    padding: "22px 24px",
-
     marginBottom: "25px",
-
-    boxSizing: "border-box",
 
     borderRadius: "15px",
 
     background:
-        "linear-gradient(135deg, #111c38 0%, #203d89 100%)",
+        "linear-gradient(135deg, var(--sidebar-color) 0%, var(--sidebar-color) 45%, var(--primary-color) 100%)",
 
     boxShadow:
-        "0 8px 20px rgba(15,23,42,0.12)"
+        "0 10px 30px rgba(15,23,42,0.16)",
+
+    position: "relative",
+
+    overflow: "hidden"
+
+};
+
+
+const headerContentStyle = {
+
+    position: "relative",
+
+    zIndex: 1
 
 };
 
@@ -1933,9 +1969,11 @@ const eyebrowStyle = {
 
     fontWeight: "700",
 
-    letterSpacing: "1.4px",
+    letterSpacing: "1.7px",
 
-    marginBottom: "7px"
+    marginBottom: "7px",
+
+    textTransform: "uppercase"
 
 };
 
@@ -1961,7 +1999,7 @@ const subtitleStyle = {
 
     margin: "6px 0 0",
 
-    color: "#dbeafe",
+    color: "#cbd5e1",
 
     fontSize: "12px",
 
@@ -1978,7 +2016,11 @@ const headerButtonsStyle = {
 
     gap: "9px",
 
-    flexWrap: "wrap"
+    flexWrap: "wrap",
+
+    position: "relative",
+
+    zIndex: 1
 
 };
 
@@ -1993,11 +2035,13 @@ const refreshButtonStyle = {
 
     padding: "0 15px",
 
-    border: "1px solid rgba(255,255,255,0.24)",
+    border:
+        "1px solid rgba(255,255,255,0.25)",
 
-    borderRadius: "8px",
+    borderRadius: "9px",
 
-    background: "rgba(255,255,255,0.08)",
+    background:
+        "rgba(255,255,255,0.12)",
 
     color: "#ffffff",
 
@@ -2006,6 +2050,10 @@ const refreshButtonStyle = {
     fontWeight: "600",
 
     cursor: "pointer",
+
+    backdropFilter: "blur(8px)",
+
+    WebkitBackdropFilter: "blur(8px)",
 
     transition: "all 0.2s ease"
 
@@ -2029,13 +2077,15 @@ const addButtonStyle = {
 
     padding: "0 17px",
 
-    border: "1px solid rgba(255,255,255,0.18)",
+    border:
+        "1px solid rgba(255,255,255,0.18)",
 
-    borderRadius: "8px",
+    borderRadius: "9px",
 
     background: "#ffffff",
 
-    color: "#1d4ed8",
+    color:
+        "var(--primary-color)",
 
     fontSize: "12px",
 
@@ -2078,9 +2128,11 @@ const summaryGridStyle = {
 
 const summaryCardStyle = {
 
-    background: "#ffffff",
+    background:
+        "var(--card-background)",
 
-    border: "1px solid #e8edf3",
+    border:
+        "1px solid var(--border-color)",
 
     borderRadius: "12px",
 
@@ -2121,7 +2173,8 @@ const summaryIconStyle = {
 
 const summaryTitleStyle = {
 
-    color: "#64748b",
+    color:
+        "var(--muted-text-color)",
 
     fontSize: "12px",
 
@@ -2136,7 +2189,8 @@ const summaryValueStyle = {
 
     fontWeight: "750",
 
-    color: "#0f172a"
+    color:
+        "var(--text-color)"
 
 };
 
@@ -2155,15 +2209,20 @@ const filterBannerStyle = {
 
     gap: "15px",
 
-    background: "#eff6ff",
+    background:
+        "var(--primary-light)",
 
-    border: "1px solid #bfdbfe",
+    border:
+        "1px solid var(--primary-border)",
 
     padding: "12px 15px",
 
     borderRadius: "9px",
 
-    marginBottom: "18px"
+    marginBottom: "18px",
+
+    color:
+        "var(--text-color)"
 
 };
 
@@ -2172,9 +2231,10 @@ const clearFilterButtonStyle = {
 
     border: "none",
 
-    background: "#2563eb",
+    background:
+        "var(--primary-color)",
 
-    color: "#fff",
+    color: "#ffffff",
 
     padding: "7px 12px",
 
@@ -2195,9 +2255,11 @@ const clearFilterButtonStyle = {
 
 const tableCardStyle = {
 
-    background: "#ffffff",
+    background:
+        "var(--card-background)",
 
-    border: "1px solid #e5eaf0",
+    border:
+        "1px solid var(--border-color)",
 
     borderRadius: "14px",
 
@@ -2224,7 +2286,7 @@ const tableTopStyle = {
     flexWrap: "wrap",
 
     borderBottom:
-        "1px solid #edf1f5"
+        "1px solid var(--border-color)"
 
 };
 
@@ -2235,7 +2297,10 @@ const tableTitleStyle = {
 
     fontSize: "17px",
 
-    fontWeight: "700"
+    fontWeight: "700",
+
+    color:
+        "var(--text-color)"
 
 };
 
@@ -2244,7 +2309,8 @@ const tableSubtitleStyle = {
 
     margin: "5px 0 0",
 
-    color: "#94a3b8",
+    color:
+        "var(--muted-text-color)",
 
     fontSize: "12px"
 
@@ -2267,9 +2333,11 @@ const searchWrapperStyle = {
 
     alignItems: "center",
 
-    background: "#f8fafc",
+    background:
+        "var(--input-background)",
 
-    border: "1px solid #dbe2ea",
+    border:
+        "1px solid var(--border-color)",
 
     borderRadius: "9px",
 
@@ -2282,7 +2350,8 @@ const searchWrapperStyle = {
 
 const searchIconStyle = {
 
-    color: "#94a3b8",
+    color:
+        "var(--muted-text-color)",
 
     fontSize: "20px",
 
@@ -2307,7 +2376,8 @@ const searchInputStyle = {
 
     fontSize: "13px",
 
-    color: "#0f172a"
+    color:
+        "var(--text-color)"
 
 };
 
@@ -2318,7 +2388,8 @@ const clearButtonStyle = {
 
     background: "transparent",
 
-    color: "#94a3b8",
+    color:
+        "var(--muted-text-color)",
 
     fontSize: "19px",
 
@@ -2333,13 +2404,16 @@ const filterSelectStyle = {
 
     padding: "0 12px",
 
-    border: "1px solid #dbe2ea",
+    border:
+        "1px solid var(--border-color)",
 
     borderRadius: "9px",
 
-    background: "#ffffff",
+    background:
+        "var(--card-background)",
 
-    color: "#475569",
+    color:
+        "var(--text-color)",
 
     fontSize: "13px",
 
@@ -2380,9 +2454,11 @@ const thStyle = {
 
     textAlign: "left",
 
-    background: "#f8fafc",
+    background:
+        "var(--table-header-background)",
 
-    color: "#64748b",
+    color:
+        "var(--muted-text-color)",
 
     fontSize: "11px",
 
@@ -2393,7 +2469,7 @@ const thStyle = {
     letterSpacing: "0.5px",
 
     borderBottom:
-        "1px solid #e8edf3",
+        "1px solid var(--border-color)",
 
     whiteSpace: "nowrap"
 
@@ -2404,12 +2480,13 @@ const tdStyle = {
 
     padding: "14px 16px",
 
-    color: "#475569",
+    color:
+        "var(--secondary-text-color)",
 
     fontSize: "13px",
 
     borderBottom:
-        "1px solid #f0f2f5",
+        "1px solid var(--border-color)",
 
     verticalAlign: "middle"
 
@@ -2418,7 +2495,8 @@ const tdStyle = {
 
 const rowStyle = {
 
-    background: "#ffffff",
+    background:
+        "var(--card-background)",
 
     transition: "background 0.15s"
 
@@ -2448,9 +2526,11 @@ const assetIconStyle = {
 
     borderRadius: "10px",
 
-    background: "#eff6ff",
+    background:
+        "var(--primary-light)",
 
-    color: "#2563eb",
+    color:
+        "var(--primary-color)",
 
     display: "flex",
 
@@ -2469,7 +2549,8 @@ const assetIconStyle = {
 
 const assetNameStyle = {
 
-    color: "#1e293b",
+    color:
+        "var(--text-color)",
 
     fontSize: "13px",
 
@@ -2480,7 +2561,8 @@ const assetNameStyle = {
 
 const assetCodeStyle = {
 
-    color: "#94a3b8",
+    color:
+        "var(--muted-text-color)",
 
     fontSize: "11px",
 
@@ -2491,7 +2573,8 @@ const assetCodeStyle = {
 
 const employeeTextStyle = {
 
-    color: "#334155",
+    color:
+        "var(--secondary-text-color)",
 
     fontWeight: "500"
 
@@ -2500,7 +2583,8 @@ const employeeTextStyle = {
 
 const locationStyle = {
 
-    color: "#475569",
+    color:
+        "var(--secondary-text-color)",
 
     fontSize: "12px"
 
@@ -2580,11 +2664,14 @@ const iconViewButtonStyle = {
 
     ...iconBaseStyle,
 
-    border: "1px solid #cbd5e1",
+    border:
+        "1px solid var(--border-color)",
 
-    background: "#ffffff",
+    background:
+        "var(--card-background)",
 
-    color: "#475569"
+    color:
+        "var(--secondary-text-color)"
 
 };
 
@@ -2593,11 +2680,14 @@ const iconEditButtonStyle = {
 
     ...iconBaseStyle,
 
-    border: "1px solid #bfdbfe",
+    border:
+        "1px solid var(--primary-border)",
 
-    background: "#eff6ff",
+    background:
+        "var(--primary-light)",
 
-    color: "#1d4ed8"
+    color:
+        "var(--primary-color)"
 
 };
 
@@ -2606,11 +2696,14 @@ const iconDeleteButtonStyle = {
 
     ...iconBaseStyle,
 
-    border: "1px solid #fecaca",
+    border:
+        "1px solid var(--danger-border)",
 
-    background: "#fef2f2",
+    background:
+        "var(--danger-light)",
 
-    color: "#b91c1c"
+    color:
+        "var(--danger-color)"
 
 };
 
@@ -2619,11 +2712,14 @@ const iconAssignButtonStyle = {
 
     ...iconBaseStyle,
 
-    border: "1px solid #bfdbfe",
+    border:
+        "1px solid var(--primary-border)",
 
-    background: "#eff6ff",
+    background:
+        "var(--primary-light)",
 
-    color: "#1d4ed8"
+    color:
+        "var(--primary-color)"
 
 };
 
@@ -2632,11 +2728,14 @@ const iconReturnButtonStyle = {
 
     ...iconBaseStyle,
 
-    border: "1px solid #bbf7d0",
+    border:
+        "1px solid var(--success-border)",
 
-    background: "#f0fdf4",
+    background:
+        "var(--success-light)",
 
-    color: "#15803d"
+    color:
+        "var(--success-color)"
 
 };
 
@@ -2645,11 +2744,14 @@ const iconScrapButtonStyle = {
 
     ...iconBaseStyle,
 
-    border: "1px solid #fecaca",
+    border:
+        "1px solid var(--danger-border)",
 
-    background: "#fef2f2",
+    background:
+        "var(--danger-light)",
 
-    color: "#b91c1c"
+    color:
+        "var(--danger-color)"
 
 };
 
@@ -2666,7 +2768,8 @@ const loadingCellStyle = {
 
     textAlign: "center",
 
-    color: "#64748b"
+    color:
+        "var(--secondary-text-color)"
 
 };
 
@@ -2695,13 +2798,14 @@ const largeSpinnerStyle = {
 
     height: "36px",
 
-    border: "4px solid #dbeafe",
+    border:
+        "4px solid var(--primary-light)",
 
     borderTop:
-        "4px solid #2563eb",
+        "4px solid var(--primary-color)",
 
     borderRight:
-        "4px solid #2563eb",
+        "4px solid var(--primary-color)",
 
     borderRadius: "50%",
 
@@ -2715,7 +2819,8 @@ const largeSpinnerStyle = {
 
 const loadingTitleStyle = {
 
-    color: "#334155",
+    color:
+        "var(--text-color)",
 
     fontSize: "14px",
 
@@ -2728,7 +2833,8 @@ const loadingTitleStyle = {
 
 const loadingSubtitleStyle = {
 
-    color: "#94a3b8",
+    color:
+        "var(--muted-text-color)",
 
     fontSize: "12px"
 
@@ -2741,7 +2847,8 @@ const emptyStyle = {
 
     textAlign: "center",
 
-    color: "#64748b",
+    color:
+        "var(--secondary-text-color)",
 
     fontSize: "13px"
 
@@ -2754,7 +2861,10 @@ const emptyIconStyle = {
 
     marginBottom: "10px",
 
-    opacity: 0.6
+    opacity: 0.6,
+
+    color:
+        "var(--primary-color)"
 
 };
 
@@ -2770,7 +2880,7 @@ const overlayStyle = {
     inset: 0,
 
     background:
-        "rgba(15,23,42,0.45)",
+        "rgba(15,23,42,0.55)",
 
     display: "flex",
 
@@ -2787,7 +2897,8 @@ const overlayStyle = {
 
 const modalStyle = {
 
-    background: "#ffffff",
+    background:
+        "var(--card-background)",
 
     width: "100%",
 
@@ -2802,7 +2913,10 @@ const modalStyle = {
     padding: "25px",
 
     boxShadow:
-        "0 20px 50px rgba(0,0,0,0.2)"
+        "0 20px 50px rgba(0,0,0,0.25)",
+
+    color:
+        "var(--text-color)"
 
 };
 
@@ -2822,7 +2936,8 @@ const modalHeaderStyle = {
 
 const modalEyebrowStyle = {
 
-    color: "#2563eb",
+    color:
+        "var(--primary-color)",
 
     fontSize: "10px",
 
@@ -2841,7 +2956,8 @@ const modalTitleStyle = {
 
     fontSize: "20px",
 
-    color: "#0f172a"
+    color:
+        "var(--text-color)"
 
 };
 
@@ -2850,9 +2966,11 @@ const closeButtonStyle = {
 
     border: "none",
 
-    background: "#f1f5f9",
+    background:
+        "var(--input-background)",
 
-    color: "#475569",
+    color:
+        "var(--secondary-text-color)",
 
     borderRadius: "7px",
 
@@ -2893,7 +3011,8 @@ const detailStyle = {
 
     padding: "12px",
 
-    background: "#f8fafc",
+    background:
+        "var(--input-background)",
 
     borderRadius: "8px"
 
@@ -2902,7 +3021,8 @@ const detailStyle = {
 
 const detailLabelStyle = {
 
-    color: "#94a3b8",
+    color:
+        "var(--muted-text-color)",
 
     fontSize: "11px",
 
@@ -2913,7 +3033,8 @@ const detailLabelStyle = {
 
 const detailValueStyle = {
 
-    color: "#334155",
+    color:
+        "var(--secondary-text-color)",
 
     fontSize: "13px"
 
@@ -2934,7 +3055,8 @@ const labelStyle = {
 
     fontWeight: "600",
 
-    color: "#334155",
+    color:
+        "var(--secondary-text-color)",
 
     fontSize: "13px"
 
@@ -2947,7 +3069,8 @@ const inputStyle = {
 
     padding: "10px",
 
-    border: "1px solid #cbd5e1",
+    border:
+        "1px solid var(--border-color)",
 
     borderRadius: "8px",
 
@@ -2955,7 +3078,13 @@ const inputStyle = {
 
     outline: "none",
 
-    fontSize: "13px"
+    fontSize: "13px",
+
+    background:
+        "var(--input-background)",
+
+    color:
+        "var(--text-color)"
 
 };
 
@@ -2977,11 +3106,14 @@ const cancelButtonStyle = {
 
     padding: "10px 16px",
 
-    border: "1px solid #cbd5e1",
+    border:
+        "1px solid var(--border-color)",
 
-    background: "#ffffff",
+    background:
+        "var(--card-background)",
 
-    color: "#475569",
+    color:
+        "var(--secondary-text-color)",
 
     borderRadius: "8px",
 
@@ -2998,7 +3130,8 @@ const saveButtonStyle = {
 
     border: "none",
 
-    background: "#2563eb",
+    background:
+        "var(--primary-color)",
 
     color: "#ffffff",
 
@@ -3012,7 +3145,7 @@ const saveButtonStyle = {
 
 
 // =====================================================
-// RESPONSIVE + ANIMATION
+// ANIMATION + THEME FALLBACKS
 // =====================================================
 
 if (
@@ -3028,6 +3161,61 @@ if (
 
     style.innerHTML = `
 
+        :root {
+
+            --app-background: #f8fafc;
+            --card-background: #ffffff;
+            --input-background: #f8fafc;
+
+            --text-color: #0f172a;
+            --secondary-text-color: #475569;
+            --muted-text-color: #94a3b8;
+
+            --border-color: #e5eaf0;
+
+            --table-header-background: #f8fafc;
+            --table-row-hover: #f8fafc;
+
+            --primary-color: #2563eb;
+            --primary-light: #eff6ff;
+            --primary-border: #bfdbfe;
+
+            --secondary-color: #7c3aed;
+            --secondary-light: #f5f3ff;
+
+            --success-color: #16a34a;
+            --success-light: #f0fdf4;
+            --success-border: #bbf7d0;
+
+            --warning-color: #d97706;
+            --warning-light: #fffbeb;
+            --warning-border: #fde68a;
+
+            --danger-color: #b91c1c;
+            --danger-light: #fef2f2;
+            --danger-border: #fecaca;
+
+            --asset-status-assigned-bg: #dbeafe;
+            --asset-status-assigned-color: #1d4ed8;
+
+            --asset-status-stock-bg: #dcfce7;
+            --asset-status-stock-color: #166534;
+
+            --asset-status-repair-bg: #fef3c7;
+            --asset-status-repair-color: #92400e;
+
+            --asset-status-scrap-bg: #fee2e2;
+            --asset-status-scrap-color: #991b1b;
+
+            --asset-status-lost-bg: #f3e8ff;
+            --asset-status-lost-color: #7e22ce;
+
+            --asset-status-default-bg: #f1f5f9;
+            --asset-status-default-color: #475569;
+
+        }
+
+
         @keyframes spin {
 
             from {
@@ -3039,6 +3227,7 @@ if (
             }
 
         }
+
 
         @keyframes fadeIn {
 
@@ -3052,13 +3241,16 @@ if (
 
         }
 
+
         .assets-header-button:hover {
-            background: rgba(255,255,255,0.14);
+            background: rgba(255,255,255,0.18);
         }
 
+
         .assets-add-button:hover {
-            background: #eff6ff;
+            background: var(--primary-light);
         }
+
 
         @media (max-width: 900px) {
 
@@ -3069,6 +3261,7 @@ if (
 
         }
 
+
         @media (max-width: 600px) {
 
             .assets-summary-grid {
@@ -3078,6 +3271,11 @@ if (
 
             .assets-content {
                 padding: 18px !important;
+            }
+
+            .assets-detail-grid {
+                grid-template-columns:
+                    1fr !important;
             }
 
         }

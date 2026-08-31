@@ -1,3 +1,7 @@
+// =====================================================
+// Settings.jsx
+// =====================================================
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -12,10 +16,6 @@ import Navbar from "../components/Navbar";
 const getCurrentUser = () => {
 
     let user = null;
-
-    // -------------------------------------------------
-    // 1. localStorage user
-    // -------------------------------------------------
 
     try {
 
@@ -35,10 +35,6 @@ const getCurrentUser = () => {
 
     }
 
-
-    // -------------------------------------------------
-    // 2. sessionStorage fallback
-    // -------------------------------------------------
 
     if (!user) {
 
@@ -62,10 +58,6 @@ const getCurrentUser = () => {
 
     }
 
-
-    // -------------------------------------------------
-    // 3. JWT fallback
-    // -------------------------------------------------
 
     if (!user) {
 
@@ -120,13 +112,11 @@ const getUserRole = (user) => {
         return "";
     }
 
-
     const role =
         user.role ||
         user.user_role ||
         user.userRole ||
         "";
-
 
     return String(role).trim();
 
@@ -141,33 +131,12 @@ function Settings() {
 
     const navigate = useNavigate();
 
-
-    // =================================================
-    // CURRENT USER
-    // =================================================
-
     const currentUser =
         getCurrentUser();
-
 
     const currentRole =
         getUserRole(currentUser);
 
-
-    console.log(
-        "SETTINGS CURRENT USER:",
-        currentUser
-    );
-
-    console.log(
-        "SETTINGS CURRENT ROLE:",
-        currentRole
-    );
-
-
-    // =================================================
-    // SETTINGS MENU
-    // =================================================
 
     const settingsItems = [
 
@@ -233,13 +202,33 @@ function Settings() {
 
             background: "#ecfdf5",
 
-            // -----------------------------------------
-            // ADMIN + SUPER ADMIN
-            // -----------------------------------------
-
             allowedRoles: [
                 "Super Admin",
                 "Admin"
+            ]
+
+        },
+
+
+        {
+            title: "Theme",
+
+            description:
+                "Customize the appearance of AssetSphere with your preferred theme.",
+
+            icon: "🎨",
+
+            path: "/settings/theme",
+
+            color: "#db2777",
+
+            background: "#fdf2f8",
+
+            allowedRoles: [
+                "Super Admin",
+                "Admin",
+                "Manager",
+                "Viewer"
             ]
 
         },
@@ -319,26 +308,12 @@ function Settings() {
     ];
 
 
-    // =================================================
-    // FILTER SETTINGS
-    // =================================================
-
     const visibleItems =
         settingsItems.filter((item) => {
-
-            // -----------------------------------------
-            // No role = hide restricted settings
-            // -----------------------------------------
 
             if (!currentRole) {
                 return false;
             }
-
-
-            // -----------------------------------------
-            // SUPER ADMIN
-            // Full access
-            // -----------------------------------------
 
             if (
                 currentRole === "Super Admin"
@@ -348,21 +323,12 @@ function Settings() {
 
             }
 
-
-            // -----------------------------------------
-            // NORMAL ROLE
-            // -----------------------------------------
-
             return item.allowedRoles.includes(
                 currentRole
             );
 
         });
 
-
-    // =================================================
-    // OPEN SETTING
-    // =================================================
 
     const handleOpen = (path) => {
 
@@ -371,42 +337,20 @@ function Settings() {
     };
 
 
-    // =================================================
-    // RENDER
-    // =================================================
-
     return (
 
         <div style={pageStyle}>
 
-            {/* =================================================
-                SIDEBAR
-            ================================================= */}
-
             <Sidebar />
-
-
-            {/* =================================================
-                MAIN
-            ================================================= */}
 
             <div style={mainStyle}>
 
                 <Navbar />
 
-
-                {/* =================================================
-                    CONTENT
-                ================================================= */}
-
                 <main
                     className="settings-content"
                     style={contentStyle}
                 >
-
-                    {/* =================================================
-                        HERO
-                    ================================================= */}
 
                     <section className="settings-hero">
 
@@ -416,11 +360,9 @@ function Settings() {
                                 ASSETSPHERE • SETTINGS
                             </div>
 
-
                             <h1>
                                 Settings
                             </h1>
-
 
                             <p>
                                 Manage your account, users and
@@ -429,17 +371,12 @@ function Settings() {
 
                         </div>
 
-
                         <div className="settings-hero-icon">
                             ⚙️
                         </div>
 
                     </section>
 
-
-                    {/* =================================================
-                        SETTINGS SECTION
-                    ================================================= */}
 
                     <section>
 
@@ -453,7 +390,6 @@ function Settings() {
                                     Settings & Preferences
                                 </h2>
 
-
                                 <p
                                     style={
                                         sectionDescriptionStyle
@@ -464,7 +400,6 @@ function Settings() {
                                 </p>
 
                             </div>
-
 
                             <div
                                 style={
@@ -478,10 +413,6 @@ function Settings() {
 
                         </div>
 
-
-                        {/* =================================================
-                            SETTINGS GRID
-                        ================================================= */}
 
                         <div
                             className="settings-grid"
@@ -504,10 +435,6 @@ function Settings() {
 
                     </section>
 
-
-                    {/* =================================================
-                        ACCOUNT ACCESS
-                    ================================================= */}
 
                     {currentRole && (
 
@@ -533,7 +460,6 @@ function Settings() {
                                         ACCOUNT ACCESS
                                     </div>
 
-
                                     <h2
                                         style={
                                             accountTitleStyle
@@ -543,7 +469,6 @@ function Settings() {
                                     </h2>
 
                                 </div>
-
 
                                 <div
                                     style={
@@ -562,8 +487,6 @@ function Settings() {
                                 }
                             >
 
-                                {/* Avatar */}
-
                                 <div
                                     style={
                                         userAvatarStyle
@@ -580,8 +503,6 @@ function Settings() {
 
                                 </div>
 
-
-                                {/* User Info */}
 
                                 <div
                                     style={
@@ -620,8 +541,6 @@ function Settings() {
                                 </div>
 
 
-                                {/* Role */}
-
                                 <div
                                     style={
                                         roleContainerStyle
@@ -648,7 +567,7 @@ function Settings() {
                                                     : currentRole ===
                                                       "Admin"
                                                         ? "#eff6ff"
-                                                        : "#f8fafc",
+                                                        : "var(--card-color)",
 
                                             color:
                                                 currentRole ===
@@ -657,7 +576,7 @@ function Settings() {
                                                     : currentRole ===
                                                       "Admin"
                                                         ? "#2563eb"
-                                                        : "#475569",
+                                                        : "var(--muted-text-color)",
 
                                             borderColor:
                                                 currentRole ===
@@ -666,7 +585,7 @@ function Settings() {
                                                     : currentRole ===
                                                       "Admin"
                                                         ? "#bfdbfe"
-                                                        : "#e2e8f0"
+                                                        : "var(--border-color)"
                                         }}
                                     >
 
@@ -681,7 +600,7 @@ function Settings() {
                                                         : currentRole ===
                                                           "Admin"
                                                             ? "#2563eb"
-                                                            : "#64748b"
+                                                            : "var(--muted-text-color)"
                                             }}
                                         />
 
@@ -697,10 +616,6 @@ function Settings() {
 
                     )}
 
-
-                    {/* =================================================
-                        HELP CARD
-                    ================================================= */}
 
                     <div
                         style={
@@ -751,10 +666,6 @@ function Settings() {
             </div>
 
 
-            {/* =========================================================
-                CSS
-            ========================================================= */}
-
             <style>
                 {`
 
@@ -763,9 +674,13 @@ function Settings() {
                     }
 
 
-                    /* =========================================
-                       HERO
-                    ========================================= */
+                    body {
+                        margin: 0;
+                        transition:
+                            background-color .25s ease,
+                            color .25s ease;
+                    }
+
 
                     .settings-hero {
 
@@ -791,8 +706,8 @@ function Settings() {
                         background:
                             linear-gradient(
                                 135deg,
-                                #111827 0%,
-                                #1e3a8a 100%
+                                var(--sidebar-color) 0%,
+                                var(--primary-color) 100%
                             );
 
                         color:
@@ -813,7 +728,7 @@ function Settings() {
                     .settings-eyebrow {
 
                         color:
-                            #bfdbfe;
+                            #dbeafe;
 
                         font-size:
                             10px;
@@ -916,10 +831,6 @@ function Settings() {
                     }
 
 
-                    /* =========================================
-                       CARD
-                    ========================================= */
-
                     .settings-card {
 
                         transition:
@@ -945,7 +856,7 @@ function Settings() {
                             );
 
                         border-color:
-                            #d7dee8 !important;
+                            var(--primary-color) !important;
 
                     }
 
@@ -957,7 +868,7 @@ function Settings() {
                             translateX(4px);
 
                         color:
-                            #2563eb !important;
+                            var(--primary-color) !important;
 
                     }
 
@@ -987,10 +898,6 @@ function Settings() {
 
                     }
 
-
-                    /* =========================================
-                       RESPONSIVE
-                    ========================================= */
 
                     @media (max-width: 900px) {
 
@@ -1153,16 +1060,12 @@ function SettingCard({
 
                 borderColor:
                     isFocused
-                        ? "#93c5fd"
-                        : "#e5e7eb"
+                        ? "var(--primary-color)"
+                        : "var(--border-color)"
 
             }}
 
         >
-
-            {/* =============================================
-                ICON
-            ============================================= */}
 
             <div
 
@@ -1186,10 +1089,6 @@ function SettingCard({
 
             </div>
 
-
-            {/* =============================================
-                CONTENT
-            ============================================= */}
 
             <div
                 style={
@@ -1229,10 +1128,6 @@ function SettingCard({
             </div>
 
 
-            {/* =============================================
-                ARROW
-            ============================================= */}
-
             <div
 
                 className="settings-arrow"
@@ -1255,7 +1150,7 @@ function SettingCard({
 
 
 // =====================================================
-// PAGE STYLE
+// STYLES
 // =====================================================
 
 const pageStyle = {
@@ -1267,10 +1162,10 @@ const pageStyle = {
         "100vh",
 
     background:
-        "#f8fafc",
+        "var(--app-background)",
 
     color:
-        "#0f172a"
+        "var(--text-color)"
 
 };
 
@@ -1305,10 +1200,6 @@ const contentStyle = {
 
 };
 
-
-// =====================================================
-// SECTION
-// =====================================================
 
 const sectionHeadingStyle = {
 
@@ -1345,7 +1236,7 @@ const sectionTitleStyle = {
         "700",
 
     color:
-        "#1e293b"
+        "var(--text-color)"
 
 };
 
@@ -1356,7 +1247,7 @@ const sectionDescriptionStyle = {
         "5px 0 0",
 
     color:
-        "#94a3b8",
+        "var(--muted-text-color)",
 
     fontSize:
         "13px"
@@ -1373,13 +1264,13 @@ const sectionCountStyle = {
         "20px",
 
     background:
-        "#f1f5f9",
+        "var(--card-color)",
 
     border:
-        "1px solid #e2e8f0",
+        "1px solid var(--border-color)",
 
     color:
-        "#64748b",
+        "var(--muted-text-color)",
 
     fontSize:
         "11px",
@@ -1389,10 +1280,6 @@ const sectionCountStyle = {
 
 };
 
-
-// =====================================================
-// SETTINGS GRID
-// =====================================================
 
 const settingsGridStyle = {
 
@@ -1408,17 +1295,13 @@ const settingsGridStyle = {
 };
 
 
-// =====================================================
-// SETTING CARD
-// =====================================================
-
 const settingCardStyle = {
 
     background:
-        "#ffffff",
+        "var(--card-color)",
 
     border:
-        "1px solid #e5e7eb",
+        "1px solid var(--border-color)",
 
     borderRadius:
         "14px",
@@ -1519,7 +1402,7 @@ const settingTitleStyle = {
         "700",
 
     color:
-        "#1e293b"
+        "var(--text-color)"
 
 };
 
@@ -1536,7 +1419,7 @@ const settingDescriptionStyle = {
         "1.55",
 
     color:
-        "#64748b",
+        "var(--muted-text-color)",
 
     maxWidth:
         "420px"
@@ -1550,7 +1433,7 @@ const settingArrowStyle = {
         "21px",
 
     color:
-        "#94a3b8",
+        "var(--muted-text-color)",
 
     flexShrink:
         0
@@ -1558,20 +1441,16 @@ const settingArrowStyle = {
 };
 
 
-// =====================================================
-// ACCOUNT ACCESS
-// =====================================================
-
 const accountSectionStyle = {
 
     marginTop:
         "28px",
 
     background:
-        "#ffffff",
+        "var(--card-color)",
 
     border:
-        "1px solid #e5e7eb",
+        "1px solid var(--border-color)",
 
     borderRadius:
         "14px",
@@ -1600,7 +1479,7 @@ const accountHeaderStyle = {
         "18px 20px",
 
     borderBottom:
-        "1px solid #eef2f6"
+        "1px solid var(--border-color)"
 
 };
 
@@ -1608,7 +1487,7 @@ const accountHeaderStyle = {
 const accountEyebrowStyle = {
 
     color:
-        "#64748b",
+        "var(--muted-text-color)",
 
     fontSize:
         "10px",
@@ -1637,7 +1516,7 @@ const accountTitleStyle = {
         "700",
 
     color:
-        "#1e293b"
+        "var(--text-color)"
 
 };
 
@@ -1654,7 +1533,7 @@ const accountIconStyle = {
         "10px",
 
     background:
-        "#f8fafc",
+        "var(--app-background)",
 
     display:
         "flex",
@@ -1706,7 +1585,7 @@ const userAvatarStyle = {
         "50%",
 
     background:
-        "linear-gradient(135deg, #2563eb, #4f46e5)",
+        "linear-gradient(135deg, var(--primary-color), var(--primary-color))",
 
     color:
         "#ffffff",
@@ -1749,7 +1628,7 @@ const userNameStyle = {
         "700",
 
     color:
-        "#1e293b"
+        "var(--text-color)"
 
 };
 
@@ -1763,7 +1642,7 @@ const userEmailStyle = {
         "12px",
 
     color:
-        "#94a3b8"
+        "var(--muted-text-color)"
 
 };
 
@@ -1800,7 +1679,7 @@ const roleLabelStyle = {
         "1px",
 
     color:
-        "#94a3b8"
+        "var(--muted-text-color)"
 
 };
 
@@ -1848,10 +1727,6 @@ const roleDotStyle = {
 };
 
 
-// =====================================================
-// HELP CARD
-// =====================================================
-
 const helpCardStyle = {
 
     marginTop:
@@ -1870,10 +1745,10 @@ const helpCardStyle = {
         "16px 18px",
 
     background:
-        "#f8fafc",
+        "var(--app-background)",
 
     border:
-        "1px solid #e5e7eb",
+        "1px solid var(--border-color)",
 
     borderRadius:
         "12px"
@@ -1936,7 +1811,7 @@ const helpTitleStyle = {
         "700",
 
     color:
-        "#334155"
+        "var(--text-color)"
 
 };
 
@@ -1950,7 +1825,7 @@ const helpDescriptionStyle = {
         "11.5px",
 
     color:
-        "#94a3b8",
+        "var(--muted-text-color)",
 
     lineHeight:
         "1.5"

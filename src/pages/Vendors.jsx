@@ -1,3 +1,5 @@
+// Vendors.jsx
+
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -137,12 +139,12 @@ function Vendors() {
                 <main style={mainStyle}>
 
                     {/* =================================================
-                        PAGE HEADER - DARK NAVY / BLUE GRADIENT
+                        PAGE HEADER
+                        THEME COLORS ARE NOW CONNECTED TO
+                        THE SAME CSS VARIABLES USED BY DASHBOARD
                     ================================================= */}
 
                     <div style={heroHeader}>
-
-                        {/* LEFT */}
 
                         <div style={heroLeft}>
 
@@ -168,8 +170,6 @@ function Vendors() {
 
                         </div>
 
-
-                        {/* RIGHT ACTIONS */}
 
                         <div style={heroActions}>
 
@@ -231,32 +231,32 @@ function Vendors() {
                             title="Total Vendors"
                             value={stats.total}
                             icon="▣"
-                            iconColor="#2563eb"
-                            iconBackground="#eff6ff"
+                            iconColor="var(--primary-color)"
+                            iconBackground="var(--primary-light)"
                         />
 
                         <StatCard
                             title="Active"
                             value={stats.active}
                             icon="✓"
-                            iconColor="#16a34a"
-                            iconBackground="#f0fdf4"
+                            iconColor="var(--success-color)"
+                            iconBackground="var(--success-light)"
                         />
 
                         <StatCard
                             title="Inactive"
                             value={stats.inactive}
                             icon="!"
-                            iconColor="#dc2626"
-                            iconBackground="#fef2f2"
+                            iconColor="var(--danger-color)"
+                            iconBackground="var(--danger-light)"
                         />
 
                         <StatCard
                             title="Search Results"
                             value={stats.showing}
                             icon="⌕"
-                            iconColor="#7c3aed"
-                            iconBackground="#f5f3ff"
+                            iconColor="var(--secondary-color)"
+                            iconBackground="var(--secondary-light)"
                         />
 
                     </div>
@@ -267,10 +267,6 @@ function Vendors() {
                     ================================================= */}
 
                     <div style={tableCard}>
-
-                        {/* =================================================
-                            TABLE HEADER
-                        ================================================= */}
 
                         <div style={tableHeader}>
 
@@ -288,8 +284,6 @@ function Vendors() {
                                 </p>
                             </div>
 
-
-                            {/* SEARCH */}
 
                             <div style={searchWrapper}>
 
@@ -380,10 +374,6 @@ function Vendors() {
 
                                 <tbody>
 
-                                    {/* =================================================
-                                        LOADING
-                                    ================================================= */}
-
                                     {loading ? (
                                         <>
                                             {[1, 2, 3, 4, 5].map(
@@ -409,8 +399,7 @@ function Vendors() {
                                                                         style={{
                                                                             ...skeleton,
                                                                             width:
-                                                                                index ===
-                                                                                2
+                                                                                index === 2
                                                                                     ? "170px"
                                                                                     : "75%"
                                                                         }}
@@ -425,10 +414,6 @@ function Vendors() {
                                         </>
                                     ) : filteredVendors.length === 0 ? (
 
-                                        /* =================================================
-                                            EMPTY
-                                        ================================================= */
-
                                         <tr>
 
                                             <td
@@ -437,25 +422,19 @@ function Vendors() {
                                             >
 
                                                 <div
-                                                    style={
-                                                        emptyIcon
-                                                    }
+                                                    style={emptyIcon}
                                                 >
                                                     ▣
                                                 </div>
 
                                                 <div
-                                                    style={
-                                                        emptyTitle
-                                                    }
+                                                    style={emptyTitle}
                                                 >
                                                     No vendors found
                                                 </div>
 
                                                 <div
-                                                    style={
-                                                        emptyText
-                                                    }
+                                                    style={emptyText}
                                                 >
                                                     {search
                                                         ? "Try changing your search."
@@ -468,10 +447,6 @@ function Vendors() {
 
                                     ) : (
 
-                                        /* =================================================
-                                            VENDOR ROWS
-                                        ================================================= */
-
                                         filteredVendors.map(
                                             (vendor) => (
 
@@ -479,24 +454,16 @@ function Vendors() {
                                                     key={
                                                         vendor.vendor_id
                                                     }
-                                                    style={
-                                                        rowStyle
-                                                    }
-                                                    onMouseEnter={(
-                                                        e
-                                                    ) => {
+                                                    style={rowStyle}
+                                                    onMouseEnter={(e) => {
                                                         e.currentTarget.style.background =
-                                                            "#f8fafc";
+                                                            "var(--table-row-hover)";
                                                     }}
-                                                    onMouseLeave={(
-                                                        e
-                                                    ) => {
+                                                    onMouseLeave={(e) => {
                                                         e.currentTarget.style.background =
-                                                            "#ffffff";
+                                                            "var(--card-background)";
                                                     }}
                                                 >
-
-                                                    {/* ID */}
 
                                                     <td
                                                         style={
@@ -516,8 +483,6 @@ function Vendors() {
                                                     </td>
 
 
-                                                    {/* CODE */}
-
                                                     <td
                                                         style={
                                                             tdStyle
@@ -533,8 +498,6 @@ function Vendors() {
                                                         </span>
                                                     </td>
 
-
-                                                    {/* VENDOR */}
 
                                                     <td
                                                         style={
@@ -597,8 +560,6 @@ function Vendors() {
                                                     </td>
 
 
-                                                    {/* CONTACT */}
-
                                                     <td
                                                         style={
                                                             tdStyle
@@ -609,8 +570,6 @@ function Vendors() {
                                                     </td>
 
 
-                                                    {/* EMAIL */}
-
                                                     <td
                                                         style={
                                                             tdStyle
@@ -620,8 +579,6 @@ function Vendors() {
                                                             "-"}
                                                     </td>
 
-
-                                                    {/* PHONE */}
 
                                                     <td
                                                         style={
@@ -635,8 +592,6 @@ function Vendors() {
                                                     </td>
 
 
-                                                    {/* STATUS */}
-
                                                     <td
                                                         style={
                                                             tdStyle
@@ -649,13 +604,13 @@ function Vendors() {
                                                                 color:
                                                                     vendor.status ===
                                                                     "Active"
-                                                                        ? "#15803d"
-                                                                        : "#64748b",
+                                                                        ? "var(--success-color)"
+                                                                        : "var(--muted-text)",
                                                                 background:
                                                                     vendor.status ===
                                                                     "Active"
-                                                                        ? "#f0fdf4"
-                                                                        : "#f1f5f9"
+                                                                        ? "var(--success-light)"
+                                                                        : "var(--muted-background)"
                                                             }}
                                                         >
 
@@ -668,8 +623,8 @@ function Vendors() {
                                                                     background:
                                                                         vendor.status ===
                                                                         "Active"
-                                                                            ? "#22c55e"
-                                                                            : "#94a3b8"
+                                                                            ? "var(--success-color)"
+                                                                            : "var(--muted-text)"
                                                                 }}
                                                             />
 
@@ -680,8 +635,6 @@ function Vendors() {
 
                                                     </td>
 
-
-                                                    {/* ACTION */}
 
                                                     <td
                                                         style={{
@@ -694,10 +647,7 @@ function Vendors() {
                                                         <div
                                                             style={
                                                                 actionWrapper
-                                                            }
-                                                        >
-
-                                                            {/* VIEW */}
+                                                            }>
 
                                                             <button
                                                                 type="button"
@@ -715,8 +665,6 @@ function Vendors() {
                                                             </button>
 
 
-                                                            {/* EDIT */}
-
                                                             <button
                                                                 type="button"
                                                                 title="Edit"
@@ -732,8 +680,6 @@ function Vendors() {
                                                                 ✎
                                                             </button>
 
-
-                                                            {/* DELETE */}
 
                                                             <button
                                                                 type="button"
@@ -791,10 +737,6 @@ function Vendors() {
             </div>
 
 
-            {/* =====================================================
-                ANIMATIONS
-            ===================================================== */}
-
             <style>
                 {`
                     @keyframes vendorSpin {
@@ -805,6 +747,16 @@ function Vendors() {
                         to {
                             transform: rotate(360deg);
                         }
+                    }
+
+                    .vendor-page-card {
+                        background: var(--card-background);
+                        color: var(--text-color);
+                        border-color: var(--border-color);
+                    }
+
+                    .vendor-page-card input::placeholder {
+                        color: var(--muted-text);
                     }
 
                     @media (max-width: 900px) {
@@ -902,102 +854,174 @@ function StatCard({
 // =====================================================
 
 const pageStyle = {
+
     display: "flex",
+
     minHeight: "100vh",
-    background: "#f8fafc"
+
+    background: "var(--app-background)",
+
+    color: "var(--text-color)"
+
 };
 
 const contentStyle = {
+
     flex: 1,
+
     minWidth: 0
+
 };
 
 const mainStyle = {
+
     padding: "28px",
+
     maxWidth: "1800px",
+
     margin: "0 auto"
+
 };
 
 
 // =====================================================
 // HERO HEADER
+// SAME THEME SYSTEM AS DASHBOARD
 // =====================================================
 
 const heroHeader = {
+
     position: "relative",
+
     display: "flex",
+
     justifyContent: "space-between",
+
     alignItems: "center",
+
     gap: "24px",
+
     marginBottom: "24px",
+
     padding: "25px 28px",
+
     borderRadius: "16px",
+
     overflow: "hidden",
+
     background:
-        "linear-gradient(135deg, #0f172a 0%, #172554 42%, #2563eb 100%)",
+        "linear-gradient(135deg, var(--sidebar-color) 0%, var(--sidebar-color) 45%, var(--primary-color) 100%)",
+
     boxShadow:
-        "0 10px 30px rgba(15, 23, 42, 0.18)"
+        "0 10px 30px rgba(15,23,42,0.18)"
+
 };
 
 const heroLeft = {
+
     display: "flex",
+
     alignItems: "center",
+
     gap: "15px",
+
     minWidth: 0
+
 };
 
 const heroIcon = {
+
     width: "48px",
+
     height: "48px",
+
     borderRadius: "12px",
+
     flexShrink: 0,
+
     background: "rgba(255,255,255,0.14)",
+
     border: "1px solid rgba(255,255,255,0.16)",
+
     display: "flex",
+
     alignItems: "center",
+
     justifyContent: "center",
+
     color: "#ffffff",
+
     fontSize: "22px",
+
     fontWeight: "700",
+
     boxShadow:
         "inset 0 1px 0 rgba(255,255,255,0.08)"
+
 };
 
 const heroBreadcrumb = {
+
     display: "flex",
+
     alignItems: "center",
+
     gap: "8px",
+
     marginBottom: "4px",
+
     color: "rgba(255,255,255,0.62)",
+
     fontSize: "11px",
+
     fontWeight: "500"
+
 };
 
 const heroSlash = {
+
     color: "rgba(255,255,255,0.38)"
+
 };
 
 const heroTitle = {
+
     margin: 0,
+
     color: "#ffffff",
+
     fontSize: "29px",
+
     lineHeight: 1.15,
+
     fontWeight: "750",
+
     letterSpacing: "-0.02em"
+
 };
 
 const heroDescription = {
+
     margin: "6px 0 0",
+
     color: "rgba(255,255,255,0.72)",
+
     fontSize: "13px",
+
     lineHeight: 1.5
+
 };
 
 const heroActions = {
+
     display: "flex",
+
     alignItems: "center",
+
     gap: "9px",
+
     flexShrink: 0
+
 };
 
 
@@ -1006,49 +1030,86 @@ const heroActions = {
 // =====================================================
 
 const heroSecondaryButton = {
+
     height: "40px",
+
     padding: "0 15px",
+
     border: "1px solid rgba(255,255,255,0.22)",
+
     borderRadius: "8px",
+
     background: "rgba(255,255,255,0.10)",
+
     color: "#ffffff",
+
     cursor: "pointer",
+
     fontSize: "12px",
+
     fontWeight: "600",
+
     display: "flex",
+
     alignItems: "center",
+
     justifyContent: "center",
+
     gap: "7px",
+
     backdropFilter: "blur(8px)"
+
 };
 
 const heroPrimaryButton = {
+
     height: "40px",
+
     padding: "0 16px",
+
     border: "none",
+
     borderRadius: "8px",
+
     background: "#ffffff",
-    color: "#1d4ed8",
+
+    color: "var(--primary-color)",
+
     cursor: "pointer",
+
     fontSize: "12px",
+
     fontWeight: "700",
+
     display: "flex",
+
     alignItems: "center",
+
     justifyContent: "center",
+
     gap: "7px",
+
     boxShadow:
         "0 4px 12px rgba(0,0,0,0.14)"
+
 };
 
 const refreshIcon = {
+
     display: "inline-block",
+
     fontSize: "17px",
+
     lineHeight: 1
+
 };
 
 const plusIcon = {
+
     fontSize: "17px",
+
     lineHeight: 1
+
 };
 
 
@@ -1057,49 +1118,85 @@ const plusIcon = {
 // =====================================================
 
 const statsGrid = {
+
     display: "grid",
+
     gridTemplateColumns:
         "repeat(4, minmax(0, 1fr))",
+
     gap: "15px",
+
     marginBottom: "22px"
+
 };
 
 const statCard = {
-    background: "#ffffff",
-    border: "1px solid #e5eaf0",
+
+    background: "var(--card-background)",
+
+    border: "1px solid var(--border-color)",
+
     borderRadius: "11px",
+
     padding: "18px",
+
     display: "flex",
+
     alignItems: "center",
+
     gap: "14px",
+
     minHeight: "82px",
+
     boxSizing: "border-box",
+
     boxShadow:
-        "0 1px 3px rgba(15,23,42,0.04)"
+        "0 1px 3px rgba(15,23,42,0.04)",
+
+    color: "var(--text-color)"
+
 };
 
 const statIcon = {
+
     width: "42px",
+
     height: "42px",
+
     borderRadius: "9px",
+
     display: "flex",
+
     alignItems: "center",
+
     justifyContent: "center",
+
     fontSize: "20px",
+
     fontWeight: "700",
+
     flexShrink: 0
+
 };
 
 const statTitle = {
+
     fontSize: "12px",
-    color: "#64748b",
+
+    color: "var(--muted-text)",
+
     marginBottom: "4px"
+
 };
 
 const statValue = {
+
     fontSize: "24px",
+
     fontWeight: "750",
-    color: "#0f172a"
+
+    color: "var(--text-color)"
+
 };
 
 
@@ -1108,35 +1205,61 @@ const statValue = {
 // =====================================================
 
 const tableCard = {
-    background: "#ffffff",
-    border: "1px solid #e5eaf0",
+
+    background: "var(--card-background)",
+
+    border: "1px solid var(--border-color)",
+
     borderRadius: "12px",
+
     overflow: "hidden",
+
     boxShadow:
-        "0 2px 5px rgba(15,23,42,0.04)"
+        "0 2px 5px rgba(15,23,42,0.04)",
+
+    color: "var(--text-color)"
+
 };
 
 const tableHeader = {
+
     padding: "18px 20px",
-    borderBottom: "1px solid #eef2f6",
+
+    borderBottom:
+        "1px solid var(--border-color)",
+
     display: "flex",
+
     justifyContent: "space-between",
+
     alignItems: "center",
+
     gap: "15px",
+
     flexWrap: "wrap"
+
 };
 
 const tableTitle = {
+
     margin: 0,
+
     fontSize: "16px",
-    color: "#0f172a",
+
+    color: "var(--text-color)",
+
     fontWeight: "700"
+
 };
 
 const tableSubtitle = {
+
     margin: "4px 0 0",
-    color: "#94a3b8",
+
+    color: "var(--muted-text)",
+
     fontSize: "12px"
+
 };
 
 
@@ -1145,43 +1268,77 @@ const tableSubtitle = {
 // =====================================================
 
 const searchWrapper = {
+
     width: "360px",
+
     maxWidth: "100%",
+
     height: "40px",
-    border: "1px solid #dbe2ea",
+
+    border:
+        "1px solid var(--border-color)",
+
     borderRadius: "8px",
+
     display: "flex",
+
     alignItems: "center",
-    background: "#ffffff",
+
+    background: "var(--input-background)",
+
     boxSizing: "border-box",
-    transition: "border-color .15s, box-shadow .15s"
+
+    transition:
+        "border-color .15s, box-shadow .15s"
+
 };
 
 const searchIcon = {
+
     marginLeft: "12px",
-    color: "#94a3b8",
+
+    color: "var(--muted-text)",
+
     fontSize: "21px"
+
 };
 
 const searchInput = {
+
     flex: 1,
+
     minWidth: 0,
+
     height: "100%",
+
     border: "none",
+
     outline: "none",
+
     padding: "0 10px",
-    color: "#334155",
+
+    color: "var(--text-color)",
+
     fontSize: "13px",
+
     background: "transparent"
+
 };
 
 const clearSearch = {
+
     border: "none",
+
     background: "transparent",
-    color: "#94a3b8",
+
+    color: "var(--muted-text)",
+
     fontSize: "18px",
+
     cursor: "pointer",
+
     marginRight: "8px"
+
 };
 
 
@@ -1190,42 +1347,74 @@ const clearSearch = {
 // =====================================================
 
 const tableScroll = {
+
     width: "100%",
+
     overflowX: "auto"
+
 };
 
 const table = {
+
     width: "100%",
+
     minWidth: "1200px",
+
     borderCollapse: "collapse"
+
 };
 
 const thStyle = {
+
     padding: "13px 15px",
+
     textAlign: "left",
+
     whiteSpace: "nowrap",
+
     fontSize: "11px",
+
     textTransform: "uppercase",
+
     letterSpacing: ".04em",
-    color: "#64748b",
-    background: "#f8fafc",
-    borderBottom: "1px solid #e2e8f0",
+
+    color: "var(--muted-text)",
+
+    background:
+        "var(--table-header-background)",
+
+    borderBottom:
+        "1px solid var(--border-color)",
+
     fontWeight: "700"
+
 };
 
 const tdStyle = {
+
     padding: "14px 15px",
+
     textAlign: "left",
+
     whiteSpace: "nowrap",
+
     fontSize: "13px",
-    color: "#475569",
-    borderBottom: "1px solid #f1f5f9",
+
+    color: "var(--secondary-text)",
+
+    borderBottom:
+        "1px solid var(--border-color)",
+
     verticalAlign: "middle"
+
 };
 
 const rowStyle = {
-    background: "#ffffff",
+
+    background: "var(--card-background)",
+
     transition: "background .15s"
+
 };
 
 
@@ -1234,55 +1423,99 @@ const rowStyle = {
 // =====================================================
 
 const idText = {
-    color: "#64748b",
+
+    color: "var(--muted-text)",
+
     fontSize: "12px",
+
     fontWeight: "600"
+
 };
 
 const codeBadge = {
+
     padding: "4px 7px",
+
     borderRadius: "5px",
-    background: "#f8fafc",
-    color: "#475569",
-    border: "1px solid #e2e8f0",
+
+    background:
+        "var(--muted-background)",
+
+    color: "var(--secondary-text)",
+
+    border:
+        "1px solid var(--border-color)",
+
     fontSize: "11px"
+
 };
 
 const vendorCell = {
+
     display: "flex",
+
     alignItems: "center",
+
     gap: "10px"
+
 };
 
 const vendorIcon = {
+
     width: "36px",
+
     height: "36px",
+
     borderRadius: "8px",
-    background: "#eff6ff",
-    color: "#2563eb",
+
+    background:
+        "var(--primary-light)",
+
+    color:
+        "var(--primary-color)",
+
     display: "flex",
+
     alignItems: "center",
+
     justifyContent: "center",
+
     fontWeight: "700",
+
     fontSize: "14px",
+
     flexShrink: 0
+
 };
 
 const vendorName = {
+
     border: "none",
+
     background: "transparent",
-    color: "#0f172a",
+
+    color: "var(--text-color)",
+
     cursor: "pointer",
+
     padding: 0,
+
     fontWeight: "650",
+
     fontSize: "13px",
+
     textAlign: "left"
+
 };
 
 const vendorSmallCode = {
-    color: "#94a3b8",
+
+    color: "var(--muted-text)",
+
     fontSize: "11px",
+
     marginTop: "3px"
+
 };
 
 
@@ -1291,13 +1524,21 @@ const vendorSmallCode = {
 // =====================================================
 
 const statusBadge = {
+
     display: "inline-flex",
+
     alignItems: "center",
+
     gap: "6px",
+
     borderRadius: "20px",
+
     padding: "5px 8px",
+
     fontSize: "10px",
+
     fontWeight: "700"
+
 };
 
 
@@ -1306,42 +1547,80 @@ const statusBadge = {
 // =====================================================
 
 const actionWrapper = {
+
     display: "flex",
+
     justifyContent: "flex-end",
+
     gap: "6px"
+
 };
 
 const actionBase = {
+
     width: "31px",
+
     height: "31px",
+
     borderRadius: "7px",
+
     cursor: "pointer",
+
     fontSize: "14px",
+
     display: "inline-flex",
+
     alignItems: "center",
+
     justifyContent: "center",
+
     padding: 0
+
 };
 
 const viewButton = {
+
     ...actionBase,
-    border: "1px solid #e2e8f0",
-    background: "#f8fafc",
-    color: "#475569"
+
+    border:
+        "1px solid var(--border-color)",
+
+    background:
+        "var(--muted-background)",
+
+    color:
+        "var(--secondary-text)"
+
 };
 
 const editButton = {
+
     ...actionBase,
-    border: "1px solid #dbeafe",
-    background: "#eff6ff",
-    color: "#2563eb"
+
+    border:
+        "1px solid var(--primary-border)",
+
+    background:
+        "var(--primary-light)",
+
+    color:
+        "var(--primary-color)"
+
 };
 
 const deleteButton = {
+
     ...actionBase,
-    border: "1px solid #fee2e2",
-    background: "#fef2f2",
-    color: "#dc2626"
+
+    border:
+        "1px solid var(--danger-border)",
+
+    background:
+        "var(--danger-light)",
+
+    color:
+        "var(--danger-color)"
+
 };
 
 
@@ -1350,33 +1629,59 @@ const deleteButton = {
 // =====================================================
 
 const emptyCell = {
+
     padding: "70px 20px",
+
     textAlign: "center"
+
 };
 
 const emptyIcon = {
+
     width: "48px",
+
     height: "48px",
+
     borderRadius: "12px",
-    background: "#f1f5f9",
-    color: "#94a3b8",
+
+    background:
+        "var(--muted-background)",
+
+    color:
+        "var(--muted-text)",
+
     display: "flex",
+
     alignItems: "center",
+
     justifyContent: "center",
+
     margin: "0 auto 12px",
+
     fontSize: "20px"
+
 };
 
 const emptyTitle = {
-    color: "#334155",
+
+    color:
+        "var(--secondary-text)",
+
     fontWeight: "700",
+
     fontSize: "14px"
+
 };
 
 const emptyText = {
-    color: "#94a3b8",
+
+    color:
+        "var(--muted-text)",
+
     fontSize: "12px",
+
     marginTop: "5px"
+
 };
 
 
@@ -1385,23 +1690,22 @@ const emptyText = {
 // =====================================================
 
 const skeleton = {
+
     height: "13px",
+
     width: "75%",
+
     borderRadius: "5px",
+
     background:
-        "linear-gradient(90deg,#f1f5f9,#e2e8f0,#f1f5f9)",
+        "linear-gradient(90deg, var(--muted-background), var(--border-color), var(--muted-background))",
+
     backgroundSize: "200% 100%",
-    animation: "vendorSkeleton 1.4s ease-in-out infinite"
+
+    animation:
+        "vendorSkeleton 1.4s ease-in-out infinite"
+
 };
 
-
-// =====================================================
-// GLOBAL SKELETON ANIMATION
-// =====================================================
-
-/*
-   Added through a small style tag in component.
-   No external CSS required.
-*/
 
 export default Vendors;

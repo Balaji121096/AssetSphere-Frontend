@@ -228,7 +228,6 @@ function Employees() {
 
                     <div style={headerStyle}>
 
-                        {/* Decorative background */}
                         <div style={headerGlowOne}></div>
                         <div style={headerGlowTwo}></div>
 
@@ -314,8 +313,8 @@ function Employees() {
                                 employees.length
                             }
                             icon="👥"
-                            color="#2563eb"
-                            background="#eff6ff"
+                            color="var(--primary-color)"
+                            background="var(--primary-light)"
                         />
 
                         <SummaryCard
@@ -602,7 +601,7 @@ function Employees() {
                                                         margin:
                                                             "6px 0 0",
                                                         color:
-                                                            "#94a3b8"
+                                                            "var(--muted-text-color)"
                                                     }}
                                                 >
                                                     Try changing
@@ -630,7 +629,7 @@ function Employees() {
                                                     ) => {
 
                                                         e.currentTarget.style.background =
-                                                            "#f8fafc";
+                                                            "var(--hover-background)";
 
                                                     }}
                                                     onMouseLeave={(
@@ -638,7 +637,7 @@ function Employees() {
                                                     ) => {
 
                                                         e.currentTarget.style.background =
-                                                            "#ffffff";
+                                                            "var(--card-background)";
 
                                                     }}
                                                 >
@@ -651,7 +650,7 @@ function Employees() {
                                                         style={{
                                                             ...tdStyle,
                                                             color:
-                                                                "#64748b"
+                                                                "var(--muted-text-color)"
                                                         }}
                                                     >
 
@@ -975,8 +974,7 @@ function Employees() {
                                     <span
                                         style={
                                             showingStyle
-                                        }
-                                    >
+                                        }>
 
                                         Showing{" "}
 
@@ -1194,9 +1192,9 @@ const pageStyle = {
 
     minHeight: "100vh",
 
-    background: "#f8fafc",
+    background: "var(--app-background)",
 
-    color: "#0f172a"
+    color: "var(--text-color)"
 };
 
 
@@ -1248,7 +1246,7 @@ const headerStyle = {
     borderRadius: "18px",
 
     background:
-        "linear-gradient(135deg, #0f172a 0%, #172554 45%, #2563eb 100%)",
+        "linear-gradient(135deg, var(--sidebar-color) 0%, var(--sidebar-color) 45%, var(--primary-color) 100%)",
 
     boxShadow:
         "0 12px 30px rgba(15, 23, 42, 0.16)",
@@ -1276,7 +1274,7 @@ const headerGlowOne = {
     borderRadius: "50%",
 
     background:
-        "rgba(59,130,246,0.16)",
+        "color-mix(in srgb, var(--primary-color) 16%, transparent)",
 
     right: "-90px",
 
@@ -1296,7 +1294,7 @@ const headerGlowTwo = {
     borderRadius: "50%",
 
     background:
-        "rgba(96,165,250,0.10)",
+        "color-mix(in srgb, var(--primary-color) 12%, transparent)",
 
     right: "230px",
 
@@ -1307,7 +1305,7 @@ const headerGlowTwo = {
 
 
 const eyebrowStyle = {
-    color: "#93c5fd",
+    color: "var(--primary-light)",
 
     fontSize: "11px",
 
@@ -1337,7 +1335,7 @@ const titleStyle = {
 const subtitleStyle = {
     margin: "9px 0 0",
 
-    color: "#dbeafe",
+    color: "rgba(255,255,255,0.80)",
 
     fontSize: "14px",
 
@@ -1412,7 +1410,7 @@ const addButtonStyle = {
 
     background: "#ffffff",
 
-    color: "#1d4ed8",
+    color: "var(--primary-color)",
 
     fontSize: "13px",
 
@@ -1454,10 +1452,10 @@ const summaryGridStyle = {
 
 
 const summaryCardStyle = {
-    background: "#ffffff",
+    background: "var(--card-background)",
 
     border:
-        "1px solid #e8edf3",
+        "1px solid var(--border-color)",
 
     borderRadius: "12px",
 
@@ -1499,7 +1497,7 @@ const summaryIconStyle = {
 
 
 const summaryTitleStyle = {
-    color: "#64748b",
+    color: "var(--muted-text-color)",
 
     fontSize: "12px",
 
@@ -1512,7 +1510,7 @@ const summaryValueStyle = {
 
     fontWeight: "750",
 
-    color: "#0f172a"
+    color: "var(--text-color)"
 };
 
 
@@ -1521,10 +1519,10 @@ const summaryValueStyle = {
 ===================================================== */
 
 const tableCardStyle = {
-    background: "#ffffff",
+    background: "var(--card-background)",
 
     border:
-        "1px solid #e5eaf0",
+        "1px solid var(--border-color)",
 
     borderRadius: "14px",
 
@@ -1549,7 +1547,7 @@ const tableTopStyle = {
     flexWrap: "wrap",
 
     borderBottom:
-        "1px solid #edf1f5"
+        "1px solid var(--border-color)"
 };
 
 
@@ -1560,14 +1558,14 @@ const tableTitleStyle = {
 
     fontWeight: "700",
 
-    color: "#0f172a"
+    color: "var(--text-color)"
 };
 
 
 const tableSubtitleStyle = {
     margin: "5px 0 0",
 
-    color: "#94a3b8",
+    color: "var(--muted-text-color)",
 
     fontSize: "12px"
 };
@@ -1588,10 +1586,10 @@ const searchWrapperStyle = {
 
     alignItems: "center",
 
-    background: "#f8fafc",
+    background: "var(--input-background)",
 
     border:
-        "1px solid #dbe2ea",
+        "1px solid var(--border-color)",
 
     borderRadius: "9px",
 
@@ -1602,7 +1600,7 @@ const searchWrapperStyle = {
 
 
 const searchIconStyle = {
-    color: "#94a3b8",
+    color: "var(--muted-text-color)",
 
     fontSize: "20px",
 
@@ -1625,7 +1623,7 @@ const searchInputStyle = {
 
     fontSize: "13px",
 
-    color: "#0f172a"
+    color: "var(--text-color)"
 };
 
 
@@ -1634,7 +1632,7 @@ const clearButtonStyle = {
 
     background: "transparent",
 
-    color: "#94a3b8",
+    color: "var(--muted-text-color)",
 
     fontSize: "19px",
 
@@ -1667,9 +1665,9 @@ const thStyle = {
 
     textAlign: "left",
 
-    background: "#f8fafc",
+    background: "var(--table-header-background)",
 
-    color: "#64748b",
+    color: "var(--muted-text-color)",
 
     fontSize: "11px",
 
@@ -1680,7 +1678,7 @@ const thStyle = {
     letterSpacing: "0.5px",
 
     borderBottom:
-        "1px solid #e8edf3",
+        "1px solid var(--border-color)",
 
     whiteSpace: "nowrap"
 };
@@ -1689,19 +1687,19 @@ const thStyle = {
 const tdStyle = {
     padding: "14px 16px",
 
-    color: "#475569",
+    color: "var(--secondary-text-color)",
 
     fontSize: "13px",
 
     borderBottom:
-        "1px solid #f0f2f5",
+        "1px solid var(--border-color)",
 
     verticalAlign: "middle"
 };
 
 
 const rowStyle = {
-    background: "#ffffff",
+    background: "var(--card-background)",
 
     transition:
         "background 0.15s"
@@ -1728,9 +1726,11 @@ const avatarStyle = {
 
     borderRadius: "10px",
 
-    background: "#eff6ff",
+    background:
+        "var(--primary-light)",
 
-    color: "#2563eb",
+    color:
+        "var(--primary-color)",
 
     display: "flex",
 
@@ -1747,7 +1747,7 @@ const avatarStyle = {
 
 
 const employeeNameStyle = {
-    color: "#1e293b",
+    color: "var(--text-color)",
 
     fontSize: "13px",
 
@@ -1756,7 +1756,7 @@ const employeeNameStyle = {
 
 
 const employeeCodeStyle = {
-    color: "#94a3b8",
+    color: "var(--muted-text-color)",
 
     fontSize: "11px",
 
@@ -1778,14 +1778,14 @@ const contactStyle = {
 
 
 const mobileStyle = {
-    color: "#94a3b8",
+    color: "var(--muted-text-color)",
 
     fontSize: "11px"
 };
 
 
 const normalTextStyle = {
-    color: "#334155",
+    color: "var(--secondary-text-color)",
 
     fontWeight: "500"
 };
@@ -1796,7 +1796,7 @@ const normalTextStyle = {
 ===================================================== */
 
 const locationBadgeStyle = {
-    color: "#475569",
+    color: "var(--secondary-text-color)",
 
     fontSize: "12px"
 };
@@ -1840,13 +1840,15 @@ const editButtonStyle = {
     padding: "7px 11px",
 
     border:
-        "1px solid #dbe2ea",
+        "1px solid var(--border-color)",
 
     borderRadius: "7px",
 
-    background: "#ffffff",
+    background:
+        "var(--card-background)",
 
-    color: "#2563eb",
+    color:
+        "var(--primary-color)",
 
     fontSize: "11px",
 
@@ -1885,7 +1887,7 @@ const emptyStyle = {
 
     textAlign: "center",
 
-    color: "#64748b",
+    color: "var(--muted-text-color)",
 
     fontSize: "13px"
 };
@@ -1915,10 +1917,10 @@ const spinnerStyle = {
     height: "22px",
 
     border:
-        "3px solid #dbeafe",
+        "3px solid var(--primary-light)",
 
     borderTop:
-        "3px solid #2563eb",
+        "3px solid var(--primary-color)",
 
     borderRadius: "50%",
 
@@ -1947,7 +1949,7 @@ const paginationStyle = {
 
 
 const showingStyle = {
-    color: "#64748b",
+    color: "var(--muted-text-color)",
 
     fontSize: "12px"
 };
@@ -1966,13 +1968,15 @@ const pageButtonStyle = {
     padding: "7px 11px",
 
     border:
-        "1px solid #dbe2ea",
+        "1px solid var(--border-color)",
 
     borderRadius: "7px",
 
-    background: "#ffffff",
+    background:
+        "var(--card-background)",
 
-    color: "#475569",
+    color:
+        "var(--secondary-text-color)",
 
     fontSize: "12px",
 
@@ -1985,7 +1989,8 @@ const currentPageStyle = {
 
     borderRadius: "7px",
 
-    background: "#2563eb",
+    background:
+        "var(--primary-color)",
 
     color: "#ffffff",
 

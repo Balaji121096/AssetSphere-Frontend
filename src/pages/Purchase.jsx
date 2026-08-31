@@ -10,10 +10,6 @@ import API from "../api/axios";
 function Purchase() {
     const navigate = useNavigate();
 
-    // =====================================================
-    // STATES
-    // =====================================================
-
     const [purchases, setPurchases] = useState([]);
     const [summary, setSummary] = useState(null);
     const [search, setSearch] = useState("");
@@ -29,8 +25,6 @@ function Purchase() {
             setLoading(true);
 
             const response = await API.get("/purchases");
-
-            console.log("Purchases API Response:", response.data);
 
             setPurchases(response.data?.data || []);
         } catch (error) {
@@ -53,20 +47,11 @@ function Purchase() {
         try {
             const response = await API.get("/purchases/summary");
 
-            console.log(
-                "Purchase Summary Response:",
-                response.data
-            );
-
             setSummary(response.data?.data || null);
         } catch (error) {
             console.error("Purchase Summary Error:", error);
         }
     };
-
-    // =====================================================
-    // INITIAL LOAD
-    // =====================================================
 
     useEffect(() => {
         loadPurchases();
@@ -135,6 +120,8 @@ function Purchase() {
     // =====================================================
 
     const filteredPurchases = useMemo(() => {
+        const searchText = search.toLowerCase().trim();
+
         return purchases.filter((purchase) => {
             if (selectedMonth !== "all") {
                 if (!purchase.purchase_date) return false;
@@ -143,18 +130,16 @@ function Purchase() {
 
                 if (Number.isNaN(date.getTime())) return false;
 
-                const year = date.getFullYear();
-
-                const month = String(
+                const purchaseMonth = `${date.getFullYear()}-${String(
                     date.getMonth() + 1
-                ).padStart(2, "0");
-
-                const purchaseMonth = `${year}-${month}`;
+                ).padStart(2, "0")}`;
 
                 if (purchaseMonth !== selectedMonth) {
                     return false;
                 }
             }
+
+            if (!searchText) return true;
 
             const text = `
                 ${purchase.purchase_id || ""}
@@ -169,14 +154,12 @@ function Purchase() {
                 ${purchase.remarks || ""}
             `.toLowerCase();
 
-            return text.includes(
-                search.toLowerCase().trim()
-            );
+            return text.includes(searchText);
         });
     }, [purchases, search, selectedMonth]);
 
     // =====================================================
-    // SELECTED MONTH SUMMARY
+    // SUMMARY
     // =====================================================
 
     const filteredSummary = useMemo(() => {
@@ -185,15 +168,12 @@ function Purchase() {
                 total_purchases: Number(
                     summary?.total_purchases || 0
                 ),
-
                 total_purchase_amount: Number(
                     summary?.total_purchase_amount || 0
                 ),
-
                 pending_payments: Number(
                     summary?.pending_payments || 0
                 ),
-
                 paid_purchases: Number(
                     summary?.paid_purchases || 0
                 )
@@ -207,10 +187,7 @@ function Purchase() {
 
         filteredPurchases.forEach((purchase) => {
             totalPurchases += 1;
-
-            totalAmount += Number(
-                purchase.amount || 0
-            );
+            totalAmount += Number(purchase.amount || 0);
 
             if (purchase.payment_status === "Pending") {
                 pendingPayments += 1;
@@ -230,7 +207,7 @@ function Purchase() {
     }, [filteredPurchases, selectedMonth, summary]);
 
     // =====================================================
-    // FORMAT DATE
+    // HELPERS
     // =====================================================
 
     const formatDate = (date) => {
@@ -245,10 +222,6 @@ function Purchase() {
         return parsedDate.toLocaleDateString("en-IN");
     };
 
-    // =====================================================
-    // FORMAT AMOUNT
-    // =====================================================
-
     const formatAmount = (amount) => {
         return Number(amount || 0).toLocaleString("en-IN", {
             style: "currency",
@@ -258,24 +231,16 @@ function Purchase() {
     };
 
     // =====================================================
-    // ADD PURCHASE
+    // ACTIONS
     // =====================================================
 
     const handleAddPurchase = () => {
         navigate("/purchases/add");
     };
 
-    // =====================================================
-    // EDIT PURCHASE
-    // =====================================================
-
     const handleEditPurchase = (purchaseId) => {
         navigate(`/purchases/edit/${purchaseId}`);
     };
-
-    // =====================================================
-    // DELETE PURCHASE
-    // =====================================================
 
     const handleDeletePurchase = async (purchaseId) => {
         const confirmed = window.confirm(
@@ -303,10 +268,7 @@ function Purchase() {
                 );
             }
         } catch (error) {
-            console.error(
-                "Delete Purchase Error:",
-                error
-            );
+            console.error("Delete Purchase Error:", error);
 
             alert(
                 error.response?.data?.message ||
@@ -316,7 +278,7 @@ function Purchase() {
     };
 
     // =====================================================
-    // UPLOAD / REPLACE DOCUMENT
+    // DOCUMENT UPLOAD
     // =====================================================
 
     const handleUploadDocument = (
@@ -326,25 +288,19 @@ function Purchase() {
         const input = document.createElement("input");
 
         input.type = "file";
-        input.accept =
-            ".pdf,.jpg,.jpeg,.png,.doc,.docx";
+        input.accept = ".pdf,.jpg,.jpeg,.png,.doc,.docx";
 
         input.onchange = async (event) => {
             const file = event.target.files?.[0];
 
             if (!file) return;
 
-            const maxSize = 10 * 1024 * 1024;
-
-            if (file.size > maxSize) {
-                alert(
-                    "File size must be 10 MB or less."
-                );
+            if (file.size > 10 * 1024 * 1024) {
+                alert("File size must be 10 MB or less.");
                 return;
             }
 
             const formData = new FormData();
-
             formData.append("file", file);
 
             try {
@@ -353,8 +309,7 @@ function Purchase() {
                     formData,
                     {
                         headers: {
-                            "Content-Type":
-                                "multipart/form-data"
+                            "Content-Type": "multipart/form-data"
                         }
                     }
                 );
@@ -374,10 +329,7 @@ function Purchase() {
                     );
                 }
             } catch (error) {
-                console.error(
-                    "Upload Document Error:",
-                    error
-                );
+                console.error("Upload Document Error:", error);
 
                 alert(
                     error.response?.data?.message ||
@@ -405,17 +357,17 @@ function Purchase() {
                 }
             );
 
-            const fileUrl =
-                window.URL.createObjectURL(
-                    response.data
-                );
+            const fileUrl = window.URL.createObjectURL(
+                response.data
+            );
 
             window.open(fileUrl, "_blank");
+
+            setTimeout(() => {
+                window.URL.revokeObjectURL(fileUrl);
+            }, 60000);
         } catch (error) {
-            console.error(
-                "View Document Error:",
-                error
-            );
+            console.error("View Document Error:", error);
 
             alert(
                 error.response?.data?.message ||
@@ -433,9 +385,7 @@ function Purchase() {
         documentType
     ) => {
         const documentName =
-            documentType === "po"
-                ? "PO"
-                : "Invoice";
+            documentType === "po" ? "PO" : "Invoice";
 
         const confirmed = window.confirm(
             `Are you sure you want to delete ${documentName} document?`
@@ -461,10 +411,7 @@ function Purchase() {
                 );
             }
         } catch (error) {
-            console.error(
-                "Delete Document Error:",
-                error
-            );
+            console.error("Delete Document Error:", error);
 
             alert(
                 error.response?.data?.message ||
@@ -481,10 +428,6 @@ function Purchase() {
         setSearch("");
         setSelectedMonth("all");
     };
-
-    // =====================================================
-    // SELECTED MONTH LABEL
-    // =====================================================
 
     const selectedMonthLabel =
         selectedMonth === "all"
@@ -507,14 +450,13 @@ function Purchase() {
 
                 <main style={contentStyle}>
 
-                    {/* =================================================
-                        HEADER - SCREENSHOT STYLE
-                    ================================================= */}
+                    {/* HEADER */}
 
-                    <div style={headerStyle}>
-
+                    <div
+                        style={headerStyle}
+                        className="purchase-header"
+                    >
                         <div style={headerContentStyle}>
-
                             <div style={eyebrowStyle}>
                                 PURCHASE MANAGEMENT
                             </div>
@@ -527,70 +469,40 @@ function Purchase() {
                                 Manage company purchases
                                 and track purchase documents.
                             </p>
-
                         </div>
 
-                        <div style={headerButtonsStyle}>
-
-                            {/* REFRESH */}
-
+                        <div
+                            style={headerButtonsStyle}
+                            className="purchase-header-buttons"
+                        >
                             <button
                                 type="button"
                                 onClick={handleRefresh}
                                 style={refreshButtonStyle}
-                                onMouseEnter={(e) => {
-                                    e.currentTarget.style.background =
-                                        "rgba(255,255,255,0.18)";
-                                }}
-                                onMouseLeave={(e) => {
-                                    e.currentTarget.style.background =
-                                        "rgba(255,255,255,0.10)";
-                                }}
                             >
                                 <span style={buttonIconStyle}>
                                     ↻
                                 </span>
-
                                 Refresh
                             </button>
-
-                            {/* ADD PURCHASE */}
 
                             <button
                                 type="button"
                                 onClick={handleAddPurchase}
                                 style={addButtonStyle}
-                                onMouseEnter={(e) => {
-                                    e.currentTarget.style.transform =
-                                        "translateY(-1px)";
-                                    e.currentTarget.style.boxShadow =
-                                        "0 7px 18px rgba(0,0,0,0.18)";
-                                }}
-                                onMouseLeave={(e) => {
-                                    e.currentTarget.style.transform =
-                                        "translateY(0)";
-                                    e.currentTarget.style.boxShadow =
-                                        "0 4px 12px rgba(0,0,0,0.12)";
-                                }}
                             >
                                 <span style={plusStyle}>
                                     +
                                 </span>
-
                                 Add Purchase
                             </button>
-
                         </div>
                     </div>
 
-                    {/* =================================================
-                        MONTH FILTER
-                    ================================================= */}
+                    {/* FILTER */}
 
                     <div style={filterBarStyle}>
-
                         <div style={filterLeftStyle}>
-
                             <div style={filterIconStyle}>
                                 ◷
                             </div>
@@ -604,11 +516,9 @@ function Purchase() {
                                     View purchases month-wise
                                 </div>
                             </div>
-
                         </div>
 
                         <div style={filterRightStyle}>
-
                             <select
                                 value={selectedMonth}
                                 onChange={(e) =>
@@ -636,29 +546,21 @@ function Purchase() {
                                 selectedMonth !== "all") && (
                                 <button
                                     type="button"
-                                    onClick={
-                                        handleClearFilters
-                                    }
-                                    style={
-                                        clearFilterStyle
-                                    }
+                                    onClick={handleClearFilters}
+                                    style={clearFilterStyle}
                                 >
                                     Clear Filters
                                 </button>
                             )}
-
                         </div>
                     </div>
 
-                    {/* =================================================
-                        SUMMARY CARDS
-                    ================================================= */}
+                    {/* SUMMARY */}
 
                     <div
                         style={summaryGridStyle}
                         className="purchase-summary-grid"
                     >
-
                         <SummaryCard
                             title={
                                 selectedMonth === "all"
@@ -702,51 +604,31 @@ function Purchase() {
                             color="#16a34a"
                             background="#f0fdf4"
                         />
-
                     </div>
 
-                    {/* =================================================
-                        TABLE CARD
-                    ================================================= */}
+                    {/* TABLE */}
 
                     <div style={tableCardStyle}>
-
                         <div style={tableTopStyle}>
-
                             <div>
                                 <h2 style={tableTitleStyle}>
                                     Purchase Directory
                                 </h2>
 
                                 <p style={tableSubtitleStyle}>
-                                    {filteredPurchases.length}{" "}
-                                    purchase
-                                    {filteredPurchases.length !==
-                                    1
+                                    {filteredPurchases.length} purchase
+                                    {filteredPurchases.length !== 1
                                         ? "s"
                                         : ""}{" "}
                                     found
-
                                     {selectedMonth !== "all" &&
                                         ` for ${selectedMonthLabel}`}
                                 </p>
                             </div>
 
-                            {/* SEARCH */}
-
                             <div style={searchAreaStyle}>
-
-                                <div
-                                    style={
-                                        searchWrapperStyle
-                                    }
-                                >
-
-                                    <span
-                                        style={
-                                            searchIconStyle
-                                        }
-                                    >
+                                <div style={searchWrapperStyle}>
+                                    <span style={searchIconStyle}>
                                         ⌕
                                     </span>
 
@@ -755,13 +637,9 @@ function Purchase() {
                                         placeholder="Search PO, invoice, vendor..."
                                         value={search}
                                         onChange={(e) =>
-                                            setSearch(
-                                                e.target.value
-                                            )
+                                            setSearch(e.target.value)
                                         }
-                                        style={
-                                            searchInputStyle
-                                        }
+                                        style={searchInputStyle}
                                     />
 
                                     {search && (
@@ -770,26 +648,17 @@ function Purchase() {
                                             onClick={() =>
                                                 setSearch("")
                                             }
-                                            style={
-                                                clearButtonStyle
-                                            }
+                                            style={clearButtonStyle}
                                         >
                                             ×
                                         </button>
                                     )}
-
                                 </div>
                             </div>
                         </div>
 
-                        {/* =================================================
-                            TABLE
-                        ================================================= */}
-
                         <div style={tableWrapperStyle}>
-
                             <table style={tableStyle}>
-
                                 <thead>
                                     <tr>
                                         <th style={thStyle}>ID</th>
@@ -830,20 +699,13 @@ function Purchase() {
                                 </thead>
 
                                 <tbody>
-
-                                    {/* LOADING */}
-
                                     {loading ? (
                                         <tr>
                                             <td
                                                 colSpan="12"
                                                 style={emptyStyle}
                                             >
-                                                <div
-                                                    style={
-                                                        loaderStyle
-                                                    }
-                                                >
+                                                <div style={loaderStyle}>
                                                     <div
                                                         style={
                                                             spinnerStyle
@@ -854,10 +716,7 @@ function Purchase() {
                                                 Loading purchases...
                                             </td>
                                         </tr>
-
-                                    ) : filteredPurchases.length ===
-                                      0 ? (
-
+                                    ) : filteredPurchases.length === 0 ? (
                                         <tr>
                                             <td
                                                 colSpan="12"
@@ -892,34 +751,15 @@ function Purchase() {
                                                 </p>
                                             </td>
                                         </tr>
-
                                     ) : (
-
                                         filteredPurchases.map(
                                             (purchase) => (
                                                 <tr
                                                     key={
                                                         purchase.purchase_id
                                                     }
-                                                    style={
-                                                        rowStyle
-                                                    }
-                                                    onMouseEnter={(
-                                                        e
-                                                    ) => {
-                                                        e.currentTarget.style.background =
-                                                            "#f8fafc";
-                                                    }}
-                                                    onMouseLeave={(
-                                                        e
-                                                    ) => {
-                                                        e.currentTarget.style.background =
-                                                            "#ffffff";
-                                                    }}
+                                                    style={rowStyle}
                                                 >
-
-                                                    {/* ID */}
-
                                                     <td
                                                         style={{
                                                             ...tdStyle,
@@ -933,55 +773,31 @@ function Purchase() {
                                                         }
                                                     </td>
 
-                                                    {/* PO */}
-
-                                                    <td
-                                                        style={
-                                                            tdStyle
-                                                        }
-                                                    >
+                                                    <td style={tdStyle}>
                                                         <span
                                                             style={
                                                                 poNumberStyle
                                                             }
                                                         >
-                                                            {
-                                                                purchase.po_number ||
-                                                                "-"
-                                                            }
+                                                            {purchase.po_number ||
+                                                                "-"}
                                                         </span>
                                                     </td>
 
-                                                    {/* INVOICE */}
-
-                                                    <td
-                                                        style={
-                                                            tdStyle
-                                                        }
-                                                    >
-                                                        {
-                                                            purchase.invoice_number ||
-                                                            "-"
-                                                        }
+                                                    <td style={tdStyle}>
+                                                        {purchase.invoice_number ||
+                                                            "-"}
                                                     </td>
 
-                                                    {/* VENDOR */}
-
-                                                    <td
-                                                        style={
-                                                            tdStyle
-                                                        }
-                                                    >
+                                                    <td style={tdStyle}>
                                                         <div>
                                                             <div
                                                                 style={
                                                                     vendorNameStyle
                                                                 }
                                                             >
-                                                                {
-                                                                    purchase.vendor_name ||
-                                                                    "-"
-                                                                }
+                                                                {purchase.vendor_name ||
+                                                                    "-"}
                                                             </div>
 
                                                             {purchase.vendor_code && (
@@ -998,13 +814,7 @@ function Purchase() {
                                                         </div>
                                                     </td>
 
-                                                    {/* PRODUCT */}
-
-                                                    <td
-                                                        style={
-                                                            tdStyle
-                                                        }
-                                                    >
+                                                    <td style={tdStyle}>
                                                         <div
                                                             style={
                                                                 productCellStyle
@@ -1027,27 +837,17 @@ function Purchase() {
                                                                     productNameStyle
                                                                 }
                                                             >
-                                                                {
-                                                                    purchase.product_name ||
-                                                                    "-"
-                                                                }
+                                                                {purchase.product_name ||
+                                                                    "-"}
                                                             </span>
                                                         </div>
                                                     </td>
 
-                                                    {/* DATE */}
-
-                                                    <td
-                                                        style={
-                                                            tdStyle
-                                                        }
-                                                    >
+                                                    <td style={tdStyle}>
                                                         {formatDate(
                                                             purchase.purchase_date
                                                         )}
                                                     </td>
-
-                                                    {/* AMOUNT */}
 
                                                     <td
                                                         style={
@@ -1059,17 +859,10 @@ function Purchase() {
                                                         )}
                                                     </td>
 
-                                                    {/* PAYMENT */}
-
-                                                    <td
-                                                        style={
-                                                            tdStyle
-                                                        }
-                                                    >
+                                                    <td style={tdStyle}>
                                                         <span
                                                             style={{
                                                                 ...paymentBadgeStyle,
-
                                                                 background:
                                                                     purchase.payment_status ===
                                                                     "Paid"
@@ -1081,7 +874,6 @@ function Purchase() {
                                                                           "Partially Paid"
                                                                         ? "#fef3c7"
                                                                         : "#fff7ed",
-
                                                                 color:
                                                                     purchase.payment_status ===
                                                                     "Paid"
@@ -1108,32 +900,18 @@ function Purchase() {
                                                                 }}
                                                             />
 
-                                                            {
-                                                                purchase.payment_status ||
-                                                                "-"
-                                                            }
+                                                            {purchase.payment_status ||
+                                                                "-"}
                                                         </span>
                                                     </td>
 
-                                                    {/* WARRANTY */}
-
-                                                    <td
-                                                        style={
-                                                            tdStyle
-                                                        }
-                                                    >
+                                                    <td style={tdStyle}>
                                                         {formatDate(
                                                             purchase.warranty_expiry
                                                         )}
                                                     </td>
 
-                                                    {/* REMARKS */}
-
-                                                    <td
-                                                        style={
-                                                            tdStyle
-                                                        }
-                                                    >
+                                                    <td style={tdStyle}>
                                                         <span
                                                             style={
                                                                 remarksStyle
@@ -1143,196 +921,76 @@ function Purchase() {
                                                                 ""
                                                             }
                                                         >
-                                                            {
-                                                                purchase.remarks ||
-                                                                "-"
-                                                            }
+                                                            {purchase.remarks ||
+                                                                "-"}
                                                         </span>
                                                     </td>
 
                                                     {/* DOCUMENTS */}
 
-                                                    <td
-                                                        style={
-                                                            tdStyle
-                                                        }
-                                                    >
+                                                    <td style={tdStyle}>
                                                         <div
                                                             style={
                                                                 documentContainerStyle
                                                             }
                                                         >
-
-                                                            {/* PO */}
-
-                                                            <div
-                                                                style={
-                                                                    documentRowStyle
+                                                            <DocumentRow
+                                                                label="PO"
+                                                                exists={
+                                                                    !!purchase.po_document
                                                                 }
-                                                            >
-                                                                <span
-                                                                    style={
-                                                                        documentLabelStyle
-                                                                    }
-                                                                >
-                                                                    PO
-                                                                </span>
-
-                                                                {purchase.po_document ? (
-                                                                    <>
-                                                                        <button
-                                                                            type="button"
-                                                                            onClick={() =>
-                                                                                handleViewDocument(
-                                                                                    purchase.purchase_id,
-                                                                                    "po"
-                                                                                )
-                                                                            }
-                                                                            style={
-                                                                                viewButtonStyle
-                                                                            }
-                                                                        >
-                                                                            View
-                                                                        </button>
-
-                                                                        <button
-                                                                            type="button"
-                                                                            onClick={() =>
-                                                                                handleUploadDocument(
-                                                                                    purchase.purchase_id,
-                                                                                    "po"
-                                                                                )
-                                                                            }
-                                                                            style={
-                                                                                replaceButtonStyle
-                                                                            }
-                                                                        >
-                                                                            Replace
-                                                                        </button>
-
-                                                                        <button
-                                                                            type="button"
-                                                                            onClick={() =>
-                                                                                handleDeleteDocument(
-                                                                                    purchase.purchase_id,
-                                                                                    "po"
-                                                                                )
-                                                                            }
-                                                                            style={
-                                                                                documentDeleteButtonStyle
-                                                                            }
-                                                                        >
-                                                                            Delete
-                                                                        </button>
-                                                                    </>
-                                                                ) : (
-                                                                    <button
-                                                                        type="button"
-                                                                        onClick={() =>
-                                                                            handleUploadDocument(
-                                                                                purchase.purchase_id,
-                                                                                "po"
-                                                                            )
-                                                                        }
-                                                                        style={
-                                                                            uploadButtonStyle
-                                                                        }
-                                                                    >
-                                                                        Upload PO
-                                                                    </button>
-                                                                )}
-                                                            </div>
-
-                                                            {/* INVOICE */}
-
-                                                            <div
-                                                                style={
-                                                                    documentRowStyle
+                                                                onView={() =>
+                                                                    handleViewDocument(
+                                                                        purchase.purchase_id,
+                                                                        "po"
+                                                                    )
                                                                 }
-                                                            >
-                                                                <span
-                                                                    style={
-                                                                        documentLabelStyle
-                                                                    }
-                                                                >
-                                                                    Invoice
-                                                                </span>
+                                                                onUpload={() =>
+                                                                    handleUploadDocument(
+                                                                        purchase.purchase_id,
+                                                                        "po"
+                                                                    )
+                                                                }
+                                                                onDelete={() =>
+                                                                    handleDeleteDocument(
+                                                                        purchase.purchase_id,
+                                                                        "po"
+                                                                    )
+                                                                }
+                                                                uploadText="Upload PO"
+                                                            />
 
-                                                                {purchase.invoice_document ? (
-                                                                    <>
-                                                                        <button
-                                                                            type="button"
-                                                                            onClick={() =>
-                                                                                handleViewDocument(
-                                                                                    purchase.purchase_id,
-                                                                                    "invoice"
-                                                                                )
-                                                                            }
-                                                                            style={
-                                                                                viewButtonStyle
-                                                                            }
-                                                                        >
-                                                                            View
-                                                                        </button>
-
-                                                                        <button
-                                                                            type="button"
-                                                                            onClick={() =>
-                                                                                handleUploadDocument(
-                                                                                    purchase.purchase_id,
-                                                                                    "invoice"
-                                                                                )
-                                                                            }
-                                                                            style={
-                                                                                replaceButtonStyle
-                                                                            }
-                                                                        >
-                                                                            Replace
-                                                                        </button>
-
-                                                                        <button
-                                                                            type="button"
-                                                                            onClick={() =>
-                                                                                handleDeleteDocument(
-                                                                                    purchase.purchase_id,
-                                                                                    "invoice"
-                                                                                )
-                                                                            }
-                                                                            style={
-                                                                                documentDeleteButtonStyle
-                                                                            }
-                                                                        >
-                                                                            Delete
-                                                                        </button>
-                                                                    </>
-                                                                ) : (
-                                                                    <button
-                                                                        type="button"
-                                                                        onClick={() =>
-                                                                            handleUploadDocument(
-                                                                                purchase.purchase_id,
-                                                                                "invoice"
-                                                                            )
-                                                                        }
-                                                                        style={
-                                                                            uploadButtonStyle
-                                                                        }
-                                                                    >
-                                                                        Upload Invoice
-                                                                    </button>
-                                                                )}
-                                                            </div>
-
+                                                            <DocumentRow
+                                                                label="Invoice"
+                                                                exists={
+                                                                    !!purchase.invoice_document
+                                                                }
+                                                                onView={() =>
+                                                                    handleViewDocument(
+                                                                        purchase.purchase_id,
+                                                                        "invoice"
+                                                                    )
+                                                                }
+                                                                onUpload={() =>
+                                                                    handleUploadDocument(
+                                                                        purchase.purchase_id,
+                                                                        "invoice"
+                                                                    )
+                                                                }
+                                                                onDelete={() =>
+                                                                    handleDeleteDocument(
+                                                                        purchase.purchase_id,
+                                                                        "invoice"
+                                                                    )
+                                                                }
+                                                                uploadText="Upload Invoice"
+                                                            />
                                                         </div>
                                                     </td>
 
                                                     {/* ACTIONS */}
 
-                                                    <td
-                                                        style={
-                                                            tdStyle
-                                                        }
-                                                    >
+                                                    <td style={tdStyle}>
                                                         <div
                                                             style={
                                                                 actionStyle
@@ -1367,24 +1025,16 @@ function Purchase() {
                                                             </button>
                                                         </div>
                                                     </td>
-
                                                 </tr>
                                             )
                                         )
                                     )}
-
                                 </tbody>
-
                             </table>
                         </div>
                     </div>
-
                 </main>
             </div>
-
-            {/* =====================================================
-                ANIMATIONS + RESPONSIVE
-            ===================================================== */}
 
             <style>
                 {`
@@ -1434,9 +1084,71 @@ function Purchase() {
                         .purchase-header-buttons button {
                             flex: 1;
                         }
+
+                        .search-wrapper {
+                            width: 100% !important;
+                        }
                     }
                 `}
             </style>
+        </div>
+    );
+}
+
+
+// =====================================================
+// DOCUMENT ROW
+// =====================================================
+
+function DocumentRow({
+    label,
+    exists,
+    onView,
+    onUpload,
+    onDelete,
+    uploadText
+}) {
+    return (
+        <div style={documentRowStyle}>
+            <span style={documentLabelStyle}>
+                {label}
+            </span>
+
+            {exists ? (
+                <>
+                    <button
+                        type="button"
+                        onClick={onView}
+                        style={viewButtonStyle}
+                    >
+                        View
+                    </button>
+
+                    <button
+                        type="button"
+                        onClick={onUpload}
+                        style={replaceButtonStyle}
+                    >
+                        Replace
+                    </button>
+
+                    <button
+                        type="button"
+                        onClick={onDelete}
+                        style={documentDeleteButtonStyle}
+                    >
+                        Delete
+                    </button>
+                </>
+            ) : (
+                <button
+                    type="button"
+                    onClick={onUpload}
+                    style={uploadButtonStyle}
+                >
+                    {uploadText}
+                </button>
+            )}
         </div>
     );
 }
@@ -1455,7 +1167,6 @@ function SummaryCard({
 }) {
     return (
         <div style={summaryCardStyle}>
-
             <div
                 style={{
                     ...summaryIconStyle,
@@ -1467,7 +1178,6 @@ function SummaryCard({
             </div>
 
             <div style={{ minWidth: 0 }}>
-
                 <div style={summaryTitleStyle}>
                     {title}
                 </div>
@@ -1475,7 +1185,6 @@ function SummaryCard({
                 <div style={summaryValueStyle}>
                     {value}
                 </div>
-
             </div>
         </div>
     );
@@ -1489,8 +1198,8 @@ function SummaryCard({
 const pageStyle = {
     display: "flex",
     minHeight: "100vh",
-    background: "#f5f7fb",
-    color: "#0f172a"
+    background: "var(--app-background, #f5f7fb)",
+    color: "var(--text-color, #0f172a)"
 };
 
 const mainStyle = {
@@ -1508,7 +1217,7 @@ const contentStyle = {
 
 
 // =====================================================
-// HEADER - SCREENSHOT STYLE
+// HEADER
 // =====================================================
 
 const headerStyle = {
@@ -1526,22 +1235,16 @@ const headerStyle = {
     background: `
         radial-gradient(
             circle at 76% 115%,
-            rgba(67, 122, 255, 0.35) 0,
-            rgba(67, 122, 255, 0.16) 95px,
+            color-mix(in srgb, var(--primary-color, #437aff) 35%, transparent) 0,
+            color-mix(in srgb, var(--primary-color, #437aff) 16%, transparent) 95px,
             transparent 96px
-        ),
-        radial-gradient(
-            circle at 86% 85%,
-            rgba(79, 132, 255, 0.18) 0,
-            rgba(79, 132, 255, 0.06) 130px,
-            transparent 131px
         ),
         linear-gradient(
             110deg,
-            #101a35 0%,
-            #14234a 38%,
-            #1e4fb5 72%,
-            #2864e8 100%
+            var(--sidebar-color, #101a35) 0%,
+            var(--sidebar-color, #14234a) 38%,
+            var(--primary-color, #1e4fb5) 72%,
+            var(--primary-color, #2864e8) 100%
         )
     `,
 
@@ -1616,7 +1319,7 @@ const addButtonStyle = {
     border: "none",
     borderRadius: "7px",
     background: "#ffffff",
-    color: "#1851b5",
+    color: "var(--primary-color, #1851b5)",
     fontSize: "10px",
     fontWeight: "800",
     cursor: "pointer",
@@ -1634,7 +1337,7 @@ const plusStyle = {
 
 
 // =====================================================
-// FILTER BAR
+// FILTER
 // =====================================================
 
 const filterBarStyle = {
@@ -1645,8 +1348,8 @@ const filterBarStyle = {
     flexWrap: "wrap",
     padding: "15px 18px",
     marginBottom: "18px",
-    background: "#ffffff",
-    border: "1px solid #e5eaf0",
+    background: "var(--card-background, #ffffff)",
+    border: "1px solid var(--border-color, #e5eaf0)",
     borderRadius: "12px",
     boxShadow:
         "0 2px 8px rgba(15,23,42,0.025)"
@@ -1665,8 +1368,8 @@ const filterIconStyle = {
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    background: "#eff6ff",
-    color: "#2563eb",
+    background: "var(--primary-light, #eff6ff)",
+    color: "var(--primary-color, #2563eb)",
     fontSize: "18px",
     fontWeight: "700"
 };
@@ -1674,13 +1377,13 @@ const filterIconStyle = {
 const filterTitleStyle = {
     fontSize: "13px",
     fontWeight: "700",
-    color: "#1e293b"
+    color: "var(--text-color, #1e293b)"
 };
 
 const filterSubtitleStyle = {
     marginTop: "3px",
     fontSize: "11px",
-    color: "#94a3b8"
+    color: "var(--muted-text-color, #94a3b8)"
 };
 
 const filterRightStyle = {
@@ -1694,11 +1397,11 @@ const monthSelectStyle = {
     height: "40px",
     minWidth: "170px",
     padding: "0 12px",
-    border: "1px solid #dbe2ea",
+    border: "1px solid var(--border-color, #dbe2ea)",
     borderRadius: "8px",
     outline: "none",
-    background: "#ffffff",
-    color: "#334155",
+    background: "var(--card-background, #ffffff)",
+    color: "var(--text-color, #334155)",
     fontSize: "13px",
     fontWeight: "600",
     cursor: "pointer"
@@ -1730,8 +1433,8 @@ const summaryGridStyle = {
 };
 
 const summaryCardStyle = {
-    background: "#ffffff",
-    border: "1px solid #e8edf3",
+    background: "var(--card-background, #ffffff)",
+    border: "1px solid var(--border-color, #e8edf3)",
     borderRadius: "12px",
     padding: "18px 20px",
     display: "flex",
@@ -1754,7 +1457,7 @@ const summaryIconStyle = {
 };
 
 const summaryTitleStyle = {
-    color: "#64748b",
+    color: "var(--muted-text-color, #64748b)",
     fontSize: "12px",
     marginBottom: "4px"
 };
@@ -1762,7 +1465,7 @@ const summaryTitleStyle = {
 const summaryValueStyle = {
     fontSize: "23px",
     fontWeight: "750",
-    color: "#0f172a",
+    color: "var(--text-color, #0f172a)",
     whiteSpace: "nowrap"
 };
 
@@ -1772,8 +1475,8 @@ const summaryValueStyle = {
 // =====================================================
 
 const tableCardStyle = {
-    background: "#ffffff",
-    border: "1px solid #e5eaf0",
+    background: "var(--card-background, #ffffff)",
+    border: "1px solid var(--border-color, #e5eaf0)",
     borderRadius: "14px",
     boxShadow:
         "0 4px 14px rgba(15,23,42,0.04)",
@@ -1788,19 +1491,19 @@ const tableTopStyle = {
     gap: "20px",
     flexWrap: "wrap",
     borderBottom:
-        "1px solid #edf1f5"
+        "1px solid var(--border-color, #edf1f5)"
 };
 
 const tableTitleStyle = {
     margin: 0,
     fontSize: "17px",
     fontWeight: "700",
-    color: "#1e293b"
+    color: "var(--text-color, #1e293b)"
 };
 
 const tableSubtitleStyle = {
     margin: "5px 0 0",
-    color: "#94a3b8",
+    color: "var(--muted-text-color, #94a3b8)",
     fontSize: "12px"
 };
 
@@ -1820,15 +1523,15 @@ const searchWrapperStyle = {
     height: "42px",
     display: "flex",
     alignItems: "center",
-    background: "#f8fafc",
-    border: "1px solid #dbe2ea",
+    background: "var(--input-background, #f8fafc)",
+    border: "1px solid var(--border-color, #dbe2ea)",
     borderRadius: "9px",
     padding: "0 11px",
     boxSizing: "border-box"
 };
 
 const searchIconStyle = {
-    color: "#94a3b8",
+    color: "var(--muted-text-color, #94a3b8)",
     fontSize: "20px",
     marginRight: "7px"
 };
@@ -1841,7 +1544,7 @@ const searchInputStyle = {
     outline: "none",
     background: "transparent",
     fontSize: "13px",
-    color: "#0f172a"
+    color: "var(--text-color, #0f172a)"
 };
 
 const clearButtonStyle = {
@@ -1871,29 +1574,30 @@ const tableStyle = {
 const thStyle = {
     padding: "13px 16px",
     textAlign: "left",
-    background: "#f8fafc",
-    color: "#64748b",
+    background: "var(--table-header-background, #f8fafc)",
+    color: "var(--muted-text-color, #64748b)",
     fontSize: "11px",
     fontWeight: "700",
     textTransform: "uppercase",
     letterSpacing: "0.5px",
     borderBottom:
-        "1px solid #e8edf3",
+        "1px solid var(--border-color, #e8edf3)",
     whiteSpace: "nowrap"
 };
 
 const tdStyle = {
     padding: "14px 16px",
-    color: "#475569",
+    color: "var(--secondary-text-color, #475569)",
     fontSize: "13px",
     borderBottom:
-        "1px solid #f0f2f5",
+        "1px solid var(--border-color, #f0f2f5)",
     verticalAlign: "middle",
     whiteSpace: "nowrap"
 };
 
 const rowStyle = {
-    background: "#ffffff",
+    background:
+        "var(--card-background, #ffffff)",
     transition:
         "background 0.15s"
 };
@@ -1904,18 +1608,18 @@ const rowStyle = {
 // =====================================================
 
 const poNumberStyle = {
-    color: "#2563eb",
+    color: "var(--primary-color, #2563eb)",
     fontWeight: "650"
 };
 
 const vendorNameStyle = {
-    color: "#1e293b",
+    color: "var(--text-color, #1e293b)",
     fontSize: "13px",
     fontWeight: "650"
 };
 
 const vendorCodeStyle = {
-    color: "#94a3b8",
+    color: "var(--muted-text-color, #94a3b8)",
     fontSize: "11px",
     marginTop: "3px"
 };
@@ -1931,25 +1635,25 @@ const productCategoryStyle = {
     width: "fit-content",
     padding: "3px 7px",
     borderRadius: "5px",
-    background: "#f1f5f9",
-    color: "#475569",
+    background: "var(--table-header-background, #f1f5f9)",
+    color: "var(--secondary-text-color, #475569)",
     fontSize: "10px",
     fontWeight: "700"
 };
 
 const productNameStyle = {
-    color: "#334155",
+    color: "var(--secondary-text-color, #334155)",
     fontSize: "12px",
     fontWeight: "600"
 };
 
 const amountStyle = {
     padding: "14px 16px",
-    color: "#1e293b",
+    color: "var(--text-color, #1e293b)",
     fontSize: "13px",
     fontWeight: "650",
     borderBottom:
-        "1px solid #f0f2f5",
+        "1px solid var(--border-color, #f0f2f5)",
     verticalAlign: "middle",
     whiteSpace: "nowrap"
 };
@@ -1959,7 +1663,7 @@ const remarksStyle = {
     maxWidth: "180px",
     overflow: "hidden",
     textOverflow: "ellipsis",
-    color: "#64748b"
+    color: "var(--muted-text-color, #64748b)"
 };
 
 
@@ -1998,13 +1702,13 @@ const documentLabelStyle = {
     minWidth: "48px",
     fontWeight: "650",
     fontSize: "11px",
-    color: "#334155"
+    color: "var(--text-color, #334155)"
 };
 
 const viewButtonStyle = {
     padding: "5px 8px",
     border: "1px solid #16a34a",
-    background: "#ffffff",
+    background: "var(--card-background, #ffffff)",
     color: "#16a34a",
     borderRadius: "6px",
     cursor: "pointer",
@@ -2014,9 +1718,9 @@ const viewButtonStyle = {
 
 const replaceButtonStyle = {
     padding: "5px 8px",
-    border: "1px solid #2563eb",
-    background: "#ffffff",
-    color: "#2563eb",
+    border: "1px solid var(--primary-color, #2563eb)",
+    background: "var(--card-background, #ffffff)",
+    color: "var(--primary-color, #2563eb)",
     borderRadius: "6px",
     cursor: "pointer",
     fontSize: "10px",
@@ -2026,7 +1730,7 @@ const replaceButtonStyle = {
 const documentDeleteButtonStyle = {
     padding: "5px 8px",
     border: "1px solid #dc2626",
-    background: "#ffffff",
+    background: "var(--card-background, #ffffff)",
     color: "#dc2626",
     borderRadius: "6px",
     cursor: "pointer",
@@ -2037,7 +1741,7 @@ const documentDeleteButtonStyle = {
 const uploadButtonStyle = {
     padding: "5px 9px",
     border: "none",
-    background: "#2563eb",
+    background: "var(--primary-color, #2563eb)",
     color: "#ffffff",
     borderRadius: "6px",
     cursor: "pointer",
@@ -2058,10 +1762,10 @@ const actionStyle = {
 
 const editButtonStyle = {
     padding: "7px 11px",
-    border: "1px solid #dbe2ea",
+    border: "1px solid var(--border-color, #dbe2ea)",
     borderRadius: "7px",
-    background: "#ffffff",
-    color: "#2563eb",
+    background: "var(--card-background, #ffffff)",
+    color: "var(--primary-color, #2563eb)",
     fontSize: "11px",
     fontWeight: "600",
     cursor: "pointer"
@@ -2086,7 +1790,7 @@ const deleteButtonStyle = {
 const emptyStyle = {
     padding: "55px 20px",
     textAlign: "center",
-    color: "#64748b",
+    color: "var(--muted-text-color, #64748b)",
     fontSize: "13px"
 };
 
@@ -2105,9 +1809,9 @@ const loaderStyle = {
 const spinnerStyle = {
     width: "22px",
     height: "22px",
-    border: "3px solid #dbeafe",
+    border: "3px solid var(--primary-light, #dbeafe)",
     borderTop:
-        "3px solid #2563eb",
+        "3px solid var(--primary-color, #2563eb)",
     borderRadius: "50%",
     animation:
         "spin 0.8s linear infinite"

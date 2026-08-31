@@ -107,9 +107,9 @@ const pageStyle = {
 
     minHeight: "100vh",
 
-    background: "#f8fafc",
+    background: "var(--app-background)",
 
-    color: "#0f172a"
+    color: "var(--text-color)"
 
 };
 
@@ -167,7 +167,7 @@ const heroStyle = {
     borderRadius: "18px",
 
     background:
-        "linear-gradient(135deg, #0f172a 0%, #172554 45%, #2563eb 100%)",
+        "linear-gradient(135deg, var(--sidebar-color) 0%, var(--sidebar-color) 45%, var(--primary-color) 100%)",
 
     boxShadow:
         "0 10px 30px rgba(15,23,42,0.16)",

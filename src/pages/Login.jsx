@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { loginUser } from "../services/authService";
 import { useNavigate } from "react-router-dom";
 
@@ -9,9 +9,30 @@ function Login() {
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
 
+    const [rememberMe, setRememberMe] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
+
     const [loading, setLoading] = useState(false);
     const [errorMessage, setErrorMessage] = useState("");
+
+
+    // =====================================================
+    // LOAD REMEMBERED USERNAME
+    // =====================================================
+
+    useEffect(() => {
+
+        const savedUsername =
+            localStorage.getItem("rememberedUsername");
+
+        if (savedUsername) {
+
+            setUsername(savedUsername);
+            setRememberMe(true);
+
+        }
+
+    }, []);
 
 
     // =====================================================
@@ -24,11 +45,6 @@ function Login() {
 
         setErrorMessage("");
 
-
-        // -------------------------------------------------
-        // VALIDATION
-        // -------------------------------------------------
-
         if (!username.trim()) {
 
             setErrorMessage(
@@ -37,7 +53,6 @@ function Login() {
 
             return;
         }
-
 
         if (!password) {
 
@@ -48,31 +63,16 @@ function Login() {
             return;
         }
 
-
         try {
 
             setLoading(true);
 
-
             const result = await loginUser({
 
-                username:
-                    username.trim(),
-
+                username: username.trim(),
                 password
 
             });
-
-
-            console.log(
-                "Login Result:",
-                result
-            );
-
-
-            // -------------------------------------------------
-            // SAVE TOKEN
-            // -------------------------------------------------
 
             localStorage.setItem(
                 "token",
@@ -80,14 +80,27 @@ function Login() {
             );
 
 
-            // -------------------------------------------------
-            // REDIRECT
-            // -------------------------------------------------
+            // =================================================
+            // REMEMBER ME
+            // =================================================
 
-            navigate(
-                "/dashboard"
-            );
+            if (rememberMe) {
 
+                localStorage.setItem(
+                    "rememberedUsername",
+                    username.trim()
+                );
+
+            } else {
+
+                localStorage.removeItem(
+                    "rememberedUsername"
+                );
+
+            }
+
+
+            navigate("/dashboard");
 
         } catch (error) {
 
@@ -96,11 +109,9 @@ function Login() {
                 error
             );
 
-
             setErrorMessage(
 
                 error.response?.data?.message ||
-
                 "Invalid username or password."
 
             );
@@ -114,112 +125,76 @@ function Login() {
     };
 
 
+    // =====================================================
+    // FORGOT PASSWORD
+    // =====================================================
+
+    const handleForgotPassword = () => {
+
+        navigate("/forgot-password");
+
+    };
+
+
     return (
 
-        <div
-            style={styles.page}
-        >
+        <div style={styles.page}>
 
-            {/* =================================================
-                BACKGROUND DECORATION
-            ================================================= */}
-
-            <div
-                style={{
-                    ...styles.backgroundOrb,
-                    ...styles.orbOne
-                }}
-            />
-
-            <div
-                style={{
-                    ...styles.backgroundOrb,
-                    ...styles.orbTwo
-                }}
-            />
+            <div style={styles.backgroundOrbOne} />
+            <div style={styles.backgroundOrbTwo} />
 
 
             {/* =================================================
-                MAIN CONTAINER
+                LOGIN CONTAINER
             ================================================= */}
 
-            <div
-                style={styles.loginContainer}
-            >
+            <div style={styles.loginContainer}>
 
 
                 {/* =================================================
-                    LEFT BRAND SECTION
+                    LEFT SIDE
                 ================================================= */}
 
-                <div
-                    style={styles.brandSection}
-                >
+                <div style={styles.brandSection}>
 
-                    {/* Logo */}
+                    <div>
 
-                    <div
-                        style={styles.logoWrapper}
-                    >
+                        <div style={styles.logoWrapper}>
 
-                        <div
-                            style={styles.logoIcon}
-                        >
-                            A
+                            <div style={styles.logoIcon}>
+                                A
+                            </div>
+
+                            <span style={styles.logoText}>
+                                AssetSphere
+                            </span>
+
                         </div>
 
-                        <span
-                            style={styles.logoText}
-                        >
-                            AssetSphere
-                        </span>
 
-                    </div>
+                        <div style={styles.badge}>
 
-
-                    {/* Main Heading */}
-
-                    <div
-                        style={styles.brandContent}
-                    >
-
-                        <div
-                            style={styles.smallBadge}
-                        >
-
-                            <span
-                                style={
-                                    styles.statusDot
-                                }
-                            />
+                            <span style={styles.badgeDot} />
 
                             ASSET MANAGEMENT PLATFORM
 
                         </div>
 
 
-                        <h1
-                            style={styles.brandHeading}
-                        >
+                        <h1 style={styles.brandHeading}>
 
                             Manage your assets.
 
                             <br />
 
-                            <span
-                                style={
-                                    styles.highlightText
-                                }
-                            >
+                            <span style={styles.highlight}>
                                 Smarter.
                             </span>
 
                         </h1>
 
 
-                        <p
-                            style={styles.brandDescription}
-                        >
+                        <p style={styles.brandDescription}>
 
                             A centralized platform to manage
                             hardware assets, software licenses,
@@ -229,13 +204,7 @@ function Login() {
                         </p>
 
 
-                        {/* =================================================
-                            FEATURE LIST
-                        ================================================= */}
-
-                        <div
-                            style={styles.featureList}
-                        >
+                        <div style={styles.features}>
 
                             <Feature
                                 icon="✓"
@@ -260,11 +229,7 @@ function Login() {
                     </div>
 
 
-                    {/* Footer */}
-
-                    <div
-                        style={styles.brandFooter}
-                    >
+                    <div style={styles.brandFooter}>
 
                         <span>
                             © {new Date().getFullYear()} AssetSphere
@@ -280,64 +245,40 @@ function Login() {
 
 
                 {/* =================================================
-                    RIGHT LOGIN SECTION
+                    RIGHT SIDE
                 ================================================= */}
 
-                <div
-                    style={styles.formSection}
-                >
+                <div style={styles.formSection}>
 
-                    <div
-                        style={styles.loginCard}
-                    >
+                    <div style={styles.loginCard}>
 
 
-                        {/* =================================================
-                            LOGIN HEADER
-                        ================================================= */}
+                        {/* HEADER */}
 
-                        <div
-                            style={styles.loginHeader}
-                        >
+                        <div style={styles.loginHeader}>
 
-                            <div
-                                style={styles.welcomeIcon}
-                            >
+                            <div style={styles.loginIcon}>
                                 🔐
                             </div>
 
-
-                            <h2
-                                style={styles.loginTitle}
-                            >
+                            <h2 style={styles.loginTitle}>
                                 Welcome back
                             </h2>
 
-
-                            <p
-                                style={styles.loginSubtitle}
-                            >
-                                Sign in to continue to AssetSphere
+                            <p style={styles.loginSubtitle}>
+                                Sign in to your AssetSphere account
                             </p>
 
                         </div>
 
 
-                        {/* =================================================
-                            ERROR
-                        ================================================= */}
+                        {/* ERROR */}
 
                         {errorMessage && (
 
-                            <div
-                                style={
-                                    styles.errorBox
-                                }
-                            >
+                            <div style={styles.errorBox}>
 
-                                <span>
-                                    ⚠
-                                </span>
+                                <span>⚠</span>
 
                                 <span>
                                     {errorMessage}
@@ -348,44 +289,22 @@ function Login() {
                         )}
 
 
-                        {/* =================================================
-                            FORM
-                        ================================================= */}
-
-                        <form
-                            onSubmit={handleLogin}
-                        >
+                        <form onSubmit={handleLogin}>
 
 
                             {/* USERNAME */}
 
-                            <div
-                                style={styles.fieldGroup}
-                            >
+                            <div style={styles.fieldGroup}>
 
-                                <label
-                                    style={
-                                        styles.label
-                                    }
-                                >
+                                <label style={styles.label}>
                                     Username
                                 </label>
 
+                                <div style={styles.inputWrapper}>
 
-                                <div
-                                    style={
-                                        styles.inputWrapper
-                                    }
-                                >
-
-                                    <span
-                                        style={
-                                            styles.inputIcon
-                                        }
-                                    >
+                                    <span style={styles.inputIcon}>
                                         👤
                                     </span>
-
 
                                     <input
                                         type="text"
@@ -401,9 +320,7 @@ function Login() {
 
                                         }}
                                         autoComplete="username"
-                                        style={
-                                            styles.input
-                                        }
+                                        style={styles.input}
                                     />
 
                                 </div>
@@ -413,33 +330,17 @@ function Login() {
 
                             {/* PASSWORD */}
 
-                            <div
-                                style={styles.fieldGroup}
-                            >
+                            <div style={styles.fieldGroup}>
 
-                                <label
-                                    style={
-                                        styles.label
-                                    }
-                                >
+                                <label style={styles.label}>
                                     Password
                                 </label>
 
+                                <div style={styles.inputWrapper}>
 
-                                <div
-                                    style={
-                                        styles.inputWrapper
-                                    }
-                                >
-
-                                    <span
-                                        style={
-                                            styles.inputIcon
-                                        }
-                                    >
+                                    <span style={styles.inputIcon}>
                                         🔒
                                     </span>
-
 
                                     <input
                                         type={
@@ -461,11 +362,9 @@ function Login() {
                                         autoComplete="current-password"
                                         style={{
                                             ...styles.input,
-                                            paddingRight:
-                                                "50px"
+                                            paddingRight: "48px"
                                         }}
                                     />
-
 
                                     <button
                                         type="button"
@@ -474,14 +373,7 @@ function Login() {
                                                 !showPassword
                                             )
                                         }
-                                        style={
-                                            styles.passwordButton
-                                        }
-                                        aria-label={
-                                            showPassword
-                                                ? "Hide password"
-                                                : "Show password"
-                                        }
+                                        style={styles.passwordButton}
                                     >
 
                                         {showPassword
@@ -496,46 +388,46 @@ function Login() {
                             </div>
 
 
-                            {/* =================================================
-                                REMEMBER / SECURITY
-                            ================================================= */}
+                            {/* REMEMBER + FORGOT */}
 
-                            <div
-                                style={
-                                    styles.securityRow
-                                }
-                            >
+                            <div style={styles.optionsRow}>
 
-                                <div
-                                    style={
-                                        styles.secureLogin
-                                    }
-                                >
+                                <label style={styles.rememberLabel}>
 
-                                    <span
-                                        style={
-                                            styles.greenDot
+                                    <input
+                                        type="checkbox"
+                                        checked={rememberMe}
+                                        onChange={(e) =>
+                                            setRememberMe(
+                                                e.target.checked
+                                            )
                                         }
+                                        style={styles.checkbox}
                                     />
 
-                                    Secure login
+                                    <span>
+                                        Remember me
+                                    </span>
 
-                                </div>
+                                </label>
 
-                                <span
+
+                                <button
+                                    type="button"
+                                    onClick={
+                                        handleForgotPassword
+                                    }
                                     style={
-                                        styles.securityText
+                                        styles.forgotButton
                                     }
                                 >
-                                    Protected access
-                                </span>
+                                    Forgot password?
+                                </button>
 
                             </div>
 
 
-                            {/* =================================================
-                                LOGIN BUTTON
-                            ================================================= */}
+                            {/* LOGIN BUTTON */}
 
                             <button
                                 type="submit"
@@ -543,9 +435,7 @@ function Login() {
                                 style={{
                                     ...styles.loginButton,
                                     opacity:
-                                        loading
-                                            ? 0.75
-                                            : 1,
+                                        loading ? 0.7 : 1,
                                     cursor:
                                         loading
                                             ? "not-allowed"
@@ -556,7 +446,6 @@ function Login() {
                                 {loading ? (
 
                                     <>
-
                                         <span
                                             style={
                                                 styles.spinner
@@ -564,68 +453,61 @@ function Login() {
                                         />
 
                                         Signing in...
-
                                     </>
 
                                 ) : (
 
                                     <>
-
                                         Sign in
 
                                         <span
-                                            style={
-                                                styles.arrow
-                                            }
+                                            style={styles.arrow}
                                         >
                                             →
                                         </span>
-
                                     </>
 
                                 )}
 
                             </button>
 
-
                         </form>
 
 
-                        {/* =================================================
-                            BOTTOM INFO
-                        ================================================= */}
+                        {/* SECURITY */}
 
-                        <div
-                            style={
-                                styles.bottomInfo
-                            }
-                        >
+                        <div style={styles.securityBox}>
 
-                            <div
-                                style={
-                                    styles.divider
-                                }
-                            />
+                            <div style={styles.securityIcon}>
+                                ✓
+                            </div>
 
-                            <p
-                                style={
-                                    styles.bottomText
-                                }
-                            >
+                            <div>
 
+                                <div style={styles.securityTitle}>
+                                    Secure access
+                                </div>
+
+                                <div style={styles.securityText}>
+                                    Your account is protected with secure authentication.
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                        <div style={styles.bottomInfo}>
+
+                            <div style={styles.divider} />
+
+                            <p style={styles.bottomText}>
                                 Authorized personnel only
-
                             </p>
 
-                            <p
-                                style={
-                                    styles.bottomSubText
-                                }
-                            >
-
+                            <p style={styles.bottomSubText}>
                                 Your access and session activity
                                 are securely monitored.
-
                             </p>
 
                         </div>
@@ -638,7 +520,7 @@ function Login() {
 
 
             {/* =================================================
-                RESPONSIVE STYLE
+                RESPONSIVE
             ================================================= */}
 
             <style>
@@ -660,11 +542,14 @@ function Login() {
                 }
 
                 input::placeholder {
-                    color: #94a3b8;
+                    color: #64748b;
                 }
 
                 input:focus {
                     outline: none;
+                    border-color: #3b82f6 !important;
+                    box-shadow:
+                        0 0 0 3px rgba(59,130,246,0.10);
                 }
 
                 button {
@@ -692,7 +577,7 @@ function Login() {
                     from {
                         opacity: 0;
                         transform:
-                            translateY(20px)
+                            translateY(15px)
                             scale(0.98);
                     }
 
@@ -729,7 +614,7 @@ function Login() {
                     }
 
                     .assetsphere-form-section {
-                        padding: 25px !important;
+                        padding: 35px !important;
                     }
 
                 }
@@ -737,11 +622,11 @@ function Login() {
                 @media (max-width: 500px) {
 
                     .assetsphere-form-section {
-                        padding: 15px !important;
+                        padding: 20px !important;
                     }
 
                     .assetsphere-login-card {
-                        padding: 28px 22px !important;
+                        padding: 10px !important;
                     }
 
                 }
@@ -758,7 +643,7 @@ function Login() {
 
 
 // =====================================================
-// FEATURE COMPONENT
+// FEATURE
 // =====================================================
 
 function Feature({
@@ -769,28 +654,19 @@ function Feature({
 
     return (
 
-        <div
-            style={styles.feature}
-        >
+        <div style={styles.feature}>
 
-            <div
-                style={styles.featureIcon}
-            >
+            <div style={styles.featureIcon}>
                 {icon}
             </div>
 
-
             <div>
 
-                <div
-                    style={styles.featureTitle}
-                >
+                <div style={styles.featureTitle}>
                     {title}
                 </div>
 
-                <div
-                    style={styles.featureDescription}
-                >
+                <div style={styles.featureDescription}>
                     {description}
                 </div>
 
@@ -814,7 +690,7 @@ const styles = {
         minHeight: "100vh",
 
         background:
-            "linear-gradient(135deg, #07111f 0%, #0b1728 45%, #101d31 100%)",
+            "linear-gradient(135deg, #020617 0%, #0f172a 50%, #111827 100%)",
 
         display: "flex",
 
@@ -831,19 +707,25 @@ const styles = {
     },
 
 
-    backgroundOrb: {
+    backgroundOrbOne: {
 
         position: "absolute",
 
-        width: "420px",
+        width: "450px",
 
-        height: "420px",
+        height: "450px",
 
         borderRadius: "50%",
 
-        filter: "blur(100px)",
+        background: "#2563eb",
 
-        opacity: 0.22,
+        filter: "blur(130px)",
+
+        opacity: 0.16,
+
+        top: "-220px",
+
+        left: "-180px",
 
         animation:
             "floatOrb 8s ease-in-out infinite"
@@ -851,24 +733,28 @@ const styles = {
     },
 
 
-    orbOne: {
+    backgroundOrbTwo: {
 
-        background: "#2563eb",
+        position: "absolute",
 
-        top: "-180px",
+        width: "450px",
 
-        left: "-150px"
+        height: "450px",
 
-    },
-
-
-    orbTwo: {
+        borderRadius: "50%",
 
         background: "#7c3aed",
 
-        bottom: "-220px",
+        filter: "blur(130px)",
 
-        right: "-150px",
+        opacity: 0.14,
+
+        bottom: "-230px",
+
+        right: "-180px",
+
+        animation:
+            "floatOrb 9s ease-in-out infinite",
 
         animationDelay: "2s"
 
@@ -879,22 +765,22 @@ const styles = {
 
         width: "100%",
 
-        maxWidth: "1180px",
+        maxWidth: "1120px",
 
-        minHeight: "680px",
+        minHeight: "650px",
 
         display: "grid",
 
         gridTemplateColumns:
-            "1.05fr 0.95fr",
+            "1fr 0.9fr",
 
         background:
-            "rgba(255,255,255,0.04)",
+            "rgba(15,23,42,0.82)",
 
         border:
-            "1px solid rgba(255,255,255,0.10)",
+            "1px solid rgba(148,163,184,0.12)",
 
-        borderRadius: "24px",
+        borderRadius: "22px",
 
         overflow: "hidden",
 
@@ -903,17 +789,17 @@ const styles = {
         zIndex: 2,
 
         boxShadow:
-            "0 30px 80px rgba(0,0,0,0.45)",
+            "0 35px 100px rgba(0,0,0,0.55)",
 
         backdropFilter:
-            "blur(20px)"
+            "blur(25px)"
 
     },
 
 
     brandSection: {
 
-        padding: "55px",
+        padding: "52px",
 
         display: "flex",
 
@@ -922,10 +808,10 @@ const styles = {
         justifyContent: "space-between",
 
         background:
-            "linear-gradient(145deg, rgba(37,99,235,0.16), rgba(15,23,42,0.35))",
+            "linear-gradient(145deg, rgba(37,99,235,0.13), rgba(15,23,42,0.20))",
 
         borderRight:
-            "1px solid rgba(255,255,255,0.08)"
+            "1px solid rgba(148,163,184,0.10)"
 
     },
 
@@ -943,9 +829,9 @@ const styles = {
 
     logoIcon: {
 
-        width: "44px",
+        width: "43px",
 
-        height: "44px",
+        height: "43px",
 
         borderRadius: "12px",
 
@@ -956,41 +842,32 @@ const styles = {
         alignItems: "center",
 
         background:
-            "linear-gradient(135deg, #3b82f6, #6366f1)",
+            "linear-gradient(135deg, #2563eb, #6366f1)",
 
         color: "#ffffff",
 
-        fontSize: "22px",
+        fontSize: "21px",
 
         fontWeight: "800",
 
         boxShadow:
-            "0 8px 25px rgba(59,130,246,0.35)"
+            "0 8px 25px rgba(37,99,235,0.35)"
 
     },
 
 
     logoText: {
 
-        color: "#ffffff",
+        color: "#f8fafc",
 
-        fontSize: "22px",
+        fontSize: "21px",
 
-        fontWeight: "700",
-
-        letterSpacing: "-0.5px"
+        fontWeight: "700"
 
     },
 
 
-    brandContent: {
-
-        marginTop: "20px"
-
-    },
-
-
-    smallBadge: {
+    badge: {
 
         display: "inline-flex",
 
@@ -998,19 +875,21 @@ const styles = {
 
         gap: "8px",
 
-        padding: "8px 12px",
+        marginTop: "75px",
+
+        padding: "7px 11px",
 
         borderRadius: "30px",
 
         background:
-            "rgba(59,130,246,0.10)",
+            "rgba(59,130,246,0.08)",
 
         border:
-            "1px solid rgba(59,130,246,0.20)",
+            "1px solid rgba(59,130,246,0.18)",
 
         color: "#93c5fd",
 
-        fontSize: "10px",
+        fontSize: "9px",
 
         fontWeight: "700",
 
@@ -1019,18 +898,18 @@ const styles = {
     },
 
 
-    statusDot: {
+    badgeDot: {
 
-        width: "7px",
+        width: "6px",
 
-        height: "7px",
+        height: "6px",
 
         borderRadius: "50%",
 
         background: "#22c55e",
 
         boxShadow:
-            "0 0 10px #22c55e"
+            "0 0 9px #22c55e"
 
     },
 
@@ -1039,21 +918,20 @@ const styles = {
 
         color: "#ffffff",
 
-        fontSize: "48px",
+        fontSize: "46px",
 
         lineHeight: "1.08",
 
         letterSpacing: "-1.8px",
 
-        margin:
-            "28px 0 18px",
+        margin: "25px 0 18px",
 
         fontWeight: "750"
 
     },
 
 
-    highlightText: {
+    highlight: {
 
         color: "#60a5fa"
 
@@ -1064,26 +942,26 @@ const styles = {
 
         color: "#94a3b8",
 
-        fontSize: "15px",
+        fontSize: "14px",
 
         lineHeight: "1.8",
 
-        maxWidth: "500px",
+        maxWidth: "510px",
 
         margin: 0
 
     },
 
 
-    featureList: {
+    features: {
 
         display: "flex",
 
         flexDirection: "column",
 
-        gap: "18px",
+        gap: "17px",
 
-        marginTop: "38px"
+        marginTop: "32px"
 
     },
 
@@ -1094,16 +972,16 @@ const styles = {
 
         alignItems: "flex-start",
 
-        gap: "14px"
+        gap: "13px"
 
     },
 
 
     featureIcon: {
 
-        width: "28px",
+        width: "27px",
 
-        height: "28px",
+        height: "27px",
 
         flexShrink: 0,
 
@@ -1116,11 +994,11 @@ const styles = {
         justifyContent: "center",
 
         background:
-            "rgba(34,197,94,0.12)",
+            "rgba(34,197,94,0.10)",
 
         color: "#4ade80",
 
-        fontSize: "13px",
+        fontSize: "12px",
 
         fontWeight: "800"
 
@@ -1131,7 +1009,7 @@ const styles = {
 
         color: "#e2e8f0",
 
-        fontSize: "14px",
+        fontSize: "13px",
 
         fontWeight: "650",
 
@@ -1144,7 +1022,7 @@ const styles = {
 
         color: "#64748b",
 
-        fontSize: "12px",
+        fontSize: "11px",
 
         lineHeight: "1.5"
 
@@ -1157,11 +1035,11 @@ const styles = {
 
         justifyContent: "space-between",
 
-        gap: "20px",
+        gap: "15px",
 
         color: "#475569",
 
-        fontSize: "11px"
+        fontSize: "10px"
 
     },
 
@@ -1174,10 +1052,7 @@ const styles = {
 
         justifyContent: "center",
 
-        padding: "45px",
-
-        background:
-            "rgba(255,255,255,0.025)"
+        padding: "45px"
 
     },
 
@@ -1186,28 +1061,28 @@ const styles = {
 
         width: "100%",
 
-        maxWidth: "420px",
+        maxWidth: "390px",
 
         animation:
-            "cardAppear 0.6s ease-out"
+            "cardAppear 0.55s ease-out"
 
     },
 
 
     loginHeader: {
 
-        marginBottom: "30px"
+        marginBottom: "27px"
 
     },
 
 
-    welcomeIcon: {
+    loginIcon: {
 
-        width: "48px",
+        width: "46px",
 
-        height: "48px",
+        height: "46px",
 
-        borderRadius: "14px",
+        borderRadius: "13px",
 
         display: "flex",
 
@@ -1216,14 +1091,14 @@ const styles = {
         justifyContent: "center",
 
         background:
-            "rgba(59,130,246,0.12)",
+            "rgba(59,130,246,0.10)",
 
         border:
             "1px solid rgba(59,130,246,0.18)",
 
-        fontSize: "20px",
+        fontSize: "19px",
 
-        marginBottom: "18px"
+        marginBottom: "17px"
 
     },
 
@@ -1234,23 +1109,22 @@ const styles = {
 
         color: "#f8fafc",
 
-        fontSize: "30px",
+        fontSize: "29px",
 
         fontWeight: "700",
 
-        letterSpacing: "-0.8px"
+        letterSpacing: "-0.7px"
 
     },
 
 
     loginSubtitle: {
 
-        margin:
-            "8px 0 0",
+        margin: "7px 0 0",
 
         color: "#64748b",
 
-        fontSize: "13px"
+        fontSize: "12px"
 
     },
 
@@ -1261,30 +1135,30 @@ const styles = {
 
         alignItems: "center",
 
-        gap: "9px",
+        gap: "8px",
 
-        padding: "11px 13px",
+        padding: "10px 12px",
 
-        marginBottom: "20px",
+        marginBottom: "18px",
 
-        borderRadius: "9px",
+        borderRadius: "8px",
 
         background:
             "rgba(239,68,68,0.08)",
 
         border:
-            "1px solid rgba(239,68,68,0.20)",
+            "1px solid rgba(239,68,68,0.18)",
 
         color: "#fca5a5",
 
-        fontSize: "12px"
+        fontSize: "11px"
 
     },
 
 
     fieldGroup: {
 
-        marginBottom: "20px"
+        marginBottom: "18px"
 
     },
 
@@ -1295,11 +1169,11 @@ const styles = {
 
         color: "#cbd5e1",
 
-        fontSize: "12px",
+        fontSize: "11px",
 
         fontWeight: "600",
 
-        marginBottom: "8px"
+        marginBottom: "7px"
 
     },
 
@@ -1317,16 +1191,16 @@ const styles = {
 
         position: "absolute",
 
-        left: "15px",
+        left: "14px",
 
         top: "50%",
 
         transform:
             "translateY(-50%)",
 
-        fontSize: "15px",
+        fontSize: "14px",
 
-        opacity: 0.7,
+        opacity: 0.65,
 
         zIndex: 1
 
@@ -1337,22 +1211,22 @@ const styles = {
 
         width: "100%",
 
-        height: "50px",
+        height: "48px",
 
         padding:
-            "0 15px 0 45px",
+            "0 15px 0 43px",
 
-        borderRadius: "10px",
+        borderRadius: "9px",
 
         border:
             "1px solid #26364d",
 
         background:
-            "#111c2c",
+            "#0f1a2b",
 
         color: "#f8fafc",
 
-        fontSize: "13px",
+        fontSize: "12px",
 
         transition:
             "all 0.2s ease"
@@ -1364,7 +1238,7 @@ const styles = {
 
         position: "absolute",
 
-        right: "10px",
+        right: "8px",
 
         top: "50%",
 
@@ -1379,14 +1253,14 @@ const styles = {
 
         cursor: "pointer",
 
-        fontSize: "15px",
+        fontSize: "14px",
 
         padding: "6px"
 
     },
 
 
-    securityRow: {
+    optionsRow: {
 
         display: "flex",
 
@@ -1395,12 +1269,12 @@ const styles = {
         alignItems: "center",
 
         margin:
-            "5px 0 22px"
+            "2px 0 22px"
 
     },
 
 
-    secureLogin: {
+    rememberLabel: {
 
         display: "flex",
 
@@ -1410,32 +1284,41 @@ const styles = {
 
         color: "#94a3b8",
 
-        fontSize: "11px"
+        fontSize: "11px",
+
+        cursor: "pointer"
 
     },
 
 
-    greenDot: {
+    checkbox: {
 
-        width: "6px",
+        width: "14px",
 
-        height: "6px",
+        height: "14px",
 
-        borderRadius: "50%",
+        accentColor: "#2563eb",
 
-        background: "#22c55e",
-
-        boxShadow:
-            "0 0 8px rgba(34,197,94,0.7)"
+        cursor: "pointer"
 
     },
 
 
-    securityText: {
+    forgotButton: {
 
-        color: "#475569",
+        border: "none",
 
-        fontSize: "11px"
+        background: "transparent",
+
+        color: "#60a5fa",
+
+        fontSize: "11px",
+
+        fontWeight: "600",
+
+        cursor: "pointer",
+
+        padding: 0
 
     },
 
@@ -1444,18 +1327,18 @@ const styles = {
 
         width: "100%",
 
-        height: "52px",
+        height: "50px",
 
         border: "none",
 
-        borderRadius: "10px",
+        borderRadius: "9px",
 
         background:
             "linear-gradient(135deg, #2563eb, #4f46e5)",
 
         color: "#ffffff",
 
-        fontSize: "14px",
+        fontSize: "13px",
 
         fontWeight: "700",
 
@@ -1465,10 +1348,10 @@ const styles = {
 
         justifyContent: "center",
 
-        gap: "10px",
+        gap: "9px",
 
         boxShadow:
-            "0 10px 25px rgba(37,99,235,0.25)",
+            "0 10px 25px rgba(37,99,235,0.22)",
 
         transition:
             "all 0.2s ease"
@@ -1478,18 +1361,16 @@ const styles = {
 
     arrow: {
 
-        fontSize: "19px",
-
-        lineHeight: 1
+        fontSize: "18px"
 
     },
 
 
     spinner: {
 
-        width: "16px",
+        width: "15px",
 
-        height: "16px",
+        height: "15px",
 
         border:
             "2px solid rgba(255,255,255,0.35)",
@@ -1505,11 +1386,82 @@ const styles = {
     },
 
 
+    securityBox: {
+
+        display: "flex",
+
+        alignItems: "center",
+
+        gap: "10px",
+
+        marginTop: "22px",
+
+        padding: "11px 12px",
+
+        borderRadius: "9px",
+
+        background:
+            "rgba(34,197,94,0.045)",
+
+        border:
+            "1px solid rgba(34,197,94,0.10)"
+
+    },
+
+
+    securityIcon: {
+
+        width: "24px",
+
+        height: "24px",
+
+        borderRadius: "50%",
+
+        display: "flex",
+
+        alignItems: "center",
+
+        justifyContent: "center",
+
+        background:
+            "rgba(34,197,94,0.12)",
+
+        color: "#4ade80",
+
+        fontSize: "11px",
+
+        fontWeight: "700"
+
+    },
+
+
+    securityTitle: {
+
+        color: "#94a3b8",
+
+        fontSize: "10px",
+
+        fontWeight: "600",
+
+        marginBottom: "2px"
+
+    },
+
+
+    securityText: {
+
+        color: "#475569",
+
+        fontSize: "9px"
+
+    },
+
+
     bottomInfo: {
 
         textAlign: "center",
 
-        marginTop: "30px"
+        marginTop: "23px"
 
     },
 
@@ -1518,10 +1470,9 @@ const styles = {
 
         height: "1px",
 
-        background:
-            "#1e293b",
+        background: "#1e293b",
 
-        marginBottom: "18px"
+        marginBottom: "15px"
 
     },
 
@@ -1532,7 +1483,7 @@ const styles = {
 
         color: "#64748b",
 
-        fontSize: "11px",
+        fontSize: "10px",
 
         fontWeight: "600"
 
@@ -1541,12 +1492,11 @@ const styles = {
 
     bottomSubText: {
 
-        margin:
-            "5px 0 0",
+        margin: "4px 0 0",
 
         color: "#475569",
 
-        fontSize: "10px",
+        fontSize: "9px",
 
         lineHeight: "1.5"
 

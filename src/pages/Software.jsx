@@ -86,9 +86,9 @@ function Software() {
         ) {
             return {
                 text: "No Expiry",
-                color: "#64748b",
-                background: "#f1f5f9",
-                dot: "#94a3b8"
+                color: "var(--muted-text-color)",
+                background: "var(--muted-background)",
+                dot: "var(--muted-text-color)"
             };
         }
 
@@ -97,44 +97,44 @@ function Software() {
         if (remaining < 0) {
             return {
                 text: "Expired",
-                color: "#dc2626",
-                background: "#fef2f2",
-                dot: "#ef4444"
+                color: "var(--danger-color)",
+                background: "var(--danger-background)",
+                dot: "var(--danger-color)"
             };
         }
 
         if (remaining <= 10) {
             return {
                 text: "Critical",
-                color: "#dc2626",
-                background: "#fef2f2",
-                dot: "#ef4444"
+                color: "var(--danger-color)",
+                background: "var(--danger-background)",
+                dot: "var(--danger-color)"
             };
         }
 
         if (remaining <= 20) {
             return {
                 text: "10–20 Days",
-                color: "#ea580c",
-                background: "#fff7ed",
-                dot: "#f97316"
+                color: "var(--warning-color)",
+                background: "var(--warning-background)",
+                dot: "var(--warning-color)"
             };
         }
 
         if (remaining <= 30) {
             return {
                 text: "20–30 Days",
-                color: "#ca8a04",
-                background: "#fefce8",
-                dot: "#eab308"
+                color: "var(--warning-color)",
+                background: "var(--warning-background)",
+                dot: "var(--warning-color)"
             };
         }
 
         return {
             text: "Active",
-            color: "#16a34a",
-            background: "#f0fdf4",
-            dot: "#22c55e"
+            color: "var(--success-color)",
+            background: "var(--success-background)",
+            dot: "var(--success-color)"
         };
     };
 
@@ -285,8 +285,6 @@ function Software() {
 
                     <section style={heroHeader}>
 
-                        {/* Decorative shapes */}
-
                         <div style={heroGlowOne} />
                         <div style={heroGlowTwo} />
 
@@ -317,7 +315,10 @@ function Software() {
                                     disabled={loading}
                                     style={{
                                         ...secondaryButton,
-                                        opacity: loading ? 0.75 : 1
+                                        opacity: loading ? 0.75 : 1,
+                                        cursor: loading
+                                            ? "not-allowed"
+                                            : "pointer"
                                     }}
                                 >
                                     <span style={refreshIcon}>
@@ -358,40 +359,40 @@ function Software() {
                             title="Total Software"
                             value={stats.total}
                             icon="▣"
-                            iconColor="#2563eb"
-                            iconBackground="#eff6ff"
+                            iconColor="var(--primary-color)"
+                            iconBackground="var(--primary-light)"
                         />
 
                         <StatCard
                             title="Active"
                             value={stats.active}
                             icon="✓"
-                            iconColor="#16a34a"
-                            iconBackground="#f0fdf4"
+                            iconColor="var(--success-color)"
+                            iconBackground="var(--success-background)"
                         />
 
                         <StatCard
                             title="Expiring Soon"
                             value={stats.expiring}
                             icon="◷"
-                            iconColor="#d97706"
-                            iconBackground="#fffbeb"
+                            iconColor="var(--warning-color)"
+                            iconBackground="var(--warning-background)"
                         />
 
                         <StatCard
                             title="Critical"
                             value={stats.critical}
                             icon="!"
-                            iconColor="#dc2626"
-                            iconBackground="#fef2f2"
+                            iconColor="var(--danger-color)"
+                            iconBackground="var(--danger-background)"
                         />
 
                         <StatCard
                             title="Expired"
                             value={stats.expired}
                             icon="×"
-                            iconColor="#7f1d1d"
-                            iconBackground="#fef2f2"
+                            iconColor="var(--danger-color)"
+                            iconBackground="var(--danger-background)"
                         />
 
                     </div>
@@ -566,8 +567,6 @@ function Software() {
 
 
                                 <tbody>
-
-                                    {/* LOADING */}
 
                                     {loading ? (
 
@@ -811,7 +810,12 @@ function Software() {
                                                                 tdStyle
                                                             }
                                                         >
-                                                            <strong>
+                                                            <strong
+                                                                style={{
+                                                                    color:
+                                                                        "var(--text-color)"
+                                                                }}
+                                                            >
                                                                 {
                                                                     item.total_licenses
                                                                 }
@@ -897,7 +901,12 @@ function Software() {
                                                             }
                                                         >
 
-                                                            <strong>
+                                                            <strong
+                                                                style={{
+                                                                    color:
+                                                                        "var(--text-color)"
+                                                                }}
+                                                            >
                                                                 ₹{" "}
                                                                 {Number(
                                                                     item.cost ||
@@ -924,13 +933,13 @@ function Software() {
                                                                     color:
                                                                         item.status ===
                                                                         "Active"
-                                                                            ? "#15803d"
-                                                                            : "#64748b",
+                                                                            ? "var(--success-color)"
+                                                                            : "var(--muted-text-color)",
                                                                     background:
                                                                         item.status ===
                                                                         "Active"
-                                                                            ? "#f0fdf4"
-                                                                            : "#f1f5f9"
+                                                                            ? "var(--success-background)"
+                                                                            : "var(--muted-background)"
                                                                 }}
                                                             >
 
@@ -945,8 +954,8 @@ function Software() {
                                                                         background:
                                                                             item.status ===
                                                                             "Active"
-                                                                                ? "#22c55e"
-                                                                                : "#94a3b8"
+                                                                                ? "var(--success-color)"
+                                                                                : "var(--muted-text-color)"
                                                                     }}
                                                                 />
 
@@ -1221,8 +1230,8 @@ function StatusBadge({ status }) {
 const pageStyle = {
     display: "flex",
     minHeight: "100vh",
-    background: "#f8fafc",
-    color: "#0f172a"
+    background: "var(--app-background)",
+    color: "var(--text-color)"
 };
 
 const contentStyle = {
@@ -1249,7 +1258,7 @@ const heroHeader = {
     borderRadius: "15px",
     overflow: "hidden",
     background:
-        "linear-gradient(115deg, #111a34 0%, #162b61 42%, #245fe0 100%)",
+        "linear-gradient(115deg, var(--sidebar-color) 0%, var(--sidebar-color) 42%, var(--primary-color) 100%)",
     boxShadow:
         "0 10px 25px rgba(15,23,42,0.12)",
     color: "#ffffff"
@@ -1271,7 +1280,7 @@ const heroText = {
 
 const heroEyebrow = {
     marginBottom: "8px",
-    color: "#7dd3fc",
+    color: "var(--primary-light)",
     fontSize: "10px",
     lineHeight: 1,
     fontWeight: "800",
@@ -1307,7 +1316,7 @@ const heroGlowOne = {
     top: "-105px",
     borderRadius: "50%",
     background:
-        "rgba(59,130,246,0.18)",
+        "color-mix(in srgb, var(--primary-color) 30%, transparent)",
     filter: "blur(2px)"
 };
 
@@ -1319,9 +1328,9 @@ const heroGlowTwo = {
     bottom: "-95px",
     borderRadius: "50%",
     background:
-        "rgba(59,130,246,0.16)",
+        "color-mix(in srgb, var(--primary-color) 25%, transparent)",
     boxShadow:
-        "0 0 50px rgba(59,130,246,0.12)"
+        "0 0 50px color-mix(in srgb, var(--primary-color) 20%, transparent)"
 };
 
 
@@ -1363,7 +1372,7 @@ const primaryButton = {
     border: "none",
     borderRadius: "7px",
     background: "#ffffff",
-    color: "#1746a2",
+    color: "var(--primary-color)",
     cursor: "pointer",
     fontSize: "10px",
     fontWeight: "700",
@@ -1401,8 +1410,8 @@ const statsGrid = {
 };
 
 const statCard = {
-    background: "#ffffff",
-    border: "1px solid #e5eaf0",
+    background: "var(--card-background)",
+    border: "1px solid var(--border-color)",
     borderRadius: "11px",
     padding: "17px 18px",
     display: "flex",
@@ -1428,7 +1437,7 @@ const statIcon = {
 
 const statTitle = {
     fontSize: "11px",
-    color: "#64748b",
+    color: "var(--muted-text-color)",
     marginBottom: "4px",
     whiteSpace: "nowrap"
 };
@@ -1437,7 +1446,7 @@ const statValue = {
     fontSize: "22px",
     lineHeight: 1,
     fontWeight: "750",
-    color: "#0f172a"
+    color: "var(--text-color)"
 };
 
 
@@ -1446,8 +1455,8 @@ const statValue = {
 // =====================================================
 
 const toolbar = {
-    background: "#ffffff",
-    border: "1px solid #e5eaf0",
+    background: "var(--card-background)",
+    border: "1px solid var(--border-color)",
     borderRadius: "11px",
     padding: "13px",
     marginBottom: "15px",
@@ -1464,17 +1473,17 @@ const searchWrapper = {
     width: "360px",
     maxWidth: "100%",
     height: "40px",
-    border: "1px solid #dbe2ea",
+    border: "1px solid var(--border-color)",
     borderRadius: "8px",
     display: "flex",
     alignItems: "center",
-    background: "#ffffff",
+    background: "var(--card-background)",
     boxSizing: "border-box"
 };
 
 const searchIcon = {
     marginLeft: "11px",
-    color: "#94a3b8",
+    color: "var(--muted-text-color)",
     fontSize: "20px",
     lineHeight: 1
 };
@@ -1486,7 +1495,7 @@ const searchInput = {
     border: "none",
     outline: "none",
     padding: "0 9px",
-    color: "#334155",
+    color: "var(--text-color)",
     fontSize: "12px",
     background: "transparent"
 };
@@ -1494,7 +1503,7 @@ const searchInput = {
 const clearSearch = {
     border: "none",
     background: "transparent",
-    color: "#94a3b8",
+    color: "var(--muted-text-color)",
     fontSize: "18px",
     cursor: "pointer",
     marginRight: "7px",
@@ -1510,7 +1519,7 @@ const filterGroup = {
 const filterButton = {
     border: "1px solid transparent",
     background: "transparent",
-    color: "#64748b",
+    color: "var(--muted-text-color)",
     borderRadius: "7px",
     padding: "7px 11px",
     cursor: "pointer",
@@ -1519,9 +1528,9 @@ const filterButton = {
 };
 
 const activeFilterButton = {
-    background: "#eff6ff",
-    color: "#2563eb",
-    borderColor: "#dbeafe"
+    background: "var(--primary-light)",
+    color: "var(--primary-color)",
+    borderColor: "var(--primary-light)"
 };
 
 
@@ -1530,8 +1539,8 @@ const activeFilterButton = {
 // =====================================================
 
 const tableCard = {
-    background: "#ffffff",
-    border: "1px solid #e5eaf0",
+    background: "var(--card-background)",
+    border: "1px solid var(--border-color)",
     borderRadius: "11px",
     overflow: "hidden",
     boxShadow:
@@ -1540,19 +1549,19 @@ const tableCard = {
 
 const tableHeader = {
     padding: "17px 20px",
-    borderBottom: "1px solid #eef2f6"
+    borderBottom: "1px solid var(--border-color)"
 };
 
 const tableTitle = {
     margin: 0,
     fontSize: "15px",
-    color: "#0f172a",
+    color: "var(--text-color)",
     fontWeight: "700"
 };
 
 const tableSubtitle = {
     margin: "4px 0 0",
-    color: "#94a3b8",
+    color: "var(--muted-text-color)",
     fontSize: "11px"
 };
 
@@ -1579,9 +1588,9 @@ const thStyle = {
     fontSize: "10px",
     textTransform: "uppercase",
     letterSpacing: ".04em",
-    color: "#64748b",
-    background: "#f8fafc",
-    borderBottom: "1px solid #e2e8f0",
+    color: "var(--muted-text-color)",
+    background: "var(--table-header-background)",
+    borderBottom: "1px solid var(--border-color)",
     fontWeight: "700"
 };
 
@@ -1590,8 +1599,8 @@ const tdStyle = {
     textAlign: "left",
     whiteSpace: "nowrap",
     fontSize: "12px",
-    color: "#475569",
-    borderBottom: "1px solid #f1f5f9",
+    color: "var(--text-color)",
+    borderBottom: "1px solid var(--border-color)",
     verticalAlign: "middle"
 };
 
@@ -1606,7 +1615,7 @@ const rowStyle = {
 // =====================================================
 
 const idText = {
-    color: "#64748b",
+    color: "var(--muted-text-color)",
     fontSize: "11px",
     fontWeight: "600"
 };
@@ -1621,8 +1630,8 @@ const softwareIcon = {
     width: "35px",
     height: "35px",
     borderRadius: "8px",
-    background: "#eff6ff",
-    color: "#2563eb",
+    background: "var(--primary-light)",
+    color: "var(--primary-color)",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
@@ -1632,33 +1641,33 @@ const softwareIcon = {
 };
 
 const softwareName = {
-    color: "#0f172a",
+    color: "var(--text-color)",
     fontWeight: "650",
     fontSize: "12px",
     marginBottom: "3px"
 };
 
 const softwareCode = {
-    color: "#94a3b8",
+    color: "var(--muted-text-color)",
     fontSize: "10px"
 };
 
 const versionBadge = {
     padding: "4px 7px",
     borderRadius: "5px",
-    background: "#f8fafc",
-    color: "#475569",
-    border: "1px solid #e2e8f0",
+    background: "var(--table-header-background)",
+    color: "var(--text-color)",
+    border: "1px solid var(--border-color)",
     fontSize: "10px"
 };
 
 const licenseBadge = {
-    color: "#475569",
-    background: "#f8fafc",
+    color: "var(--text-color)",
+    background: "var(--table-header-background)",
     borderRadius: "5px",
     padding: "4px 7px",
     fontSize: "10px",
-    border: "1px solid #e2e8f0"
+    border: "1px solid var(--border-color)"
 };
 
 
@@ -1690,10 +1699,10 @@ const actionWrapper = {
 const editButton = {
     width: "30px",
     height: "30px",
-    border: "1px solid #dbeafe",
+    border: "1px solid var(--primary-light)",
     borderRadius: "7px",
-    background: "#eff6ff",
-    color: "#2563eb",
+    background: "var(--primary-light)",
+    color: "var(--primary-color)",
     cursor: "pointer",
     fontSize: "13px"
 };
@@ -1701,10 +1710,10 @@ const editButton = {
 const deleteButton = {
     width: "30px",
     height: "30px",
-    border: "1px solid #fee2e2",
+    border: "1px solid var(--danger-background)",
     borderRadius: "7px",
-    background: "#fef2f2",
-    color: "#dc2626",
+    background: "var(--danger-background)",
+    color: "var(--danger-color)",
     cursor: "pointer",
     fontSize: "13px"
 };
@@ -1723,8 +1732,8 @@ const emptyIcon = {
     width: "47px",
     height: "47px",
     borderRadius: "12px",
-    background: "#f1f5f9",
-    color: "#94a3b8",
+    background: "var(--muted-background)",
+    color: "var(--muted-text-color)",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
@@ -1733,13 +1742,13 @@ const emptyIcon = {
 };
 
 const emptyTitle = {
-    color: "#334155",
+    color: "var(--text-color)",
     fontWeight: "700",
     fontSize: "13px"
 };
 
 const emptyText = {
-    color: "#94a3b8",
+    color: "var(--muted-text-color)",
     fontSize: "11px",
     marginTop: "5px"
 };
@@ -1754,7 +1763,7 @@ const skeleton = {
     width: "75%",
     borderRadius: "5px",
     background:
-        "linear-gradient(90deg,#f1f5f9,#e2e8f0,#f1f5f9)",
+        "linear-gradient(90deg, var(--muted-background), var(--border-color), var(--muted-background))",
     backgroundSize: "200% 100%",
     animation:
         "skeletonMove 1.3s ease-in-out infinite"

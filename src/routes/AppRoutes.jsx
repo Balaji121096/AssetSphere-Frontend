@@ -1,3 +1,7 @@
+// =====================================================
+// AppRoutes.jsx
+// =====================================================
+
 import { Routes, Route } from "react-router-dom";
 
 // =====================================================
@@ -6,7 +10,6 @@ import { Routes, Route } from "react-router-dom";
 
 import Login from "../pages/Login";
 import Dashboard from "../pages/Dashboard";
-
 import ProtectedRoute from "../components/ProtectedRoute";
 
 // =====================================================
@@ -60,18 +63,7 @@ import SettingsProfile from "../pages/SettingsProfile";
 import SettingSecurity from "../pages/SettingSecurity";
 import ChangePassword from "../pages/ChangePassword";
 import UserManagement from "../pages/UserManagement";
-
-// =====================================================
-// OPTIONAL SETTINGS PAGES
-// =====================================================
-
-// IMPORTANT:
-// Indha 3 pages actual-ah create pannirundha mattum
-// imports uncomment pannu.
-//
-// import CompanySettings from "../pages/CompanySettings";
-// import MasterData from "../pages/MasterData";
-// import DocumentSettings from "../pages/DocumentSettings";
+import Theme from "../pages/Theme";
 
 // =====================================================
 // PURCHASE
@@ -339,53 +331,14 @@ function AppRoutes() {
                 }
             />
 
-
-            {/* =================================================
-                COMPANY SETTINGS
-            ================================================= */}
-
-            {/*
             <Route
-                path="/settings/company"
+                path="/settings/theme"
                 element={
                     <ProtectedRoute>
-                        <CompanySettings />
+                        <Theme />
                     </ProtectedRoute>
                 }
             />
-            */}
-
-
-            {/* =================================================
-                MASTER DATA
-            ================================================= */}
-
-            {/*
-            <Route
-                path="/settings/master-data"
-                element={
-                    <ProtectedRoute>
-                        <MasterData />
-                    </ProtectedRoute>
-                }
-            />
-            */}
-
-
-            {/* =================================================
-                DOCUMENT SETTINGS
-            ================================================= */}
-
-            {/*
-            <Route
-                path="/settings/documents"
-                element={
-                    <ProtectedRoute>
-                        <DocumentSettings />
-                    </ProtectedRoute>
-                }
-            />
-            */}
 
 
             {/* =================================================
