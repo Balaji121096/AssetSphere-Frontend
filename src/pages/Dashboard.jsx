@@ -1,4 +1,6 @@
-// Dashboard.jsx
+// Dashboard.jsx - SIMPLIFIED VERSION
+// No need to pass userFullName and currentPage props to Navbar anymore
+// Navbar reads everything from localStorage and useLocation
 
 import {
     useCallback,
@@ -31,7 +33,6 @@ import {
 function Dashboard() {
 
     const navigate = useNavigate();
-
 
     const [dashboard, setDashboard] = useState({});
     const [softwareList, setSoftwareList] = useState([]);
@@ -1897,7 +1898,7 @@ const cardFooterStyle = {
         "9px",
 
     fontWeight:
-        800
+        "800"
 
 };
 

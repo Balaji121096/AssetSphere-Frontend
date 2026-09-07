@@ -81,6 +81,28 @@ function Login() {
 
 
             // =================================================
+            // STORE USER INFO (NEW)
+            // =================================================
+
+            // Store the username for displaying in the navbar
+            localStorage.setItem(
+                "userFullName",
+                result.full_name || 
+                result.name || 
+                username.trim()
+            );
+
+            // Optionally store more user data if available
+            if (result.email) {
+                localStorage.setItem("userEmail", result.email);
+            }
+
+            if (result.user_id || result.id) {
+                localStorage.setItem("userId", result.user_id || result.id);
+            }
+
+
+            // =================================================
             // REMEMBER ME
             // =================================================
 

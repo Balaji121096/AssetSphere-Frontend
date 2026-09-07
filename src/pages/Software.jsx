@@ -6,6 +6,10 @@ import { useNavigate } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
 import Navbar from "../components/Navbar";
 import API from "../api/axios";
+import {
+    exportToExcel,
+    exportToPDF
+} from "../utils/exportUtils";
 
 function Software() {
     const navigate = useNavigate();
@@ -42,6 +46,39 @@ function Software() {
     useEffect(() => {
         loadSoftware();
     }, []);
+
+    // =====================================================
+    // EXPORT
+    // =====================================================
+
+    const handleExportExcel = () => {
+        if (filteredSoftware.length === 0) {
+            alert("No software records available to export.");
+        return;
+    }
+
+    exportToExcel(
+        filteredSoftware,
+        `AssetSphere_Software_${new Date()
+            .toISOString()
+            .slice(0, 10)}.xls`
+    );
+};
+
+    const handleExportPDF = () => {
+        if (filteredSoftware.length === 0) {
+            alert("No software records available to export.");
+        return;
+    }
+
+    exportToPDF(
+        filteredSoftware,
+        "AssetSphere - Software License Report",
+        `AssetSphere_Software_${new Date()
+            .toISOString()
+            .slice(0, 10)}`
+    );
+};
 
     // =====================================================
     // DELETE SOFTWARE
@@ -309,41 +346,85 @@ function Software() {
 
                             <div style={headerActions}>
 
-                                <button
-                                    type="button"
-                                    onClick={loadSoftware}
-                                    disabled={loading}
-                                    style={{
-                                        ...secondaryButton,
-                                        opacity: loading ? 0.75 : 1,
-                                        cursor: loading
-                                            ? "not-allowed"
-                                            : "pointer"
-                                    }}
-                                >
-                                    <span style={refreshIcon}>
-                                        ↻
-                                    </span>
+    {/* REFRESH */}
 
-                                    Refresh
-                                </button>
+    <button
+        type="button"
+        onClick={loadSoftware}
+        disabled={loading}
+        style={{
+            ...secondaryButton,
+            opacity: loading ? 0.75 : 1,
+            cursor: loading
+                ? "not-allowed"
+                : "pointer"
+        }}
+    >
+        <span style={refreshIcon}>
+            ↻
+        </span>
 
-                                <button
-                                    type="button"
-                                    onClick={() =>
-                                        navigate("/software/add")
-                                    }
-                                    style={primaryButton}
-                                >
-                                    <span style={plusIcon}>
-                                        +
-                                    </span>
+        Refresh
+    </button>
 
-                                    Add Software
-                                </button>
 
-                            </div>
+    {/* EXCEL */}
 
+    <button
+        type="button"
+        onClick={handleExportExcel}
+        disabled={loading || filteredSoftware.length === 0}
+        style={{
+            ...exportExcelButton,
+            opacity:
+                loading ||
+                filteredSoftware.length === 0
+                    ? 0.55
+                    : 1
+        }}
+    >
+        <span>▤</span>
+        Export Excel
+    </button>
+
+
+    {/* PDF */}
+
+    <button
+        type="button"
+        onClick={handleExportPDF}
+        disabled={loading || filteredSoftware.length === 0}
+        style={{
+            ...exportPdfButton,
+            opacity:
+                loading ||
+                filteredSoftware.length === 0
+                    ? 0.55
+                    : 1
+        }}
+    >
+        <span>▥</span>
+        Export PDF
+    </button>
+
+
+    {/* ADD */}
+
+    <button
+        type="button"
+        onClick={() =>
+            navigate("/software/add")
+        }
+        style={primaryButton}
+    >
+        <span style={plusIcon}>
+            +
+        </span>
+
+        Add Software
+    </button>
+
+</div>
                         </div>
 
                     </section>
@@ -1382,6 +1463,42 @@ const primaryButton = {
     gap: "6px",
     boxShadow:
         "0 5px 14px rgba(0,0,0,0.14)"
+};
+
+const exportExcelButton = {
+    height: "35px",
+    padding: "0 13px",
+    border: "1px solid rgba(255,255,255,0.30)",
+    borderRadius: "7px",
+    background: "rgba(255,255,255,0.10)",
+    color: "#ffffff",
+    cursor: "pointer",
+    fontSize: "10px",
+    fontWeight: "650",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: "5px",
+    backdropFilter: "blur(8px)",
+    WebkitBackdropFilter: "blur(8px)"
+};
+
+const exportPdfButton = {
+    height: "35px",
+    padding: "0 13px",
+    border: "1px solid rgba(255,255,255,0.30)",
+    borderRadius: "7px",
+    background: "rgba(255,255,255,0.10)",
+    color: "#ffffff",
+    cursor: "pointer",
+    fontSize: "10px",
+    fontWeight: "650",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: "5px",
+    backdropFilter: "blur(8px)",
+    WebkitBackdropFilter: "blur(8px)"
 };
 
 const refreshIcon = {

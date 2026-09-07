@@ -11,6 +11,11 @@ import {
 import Sidebar from "../components/Sidebar";
 import Navbar from "../components/Navbar";
 import API from "../api/axios";
+import {
+    buildExcelXml,
+    getHardwareExportHeaders,
+    getHardwareExportRows
+} from "../utils/assetExportUtils";
 
 
 function Assets() {
@@ -517,6 +522,163 @@ function Assets() {
 
 
     // =====================================================
+    // EXPORT HARDWARE ASSETS
+    // =====================================================
+
+    const exportHardwareExcel = () => {
+
+        if (!filteredAssets.length) {
+
+            alert("No hardware assets available to export");
+
+            return;
+
+        }
+
+        const headers = getHardwareExportHeaders();
+        const rows = getHardwareExportRows(filteredAssets);
+
+        const xml = buildExcelXml(headers, rows);
+
+        const blob = new Blob(
+            [xml],
+            {
+                type: "application/vnd.ms-excel;charset=utf-8;"
+            }
+        );
+
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+
+        const dateStamp = new Date()
+            .toISOString()
+            .slice(0, 10);
+
+        link.href = url;
+        link.download = `Hardware_Assets_${dateStamp}.xls`;
+
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        URL.revokeObjectURL(url);
+    };
+
+
+    const exportHardwarePdf = () => {
+
+        if (!filteredAssets.length) {
+
+            alert("No hardware assets available to export");
+
+            return;
+
+        }
+
+        const headers = getHardwareExportHeaders();
+        const rows = getHardwareExportRows(filteredAssets);
+
+        const printWindow = window.open(
+            "",
+            "_blank",
+            "width=1400,height=900"
+        );
+
+        if (!printWindow) {
+            alert("Please allow pop-ups to export PDF");
+            return;
+        }
+
+        const escapeHtml = (value) =>
+            String(value ?? "")
+                .replaceAll("&", "&amp;")
+                .replaceAll("<", "&lt;")
+                .replaceAll(">", "&gt;")
+                .replaceAll('"', "&quot;")
+                .replaceAll("'", "&#39;");
+
+        const headerHtml = headers
+            .map((header) => `<th>${escapeHtml(header)}</th>`)
+            .join("");
+
+        const bodyHtml = rows
+            .map(
+                (row) =>
+                    `<tr>${row
+                        .map((value) => `<td>${escapeHtml(value)}</td>`)
+                        .join("")}</tr>`
+            )
+            .join("");
+
+        printWindow.document.write(`
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="UTF-8" />
+                <title>AssetSphere - Hardware Assets</title>
+                <style>
+                    @page { size: landscape; margin: 10mm; }
+                    * { box-sizing: border-box; }
+                    body {
+                        font-family: Arial, sans-serif;
+                        color: #111827;
+                        margin: 0;
+                        font-size: 9px;
+                    }
+                    h1 {
+                        margin: 0 0 4px;
+                        font-size: 20px;
+                    }
+                    .meta {
+                        color: #6b7280;
+                        margin-bottom: 12px;
+                        font-size: 10px;
+                    }
+                    table {
+                        width: 100%;
+                        border-collapse: collapse;
+                        table-layout: fixed;
+                    }
+                    th, td {
+                        border: 1px solid #d1d5db;
+                        padding: 4px 5px;
+                        text-align: left;
+                        vertical-align: top;
+                        word-break: break-word;
+                    }
+                    th {
+                        background: #f3f4f6;
+                        font-weight: 700;
+                    }
+                    tr:nth-child(even) td {
+                        background: #fafafa;
+                    }
+                </style>
+            </head>
+            <body>
+                <h1>AssetSphere - Hardware Asset Report</h1>
+                <div class="meta">
+                    Generated: ${escapeHtml(new Date().toLocaleString("en-IN"))}
+                    &nbsp; | &nbsp; Records: ${filteredAssets.length}
+                </div>
+                <table>
+                    <thead><tr>${headerHtml}</tr></thead>
+                    <tbody>${bodyHtml}</tbody>
+                </table>
+            </body>
+            </html>
+        `);
+
+        printWindow.document.close();
+
+        printWindow.onload = () => {
+            printWindow.focus();
+            printWindow.print();
+        };
+    };
+
+
+    // =====================================================
     // RETURN UI
     // =====================================================
 
@@ -600,6 +762,40 @@ function Assets() {
                                     ? "Refreshing..."
                                     : "Refresh"}
 
+                            </button>
+
+
+                            {/* EXPORT EXCEL */}
+
+                            <button
+                                type="button"
+                                onClick={exportHardwareExcel}
+                                disabled={!filteredAssets.length}
+                                style={{
+                                    ...exportButtonStyle,
+                                    ...exportExcelButtonStyle,
+                                    opacity: filteredAssets.length ? 1 : 0.55,
+                                    cursor: filteredAssets.length ? "pointer" : "not-allowed"
+                                }}
+                            >
+                                ↓ Excel
+                            </button>
+
+
+                            {/* EXPORT PDF */}
+
+                            <button
+                                type="button"
+                                onClick={exportHardwarePdf}
+                                disabled={!filteredAssets.length}
+                                style={{
+                                    ...exportButtonStyle,
+                                    ...exportPdfButtonStyle,
+                                    opacity: filteredAssets.length ? 1 : 0.55,
+                                    cursor: filteredAssets.length ? "pointer" : "not-allowed"
+                                }}
+                            >
+                                ↓ PDF
                             </button>
 
 
@@ -2028,6 +2224,49 @@ const headerButtonsStyle = {
 // =====================================================
 // HEADER BUTTONS
 // =====================================================
+
+const exportButtonStyle = {
+
+    height: "42px",
+
+    padding: "0 14px",
+
+    borderRadius: "9px",
+
+    fontSize: "12px",
+
+    fontWeight: "700",
+
+    cursor: "pointer",
+
+    transition: "all 0.2s ease",
+
+    whiteSpace: "nowrap"
+
+};
+
+
+const exportExcelButtonStyle = {
+
+    border: "1px solid rgba(255,255,255,0.22)",
+
+    background: "rgba(255,255,255,0.13)",
+
+    color: "#ffffff"
+
+};
+
+
+const exportPdfButtonStyle = {
+
+    border: "1px solid rgba(255,255,255,0.22)",
+
+    background: "rgba(255,255,255,0.08)",
+
+    color: "#ffffff"
+
+};
+
 
 const refreshButtonStyle = {
 

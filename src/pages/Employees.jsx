@@ -140,6 +140,7 @@ function Employees() {
                 ${employee.designation_name || ""}
                 ${employee.work_location || ""}
                 ${employee.employment_type || ""}
+                ${employee.joining_date || ""}
                 ${employee.status || ""}
             `.toLowerCase();
 
@@ -208,6 +209,511 @@ function Employees() {
         employees.length - activeCount;
 
     // =====================================================
+    // EXPORT HELPERS
+    // =====================================================
+
+    const getExportValue = (value) => {
+        if (
+            value === null ||
+            value === undefined ||
+            value === ""
+        ) {
+            return "-";
+        }
+
+        return String(value);
+    };
+
+    const formatExportDate = (value) => {
+        if (
+            value === null ||
+            value === undefined ||
+            value === ""
+        ) {
+            return "-";
+        }
+
+        const date = new Date(value);
+
+        if (Number.isNaN(date.getTime())) {
+            return String(value);
+        }
+
+        return date.toLocaleDateString(
+            "en-IN",
+            {
+                day: "2-digit",
+                month: "2-digit",
+                year: "numeric"
+            }
+        );
+    };
+
+    const escapeHTML = (value) => {
+        return String(value)
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    };
+
+    const escapeExcelValue = (value) => {
+        return String(value)
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;");
+    };
+
+    const getEmployeeExportRows = () => {
+        return filteredEmployees.map(
+            (employee) => ({
+
+                "Employee ID":
+                    getExportValue(
+                        employee.employee_id
+                    ),
+
+                "Employee Code":
+                    getExportValue(
+                        employee.employee_code
+                    ),
+
+                "Employee Name":
+                    getExportValue(
+                        employee.display_name
+                    ),
+
+                "Official Email":
+                    getExportValue(
+                        employee.official_email
+                    ),
+
+                "Mobile Number":
+                    getExportValue(
+                        employee.mobile_number
+                    ),
+
+                "Department":
+                    getExportValue(
+                        employee.department_name
+                    ),
+
+                "Designation":
+                    getExportValue(
+                        employee.designation_name
+                    ),
+
+                "Work Location":
+                    getExportValue(
+                        employee.work_location
+                    ),
+
+                "Employment Type":
+                    getExportValue(
+                        employee.employment_type
+                    ),
+
+                "Joining Date":
+                    formatExportDate(
+                        employee.joining_date
+                    ),
+
+                "Status":
+                    getExportValue(
+                        employee.status
+                    ),
+
+                "Created Date":
+                    formatExportDate(
+                        employee.created_at
+                    ),
+
+                "Updated Date":
+                    formatExportDate(
+                        employee.updated_at
+                    )
+
+            })
+        );
+    };
+
+    // =====================================================
+    // EXPORT TO EXCEL
+    // =====================================================
+
+    const handleExportExcel = () => {
+        if (filteredEmployees.length === 0) {
+            alert(
+                "No employees available to export."
+            );
+            return;
+        }
+
+        const rows =
+            getEmployeeExportRows();
+
+        const headers =
+            Object.keys(rows[0]);
+
+        const tableRows = rows
+            .map(
+                (row) => `
+                    <tr>
+                        ${headers
+                            .map(
+                                (header) =>
+                                    `<td>${escapeExcelValue(
+                                        row[header]
+                                    )}</td>`
+                            )
+                            .join("")}
+                    </tr>
+                `
+            )
+            .join("");
+
+        const tableHeader = headers
+            .map(
+                (header) =>
+                    `<th>${escapeExcelValue(
+                        header
+                    )}</th>`
+            )
+            .join("");
+
+        const excelHTML = `
+            <html>
+                <head>
+                    <meta charset="UTF-8" />
+                    <style>
+                        table {
+                            border-collapse: collapse;
+                            width: 100%;
+                            font-family: Arial, sans-serif;
+                        }
+
+                        th {
+                            background: #1e3a8a;
+                            color: #ffffff;
+                            border: 1px solid #d1d5db;
+                            padding: 8px;
+                            font-weight: 700;
+                        }
+
+                        td {
+                            border: 1px solid #d1d5db;
+                            padding: 8px;
+                        }
+                    </style>
+                </head>
+
+                <body>
+
+                    <table>
+
+                        <thead>
+                            <tr>
+                                ${tableHeader}
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            ${tableRows}
+                        </tbody>
+
+                    </table>
+
+                </body>
+            </html>
+        `;
+
+        const blob =
+            new Blob(
+                [excelHTML],
+                {
+                    type:
+                        "application/vnd.ms-excel"
+                }
+            );
+
+        const url =
+            window.URL.createObjectURL(
+                blob
+            );
+
+        const link =
+            document.createElement(
+                "a"
+            );
+
+        link.href = url;
+
+        link.download =
+            `AssetSphere_Employees_${new Date()
+                .toISOString()
+                .slice(0, 10)}.xls`;
+
+        document.body.appendChild(link);
+
+        link.click();
+
+        document.body.removeChild(link);
+
+        window.URL.revokeObjectURL(url);
+    };
+
+    // =====================================================
+    // EXPORT TO PDF
+    // =====================================================
+
+    const handleExportPDF = () => {
+        if (filteredEmployees.length === 0) {
+            alert(
+                "No employees available to export."
+            );
+            return;
+        }
+
+        const rows =
+            getEmployeeExportRows();
+
+        const headers =
+            Object.keys(rows[0]);
+
+        const tableHeader =
+            headers
+                .map(
+                    (header) =>
+                        `<th>${escapeHTML(
+                            header
+                        )}</th>`
+                )
+                .join("");
+
+        const tableRows =
+            rows
+                .map(
+                    (row) => `
+                        <tr>
+                            ${headers
+                                .map(
+                                    (header) =>
+                                        `<td>${escapeHTML(
+                                            row[header]
+                                        )}</td>`
+                                )
+                                .join("")}
+                        </tr>
+                    `
+                )
+                .join("");
+
+        const printWindow =
+            window.open(
+                "",
+                "_blank",
+                "width=1400,height=900"
+            );
+
+        if (!printWindow) {
+            alert(
+                "Please allow pop-ups in your browser to export PDF."
+            );
+            return;
+        }
+
+        const generatedDate =
+            new Date().toLocaleString(
+                "en-IN",
+                {
+                    day: "2-digit",
+                    month: "2-digit",
+                    year: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit"
+                }
+            );
+
+        printWindow.document.write(`
+            <!DOCTYPE html>
+
+            <html>
+
+                <head>
+
+                    <meta charset="UTF-8" />
+
+                    <title>
+                        AssetSphere - Employee Report
+                    </title>
+
+                    <style>
+
+                        @page {
+                            size: A4 landscape;
+                            margin: 12mm;
+                        }
+
+                        * {
+                            box-sizing: border-box;
+                        }
+
+                        body {
+                            margin: 0;
+                            padding: 0;
+                            font-family:
+                                Arial,
+                                Helvetica,
+                                sans-serif;
+                            color: #111827;
+                            background: #ffffff;
+                        }
+
+                        .report-header {
+                            margin-bottom: 16px;
+                        }
+
+                        .report-title {
+                            margin: 0;
+                            font-size: 22px;
+                            font-weight: 700;
+                            color: #111827;
+                        }
+
+                        .report-subtitle {
+                            margin: 5px 0 0;
+                            color: #6b7280;
+                            font-size: 11px;
+                        }
+
+                        .report-summary {
+                            margin-top: 10px;
+                            display: flex;
+                            gap: 20px;
+                            font-size: 11px;
+                            color: #374151;
+                        }
+
+                        table {
+                            width: 100%;
+                            border-collapse: collapse;
+                            table-layout: auto;
+                        }
+
+                        th {
+                            background: #1e3a8a;
+                            color: #ffffff;
+                            border: 1px solid #cbd5e1;
+                            padding: 6px 5px;
+                            font-size: 8px;
+                            text-align: left;
+                            white-space: nowrap;
+                        }
+
+                        td {
+                            border: 1px solid #dbe2ea;
+                            padding: 5px;
+                            font-size: 7px;
+                            color: #1f2937;
+                            vertical-align: top;
+                        }
+
+                        tr {
+                            page-break-inside: avoid;
+                        }
+
+                        .footer {
+                            margin-top: 12px;
+                            font-size: 8px;
+                            color: #6b7280;
+                            text-align: right;
+                        }
+
+                    </style>
+
+                </head>
+
+                <body>
+
+                    <div class="report-header">
+
+                        <h1 class="report-title">
+                            AssetSphere - Employee Report
+                        </h1>
+
+                        <p class="report-subtitle">
+                            Employee directory export
+                        </p>
+
+                        <div class="report-summary">
+
+                            <span>
+                                Total Records:
+                                <strong>
+                                    ${filteredEmployees.length}
+                                </strong>
+                            </span>
+
+                            <span>
+                                Active:
+                                <strong>
+                                    ${activeCount}
+                                </strong>
+                            </span>
+
+                            <span>
+                                Inactive:
+                                <strong>
+                                    ${inactiveCount}
+                                </strong>
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                    <table>
+
+                        <thead>
+                            <tr>
+                                ${tableHeader}
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            ${tableRows}
+                        </tbody>
+
+                    </table>
+
+                    <div class="footer">
+                        Generated on:
+                        ${escapeHTML(
+                            generatedDate
+                        )}
+                    </div>
+
+                    <script>
+                        window.onload = function () {
+                            window.focus();
+                            window.print();
+                        };
+                    </script>
+
+                </body>
+
+            </html>
+        `);
+
+        printWindow.document.close();
+
+        printWindow.onafterprint = () => {
+            printWindow.close();
+        };
+    };
+
+    // =====================================================
     // RENDER
     // =====================================================
 
@@ -264,12 +770,90 @@ function Employees() {
                             >
 
                                 <span
-                                    style={buttonIconStyle}
+                                    style={
+                                        buttonIconStyle
+                                    }
                                 >
                                     ↻
                                 </span>
 
                                 Refresh
+
+                            </button>
+
+
+                            {/* EXPORT EXCEL */}
+
+                            <button
+                                type="button"
+                                onClick={
+                                    handleExportExcel
+                                }
+                                disabled={
+                                    filteredEmployees.length === 0
+                                }
+                                style={{
+                                    ...excelButtonStyle,
+                                    opacity:
+                                        filteredEmployees.length ===
+                                        0
+                                            ? 0.5
+                                            : 1,
+                                    cursor:
+                                        filteredEmployees.length ===
+                                        0
+                                            ? "not-allowed"
+                                            : "pointer"
+                                }}
+                            >
+
+                                <span
+                                    style={
+                                        exportIconStyle
+                                    }
+                                >
+                                    XLS
+                                </span>
+
+                                Excel
+
+                            </button>
+
+
+                            {/* EXPORT PDF */}
+
+                            <button
+                                type="button"
+                                onClick={
+                                    handleExportPDF
+                                }
+                                disabled={
+                                    filteredEmployees.length === 0
+                                }
+                                style={{
+                                    ...pdfButtonStyle,
+                                    opacity:
+                                        filteredEmployees.length ===
+                                        0
+                                            ? 0.5
+                                            : 1,
+                                    cursor:
+                                        filteredEmployees.length ===
+                                        0
+                                            ? "not-allowed"
+                                            : "pointer"
+                                }}
+                            >
+
+                                <span
+                                    style={
+                                        exportIconStyle
+                                    }
+                                >
+                                    PDF
+                                </span>
+
+                                PDF
 
                             </button>
 
@@ -283,11 +867,15 @@ function Employees() {
                                         "/employees/add"
                                     )
                                 }
-                                style={addButtonStyle}
+                                style={
+                                    addButtonStyle
+                                }
                             >
 
                                 <span
-                                    style={plusStyle}
+                                    style={
+                                        plusStyle
+                                    }
                                 >
                                     +
                                 </span>
@@ -1095,9 +1683,9 @@ function Employees() {
             </div>
 
 
-            {/* =================================================
+            {/* =====================================================
                 SPINNER ANIMATION
-            ================================================= */}
+            ===================================================== */}
 
             <style>
                 {`
@@ -1108,6 +1696,12 @@ function Employees() {
 
                         to {
                             transform: rotate(360deg);
+                        }
+                    }
+
+                    @media (max-width: 1200px) {
+                        .employee-header-buttons {
+                            width: 100%;
                         }
                     }
 
@@ -1352,7 +1946,7 @@ const headerButtonsStyle = {
 
     alignItems: "center",
 
-    gap: "10px",
+    gap: "8px",
 
     flexWrap: "wrap",
 
@@ -1387,6 +1981,92 @@ const refreshButtonStyle = {
 
     transition:
         "all 0.2s ease"
+};
+
+
+const excelButtonStyle = {
+    height: "42px",
+
+    padding: "0 14px",
+
+    border:
+        "1px solid rgba(255,255,255,0.22)",
+
+    borderRadius: "9px",
+
+    background: "#15803d",
+
+    color: "#ffffff",
+
+    fontSize: "13px",
+
+    fontWeight: "700",
+
+    cursor: "pointer",
+
+    boxShadow:
+        "0 5px 12px rgba(0,0,0,0.12)",
+
+    transition:
+        "all 0.2s ease"
+};
+
+
+const pdfButtonStyle = {
+    height: "42px",
+
+    padding: "0 14px",
+
+    border:
+        "1px solid rgba(255,255,255,0.22)",
+
+    borderRadius: "9px",
+
+    background: "#dc2626",
+
+    color: "#ffffff",
+
+    fontSize: "13px",
+
+    fontWeight: "700",
+
+    cursor: "pointer",
+
+    boxShadow:
+        "0 5px 12px rgba(0,0,0,0.12)",
+
+    transition:
+        "all 0.2s ease"
+};
+
+
+const exportIconStyle = {
+    display: "inline-flex",
+
+    alignItems: "center",
+
+    justifyContent: "center",
+
+    minWidth: "25px",
+
+    height: "20px",
+
+    marginRight: "6px",
+
+    padding: "0 4px",
+
+    borderRadius: "4px",
+
+    background:
+        "rgba(255,255,255,0.18)",
+
+    fontSize: "9px",
+
+    fontWeight: "800",
+
+    letterSpacing: "0.3px",
+
+    verticalAlign: "middle"
 };
 
 
