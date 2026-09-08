@@ -28,7 +28,10 @@ function Purchase() {
 
             setPurchases(response.data?.data || []);
         } catch (error) {
-            console.error("Load Purchases Error:", error);
+            console.error(
+                "Load Purchases Error:",
+                error
+            );
 
             alert(
                 error.response?.data?.message ||
@@ -45,11 +48,17 @@ function Purchase() {
 
     const loadSummary = async () => {
         try {
-            const response = await API.get("/purchases/summary");
+            const response =
+                await API.get("/purchases/summary");
 
-            setSummary(response.data?.data || null);
+            setSummary(
+                response.data?.data || null
+            );
         } catch (error) {
-            console.error("Purchase Summary Error:", error);
+            console.error(
+                "Purchase Summary Error:",
+                error
+            );
         }
     };
 
@@ -77,26 +86,49 @@ function Purchase() {
         const months = [];
 
         purchases.forEach((purchase) => {
-            if (!purchase.purchase_date) return;
+            if (!purchase.purchase_date) {
+                return;
+            }
 
-            const date = new Date(purchase.purchase_date);
+            const date =
+                new Date(
+                    purchase.purchase_date
+                );
 
-            if (Number.isNaN(date.getTime())) return;
+            if (
+                Number.isNaN(
+                    date.getTime()
+                )
+            ) {
+                return;
+            }
 
-            const year = date.getFullYear();
-            const month = date.getMonth();
+            const year =
+                date.getFullYear();
 
-            const value = `${year}-${String(month + 1).padStart(
-                2,
-                "0"
-            )}`;
+            const month =
+                date.getMonth();
 
-            const label = date.toLocaleDateString("en-IN", {
-                month: "long",
-                year: "numeric"
-            });
+            const value =
+                `${year}-${String(
+                    month + 1
+                ).padStart(2, "0")}`;
 
-            if (!months.some((item) => item.value === value)) {
+            const label =
+                date.toLocaleDateString(
+                    "en-IN",
+                    {
+                        month: "long",
+                        year: "numeric"
+                    }
+                );
+
+            if (
+                !months.some(
+                    (item) =>
+                        item.value === value
+                )
+            ) {
                 months.push({
                     value,
                     label,
@@ -108,8 +140,14 @@ function Purchase() {
 
         months.sort(
             (a, b) =>
-                new Date(b.year, b.month) -
-                new Date(a.year, a.month)
+                new Date(
+                    b.year,
+                    b.month
+                ) -
+                new Date(
+                    a.year,
+                    a.month
+                )
         );
 
         return months;
@@ -119,323 +157,1205 @@ function Purchase() {
     // FILTER PURCHASES
     // =====================================================
 
-    const filteredPurchases = useMemo(() => {
-        const searchText = search.toLowerCase().trim();
+    const filteredPurchases =
+        useMemo(() => {
 
-        return purchases.filter((purchase) => {
-            if (selectedMonth !== "all") {
-                if (!purchase.purchase_date) return false;
+            const searchText =
+                search
+                    .toLowerCase()
+                    .trim();
 
-                const date = new Date(purchase.purchase_date);
+            return purchases.filter(
+                (purchase) => {
 
-                if (Number.isNaN(date.getTime())) return false;
+                    if (
+                        selectedMonth !==
+                        "all"
+                    ) {
+                        if (
+                            !purchase.purchase_date
+                        ) {
+                            return false;
+                        }
 
-                const purchaseMonth = `${date.getFullYear()}-${String(
-                    date.getMonth() + 1
-                ).padStart(2, "0")}`;
+                        const date =
+                            new Date(
+                                purchase.purchase_date
+                            );
 
-                if (purchaseMonth !== selectedMonth) {
-                    return false;
+                        if (
+                            Number.isNaN(
+                                date.getTime()
+                            )
+                        ) {
+                            return false;
+                        }
+
+                        const purchaseMonth =
+                            `${date.getFullYear()}-${String(
+                                date.getMonth() + 1
+                            ).padStart(
+                                2,
+                                "0"
+                            )}`;
+
+                        if (
+                            purchaseMonth !==
+                            selectedMonth
+                        ) {
+                            return false;
+                        }
+                    }
+
+                    if (!searchText) {
+                        return true;
+                    }
+
+                    const text = `
+                        ${purchase.purchase_id || ""}
+                        ${purchase.po_number || ""}
+                        ${purchase.invoice_number || ""}
+                        ${purchase.vendor_id || ""}
+                        ${purchase.vendor_code || ""}
+                        ${purchase.vendor_name || ""}
+                        ${purchase.product_category || ""}
+                        ${purchase.product_name || ""}
+                        ${purchase.product_description || ""}
+                        ${purchase.purchase_date || ""}
+                        ${purchase.amount || ""}
+                        ${purchase.payment_status || ""}
+                        ${purchase.warranty_expiry || ""}
+                        ${purchase.remarks || ""}
+                        ${purchase.po_document || ""}
+                        ${purchase.invoice_document || ""}
+                    `.toLowerCase();
+
+                    return text.includes(
+                        searchText
+                    );
                 }
-            }
-
-            if (!searchText) return true;
-
-            const text = `
-                ${purchase.purchase_id || ""}
-                ${purchase.po_number || ""}
-                ${purchase.invoice_number || ""}
-                ${purchase.vendor_code || ""}
-                ${purchase.vendor_name || ""}
-                ${purchase.product_category || ""}
-                ${purchase.product_name || ""}
-                ${purchase.product_description || ""}
-                ${purchase.payment_status || ""}
-                ${purchase.remarks || ""}
-            `.toLowerCase();
-
-            return text.includes(searchText);
-        });
-    }, [purchases, search, selectedMonth]);
+            );
+        }, [
+            purchases,
+            search,
+            selectedMonth
+        ]);
 
     // =====================================================
     // SUMMARY
     // =====================================================
 
-    const filteredSummary = useMemo(() => {
-        if (selectedMonth === "all") {
+    const filteredSummary =
+        useMemo(() => {
+
+            if (
+                selectedMonth ===
+                "all"
+            ) {
+                return {
+                    total_purchases:
+                        Number(
+                            summary?.total_purchases ||
+                            0
+                        ),
+
+                    total_purchase_amount:
+                        Number(
+                            summary?.total_purchase_amount ||
+                            0
+                        ),
+
+                    pending_payments:
+                        Number(
+                            summary?.pending_payments ||
+                            0
+                        ),
+
+                    paid_purchases:
+                        Number(
+                            summary?.paid_purchases ||
+                            0
+                        )
+                };
+            }
+
+            let totalPurchases = 0;
+            let totalAmount = 0;
+            let pendingPayments = 0;
+            let paidPurchases = 0;
+
+            filteredPurchases.forEach(
+                (purchase) => {
+
+                    totalPurchases += 1;
+
+                    totalAmount +=
+                        Number(
+                            purchase.amount ||
+                            0
+                        );
+
+                    if (
+                        purchase.payment_status ===
+                        "Pending"
+                    ) {
+                        pendingPayments += 1;
+                    }
+
+                    if (
+                        purchase.payment_status ===
+                        "Paid"
+                    ) {
+                        paidPurchases += 1;
+                    }
+                }
+            );
+
             return {
-                total_purchases: Number(
-                    summary?.total_purchases || 0
-                ),
-                total_purchase_amount: Number(
-                    summary?.total_purchase_amount || 0
-                ),
-                pending_payments: Number(
-                    summary?.pending_payments || 0
-                ),
-                paid_purchases: Number(
-                    summary?.paid_purchases || 0
-                )
+                total_purchases:
+                    totalPurchases,
+
+                total_purchase_amount:
+                    totalAmount,
+
+                pending_payments:
+                    pendingPayments,
+
+                paid_purchases:
+                    paidPurchases
             };
-        }
 
-        let totalPurchases = 0;
-        let totalAmount = 0;
-        let pendingPayments = 0;
-        let paidPurchases = 0;
-
-        filteredPurchases.forEach((purchase) => {
-            totalPurchases += 1;
-            totalAmount += Number(purchase.amount || 0);
-
-            if (purchase.payment_status === "Pending") {
-                pendingPayments += 1;
-            }
-
-            if (purchase.payment_status === "Paid") {
-                paidPurchases += 1;
-            }
-        });
-
-        return {
-            total_purchases: totalPurchases,
-            total_purchase_amount: totalAmount,
-            pending_payments: pendingPayments,
-            paid_purchases: paidPurchases
-        };
-    }, [filteredPurchases, selectedMonth, summary]);
+        }, [
+            filteredPurchases,
+            selectedMonth,
+            summary
+        ]);
 
     // =====================================================
     // HELPERS
     // =====================================================
 
     const formatDate = (date) => {
-        if (!date) return "-";
-
-        const parsedDate = new Date(date);
-
-        if (Number.isNaN(parsedDate.getTime())) {
+        if (!date) {
             return "-";
         }
 
-        return parsedDate.toLocaleDateString("en-IN");
+        const parsedDate =
+            new Date(date);
+
+        if (
+            Number.isNaN(
+                parsedDate.getTime()
+            )
+        ) {
+            return "-";
+        }
+
+        return parsedDate.toLocaleDateString(
+            "en-IN"
+        );
+    };
+
+    const formatExportDate = (date) => {
+        if (!date) {
+            return "-";
+        }
+
+        const parsedDate =
+            new Date(date);
+
+        if (
+            Number.isNaN(
+                parsedDate.getTime()
+            )
+        ) {
+            return String(date);
+        }
+
+        return parsedDate.toLocaleDateString(
+            "en-IN",
+            {
+                day: "2-digit",
+                month: "2-digit",
+                year: "numeric"
+            }
+        );
     };
 
     const formatAmount = (amount) => {
-        return Number(amount || 0).toLocaleString("en-IN", {
-            style: "currency",
-            currency: "INR",
-            maximumFractionDigits: 2
-        });
+        return Number(
+            amount || 0
+        ).toLocaleString(
+            "en-IN",
+            {
+                style: "currency",
+                currency: "INR",
+                maximumFractionDigits: 2
+            }
+        );
     };
+
+    const getExportValue = (value) => {
+        if (
+            value === null ||
+            value === undefined ||
+            value === ""
+        ) {
+            return "-";
+        }
+
+        return String(value);
+    };
+
+    const escapeHTML = (value) => {
+        return String(value)
+            .replace(
+                /&/g,
+                "&amp;"
+            )
+            .replace(
+                /</g,
+                "&lt;"
+            )
+            .replace(
+                />/g,
+                "&gt;"
+            )
+            .replace(
+                /"/g,
+                "&quot;"
+            )
+            .replace(
+                /'/g,
+                "&#039;"
+            );
+    };
+
+    const escapeExcelValue = (value) => {
+        return String(value)
+            .replace(
+                /&/g,
+                "&amp;"
+            )
+            .replace(
+                /</g,
+                "&lt;"
+            )
+            .replace(
+                />/g,
+                "&gt;"
+            );
+    };
+
+    // =====================================================
+    // EXPORT DATA
+    // =====================================================
+
+    const getPurchaseExportRows =
+        () => {
+
+            return filteredPurchases.map(
+                (purchase) => ({
+
+                    "Purchase ID":
+                        getExportValue(
+                            purchase.purchase_id
+                        ),
+
+                    "PO Number":
+                        getExportValue(
+                            purchase.po_number
+                        ),
+
+                    "Invoice Number":
+                        getExportValue(
+                            purchase.invoice_number
+                        ),
+
+                    "Vendor ID":
+                        getExportValue(
+                            purchase.vendor_id
+                        ),
+
+                    "Vendor Code":
+                        getExportValue(
+                            purchase.vendor_code
+                        ),
+
+                    "Vendor Name":
+                        getExportValue(
+                            purchase.vendor_name
+                        ),
+
+                    "Product Category":
+                        getExportValue(
+                            purchase.product_category
+                        ),
+
+                    "Product Name":
+                        getExportValue(
+                            purchase.product_name
+                        ),
+
+                    "Product Description":
+                        getExportValue(
+                            purchase.product_description
+                        ),
+
+                    "Purchase Date":
+                        formatExportDate(
+                            purchase.purchase_date
+                        ),
+
+                    "Amount":
+                        Number(
+                            purchase.amount ||
+                            0
+                        ),
+
+                    "Payment Status":
+                        getExportValue(
+                            purchase.payment_status
+                        ),
+
+                    "Warranty Expiry":
+                        formatExportDate(
+                            purchase.warranty_expiry
+                        ),
+
+                    "Remarks":
+                        getExportValue(
+                            purchase.remarks
+                        ),
+
+                    "PO Document":
+                        purchase.po_document
+                            ? "Available"
+                            : "Not Uploaded",
+
+                    "Invoice Document":
+                        purchase.invoice_document
+                            ? "Available"
+                            : "Not Uploaded",
+
+                    "Selected Month":
+                        selectedMonth ===
+                        "all"
+                            ? "All Months"
+                            : monthOptions.find(
+                                  (
+                                      month
+                                  ) =>
+                                      month.value ===
+                                      selectedMonth
+                              )?.label ||
+                              "-"
+
+                })
+            );
+        };
+
+    // =====================================================
+    // EXPORT TO EXCEL
+    // =====================================================
+
+    const handleExportExcel =
+        () => {
+
+            if (
+                filteredPurchases.length ===
+                0
+            ) {
+                alert(
+                    "No purchases available to export."
+                );
+
+                return;
+            }
+
+            const rows =
+                getPurchaseExportRows();
+
+            const headers =
+                Object.keys(
+                    rows[0]
+                );
+
+            const tableHeader =
+                headers
+                    .map(
+                        (header) =>
+                            `<th>${escapeExcelValue(
+                                header
+                            )}</th>`
+                    )
+                    .join("");
+
+            const tableRows =
+                rows
+                    .map(
+                        (row) => `
+                            <tr>
+                                ${headers
+                                    .map(
+                                        (
+                                            header
+                                        ) =>
+                                            `<td>${escapeExcelValue(
+                                                row[
+                                                    header
+                                                ]
+                                            )}</td>`
+                                    )
+                                    .join("")}
+                            </tr>
+                        `
+                    )
+                    .join("");
+
+            const excelHTML = `
+                <html>
+
+                    <head>
+
+                        <meta charset="UTF-8" />
+
+                        <style>
+
+                            table {
+                                border-collapse: collapse;
+                                width: 100%;
+                                font-family: Arial, sans-serif;
+                            }
+
+                            th {
+                                background: #1e3a8a;
+                                color: #ffffff;
+                                border: 1px solid #cbd5e1;
+                                padding: 8px;
+                                font-weight: 700;
+                                white-space: nowrap;
+                            }
+
+                            td {
+                                border: 1px solid #dbe2ea;
+                                padding: 8px;
+                                vertical-align: top;
+                            }
+
+                        </style>
+
+                    </head>
+
+                    <body>
+
+                        <table>
+
+                            <thead>
+
+                                <tr>
+                                    ${tableHeader}
+                                </tr>
+
+                            </thead>
+
+                            <tbody>
+                                ${tableRows}
+                            </tbody>
+
+                        </table>
+
+                    </body>
+
+                </html>
+            `;
+
+            const blob =
+                new Blob(
+                    [excelHTML],
+                    {
+                        type:
+                            "application/vnd.ms-excel"
+                    }
+                );
+
+            const url =
+                window.URL.createObjectURL(
+                    blob
+                );
+
+            const link =
+                document.createElement(
+                    "a"
+                );
+
+            link.href = url;
+
+            link.download =
+                `AssetSphere_Purchases_${new Date()
+                    .toISOString()
+                    .slice(
+                        0,
+                        10
+                    )}.xls`;
+
+            document.body.appendChild(
+                link
+            );
+
+            link.click();
+
+            document.body.removeChild(
+                link
+            );
+
+            window.URL.revokeObjectURL(
+                url
+            );
+        };
+
+    // =====================================================
+    // EXPORT TO PDF
+    // =====================================================
+
+    const handleExportPDF =
+        () => {
+
+            if (
+                filteredPurchases.length ===
+                0
+            ) {
+                alert(
+                    "No purchases available to export."
+                );
+
+                return;
+            }
+
+            const rows =
+                getPurchaseExportRows();
+
+            const headers =
+                Object.keys(
+                    rows[0]
+                );
+
+            const tableHeader =
+                headers
+                    .map(
+                        (header) =>
+                            `<th>${escapeHTML(
+                                header
+                            )}</th>`
+                    )
+                    .join("");
+
+            const tableRows =
+                rows
+                    .map(
+                        (row) => `
+                            <tr>
+                                ${headers
+                                    .map(
+                                        (
+                                            header
+                                        ) =>
+                                            `<td>${escapeHTML(
+                                                row[
+                                                    header
+                                                ]
+                                            )}</td>`
+                                    )
+                                    .join("")}
+                            </tr>
+                        `
+                    )
+                    .join("");
+
+            const printWindow =
+                window.open(
+                    "",
+                    "_blank",
+                    "width=1500,height=900"
+                );
+
+            if (!printWindow) {
+                alert(
+                    "Please allow pop-ups in your browser to export PDF."
+                );
+
+                return;
+            }
+
+            const selectedMonthLabel =
+                selectedMonth ===
+                "all"
+                    ? "All Months"
+                    : monthOptions.find(
+                          (
+                              month
+                          ) =>
+                              month.value ===
+                              selectedMonth
+                      )?.label ||
+                      "Selected Month";
+
+            const generatedDate =
+                new Date().toLocaleString(
+                    "en-IN",
+                    {
+                        day: "2-digit",
+                        month: "2-digit",
+                        year: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit"
+                    }
+                );
+
+            printWindow.document.write(`
+                <!DOCTYPE html>
+
+                <html>
+
+                    <head>
+
+                        <meta charset="UTF-8" />
+
+                        <title>
+                            AssetSphere - Purchase Report
+                        </title>
+
+                        <style>
+
+                            @page {
+                                size: A4 landscape;
+                                margin: 10mm;
+                            }
+
+                            * {
+                                box-sizing: border-box;
+                            }
+
+                            body {
+                                margin: 0;
+                                padding: 0;
+                                font-family:
+                                    Arial,
+                                    Helvetica,
+                                    sans-serif;
+                                color: #111827;
+                                background: #ffffff;
+                            }
+
+                            .report-header {
+                                margin-bottom: 15px;
+                            }
+
+                            .report-title {
+                                margin: 0;
+                                font-size: 22px;
+                                font-weight: 700;
+                                color: #111827;
+                            }
+
+                            .report-subtitle {
+                                margin: 5px 0 0;
+                                font-size: 11px;
+                                color: #6b7280;
+                            }
+
+                            .report-summary {
+                                display: flex;
+                                flex-wrap: wrap;
+                                gap: 18px;
+                                margin-top: 10px;
+                                font-size: 10px;
+                                color: #374151;
+                            }
+
+                            .report-summary span {
+                                white-space: nowrap;
+                            }
+
+                            table {
+                                width: 100%;
+                                border-collapse: collapse;
+                                table-layout: auto;
+                            }
+
+                            thead {
+                                display: table-header-group;
+                            }
+
+                            th {
+                                background: #1e3a8a;
+                                color: #ffffff;
+                                border: 1px solid #cbd5e1;
+                                padding: 6px 5px;
+                                font-size: 7px;
+                                text-align: left;
+                                white-space: nowrap;
+                            }
+
+                            td {
+                                border: 1px solid #dbe2ea;
+                                padding: 5px;
+                                font-size: 6.5px;
+                                color: #1f2937;
+                                vertical-align: top;
+                            }
+
+                            tr {
+                                page-break-inside: avoid;
+                            }
+
+                            .footer {
+                                margin-top: 10px;
+                                font-size: 8px;
+                                color: #6b7280;
+                                text-align: right;
+                            }
+
+                        </style>
+
+                    </head>
+
+                    <body>
+
+                        <div class="report-header">
+
+                            <h1 class="report-title">
+                                AssetSphere - Purchase Report
+                            </h1>
+
+                            <p class="report-subtitle">
+                                Purchase directory export
+                            </p>
+
+                            <div class="report-summary">
+
+                                <span>
+                                    Period:
+                                    <strong>
+                                        ${escapeHTML(
+                                            selectedMonthLabel
+                                        )}
+                                    </strong>
+                                </span>
+
+                                <span>
+                                    Records:
+                                    <strong>
+                                        ${filteredPurchases.length}
+                                    </strong>
+                                </span>
+
+                                <span>
+                                    Total Amount:
+                                    <strong>
+                                        ${escapeHTML(
+                                            formatAmount(
+                                                filteredSummary.total_purchase_amount
+                                            )
+                                        )}
+                                    </strong>
+                                </span>
+
+                                <span>
+                                    Pending:
+                                    <strong>
+                                        ${filteredSummary.pending_payments}
+                                    </strong>
+                                </span>
+
+                                <span>
+                                    Paid:
+                                    <strong>
+                                        ${filteredSummary.paid_purchases}
+                                    </strong>
+                                </span>
+
+                            </div>
+
+                        </div>
+
+                        <table>
+
+                            <thead>
+
+                                <tr>
+                                    ${tableHeader}
+                                </tr>
+
+                            </thead>
+
+                            <tbody>
+                                ${tableRows}
+                            </tbody>
+
+                        </table>
+
+                        <div class="footer">
+
+                            Generated on:
+                            ${escapeHTML(
+                                generatedDate
+                            )}
+
+                        </div>
+
+                        <script>
+
+                            window.onload =
+                                function () {
+
+                                    window.focus();
+
+                                    window.print();
+                                };
+
+                        </script>
+
+                    </body>
+
+                </html>
+            `);
+
+            printWindow.document.close();
+
+            printWindow.onafterprint =
+                () => {
+                    printWindow.close();
+                };
+        };
 
     // =====================================================
     // ACTIONS
     // =====================================================
 
-    const handleAddPurchase = () => {
-        navigate("/purchases/add");
-    };
-
-    const handleEditPurchase = (purchaseId) => {
-        navigate(`/purchases/edit/${purchaseId}`);
-    };
-
-    const handleDeletePurchase = async (purchaseId) => {
-        const confirmed = window.confirm(
-            "Are you sure you want to delete this purchase?"
-        );
-
-        if (!confirmed) return;
-
-        try {
-            const response = await API.delete(
-                `/purchases/${purchaseId}`
+    const handleAddPurchase =
+        () => {
+            navigate(
+                "/purchases/add"
             );
+        };
 
-            if (response.data?.success) {
-                alert("Purchase deleted successfully");
+    const handleEditPurchase =
+        (purchaseId) => {
+            navigate(
+                `/purchases/edit/${purchaseId}`
+            );
+        };
 
-                await Promise.all([
-                    loadPurchases(),
-                    loadSummary()
-                ]);
-            } else {
+    const handleDeletePurchase =
+        async (
+            purchaseId
+        ) => {
+
+            const confirmed =
+                window.confirm(
+                    "Are you sure you want to delete this purchase?"
+                );
+
+            if (!confirmed) {
+                return;
+            }
+
+            try {
+
+                const response =
+                    await API.delete(
+                        `/purchases/${purchaseId}`
+                    );
+
+                if (
+                    response.data?.success
+                ) {
+
+                    alert(
+                        "Purchase deleted successfully"
+                    );
+
+                    await Promise.all([
+                        loadPurchases(),
+                        loadSummary()
+                    ]);
+
+                } else {
+
+                    alert(
+                        response.data?.message ||
+                        "Failed to delete purchase"
+                    );
+                }
+
+            } catch (error) {
+
+                console.error(
+                    "Delete Purchase Error:",
+                    error
+                );
+
                 alert(
-                    response.data?.message ||
+                    error.response?.data?.message ||
                     "Failed to delete purchase"
                 );
             }
-        } catch (error) {
-            console.error("Delete Purchase Error:", error);
-
-            alert(
-                error.response?.data?.message ||
-                "Failed to delete purchase"
-            );
-        }
-    };
+        };
 
     // =====================================================
     // DOCUMENT UPLOAD
     // =====================================================
 
-    const handleUploadDocument = (
-        purchaseId,
-        documentType
-    ) => {
-        const input = document.createElement("input");
+    const handleUploadDocument =
+        (
+            purchaseId,
+            documentType
+        ) => {
 
-        input.type = "file";
-        input.accept = ".pdf,.jpg,.jpeg,.png,.doc,.docx";
+            const input =
+                document.createElement(
+                    "input"
+                );
 
-        input.onchange = async (event) => {
-            const file = event.target.files?.[0];
+            input.type = "file";
 
-            if (!file) return;
+            input.accept =
+                ".pdf,.jpg,.jpeg,.png,.doc,.docx";
 
-            if (file.size > 10 * 1024 * 1024) {
-                alert("File size must be 10 MB or less.");
-                return;
-            }
+            input.onchange =
+                async (
+                    event
+                ) => {
 
-            const formData = new FormData();
-            formData.append("file", file);
+                    const file =
+                        event.target
+                            .files?.[0];
 
-            try {
-                const response = await API.post(
-                    `/purchases/${purchaseId}/document/${documentType}`,
-                    formData,
-                    {
-                        headers: {
-                            "Content-Type": "multipart/form-data"
-                        }
+                    if (!file) {
+                        return;
                     }
-                );
 
-                if (response.data?.success) {
-                    alert(
-                        documentType === "po"
-                            ? "PO document uploaded successfully"
-                            : "Invoice document uploaded successfully"
+                    if (
+                        file.size >
+                        10 *
+                            1024 *
+                            1024
+                    ) {
+
+                        alert(
+                            "File size must be 10 MB or less."
+                        );
+
+                        return;
+                    }
+
+                    const formData =
+                        new FormData();
+
+                    formData.append(
+                        "file",
+                        file
                     );
 
-                    await loadPurchases();
-                } else {
-                    alert(
-                        response.data?.message ||
-                        "Failed to upload document"
-                    );
-                }
-            } catch (error) {
-                console.error("Upload Document Error:", error);
+                    try {
 
-                alert(
-                    error.response?.data?.message ||
-                    "Failed to upload document"
-                );
-            }
+                        const response =
+                            await API.post(
+                                `/purchases/${purchaseId}/document/${documentType}`,
+                                formData,
+                                {
+                                    headers: {
+                                        "Content-Type":
+                                            "multipart/form-data"
+                                    }
+                                }
+                            );
+
+                        if (
+                            response.data?.success
+                        ) {
+
+                            alert(
+                                documentType ===
+                                    "po"
+                                    ? "PO document uploaded successfully"
+                                    : "Invoice document uploaded successfully"
+                            );
+
+                            await loadPurchases();
+
+                        } else {
+
+                            alert(
+                                response.data?.message ||
+                                "Failed to upload document"
+                            );
+                        }
+
+                    } catch (
+                        error
+                    ) {
+
+                        console.error(
+                            "Upload Document Error:",
+                            error
+                        );
+
+                        alert(
+                            error.response?.data?.message ||
+                            "Failed to upload document"
+                        );
+                    }
+                };
+
+            input.click();
         };
-
-        input.click();
-    };
 
     // =====================================================
     // VIEW DOCUMENT
     // =====================================================
 
-    const handleViewDocument = async (
-        purchaseId,
-        documentType
-    ) => {
-        try {
-            const response = await API.get(
-                `/purchases/${purchaseId}/document/${documentType}`,
-                {
-                    responseType: "blob"
-                }
-            );
+    const handleViewDocument =
+        async (
+            purchaseId,
+            documentType
+        ) => {
 
-            const fileUrl = window.URL.createObjectURL(
-                response.data
-            );
+            try {
 
-            window.open(fileUrl, "_blank");
+                const response =
+                    await API.get(
+                        `/purchases/${purchaseId}/document/${documentType}`,
+                        {
+                            responseType:
+                                "blob"
+                        }
+                    );
 
-            setTimeout(() => {
-                window.URL.revokeObjectURL(fileUrl);
-            }, 60000);
-        } catch (error) {
-            console.error("View Document Error:", error);
+                const fileUrl =
+                    window.URL.createObjectURL(
+                        response.data
+                    );
 
-            alert(
-                error.response?.data?.message ||
-                "Failed to open document"
-            );
-        }
-    };
+                window.open(
+                    fileUrl,
+                    "_blank"
+                );
+
+                setTimeout(
+                    () => {
+                        window.URL.revokeObjectURL(
+                            fileUrl
+                        );
+                    },
+                    60000
+                );
+
+            } catch (error) {
+
+                console.error(
+                    "View Document Error:",
+                    error
+                );
+
+                alert(
+                    error.response?.data?.message ||
+                    "Failed to open document"
+                );
+            }
+        };
 
     // =====================================================
     // DELETE DOCUMENT
     // =====================================================
 
-    const handleDeleteDocument = async (
-        purchaseId,
-        documentType
-    ) => {
-        const documentName =
-            documentType === "po" ? "PO" : "Invoice";
+    const handleDeleteDocument =
+        async (
+            purchaseId,
+            documentType
+        ) => {
 
-        const confirmed = window.confirm(
-            `Are you sure you want to delete ${documentName} document?`
-        );
+            const documentName =
+                documentType ===
+                "po"
+                    ? "PO"
+                    : "Invoice";
 
-        if (!confirmed) return;
-
-        try {
-            const response = await API.delete(
-                `/purchases/${purchaseId}/document/${documentType}`
-            );
-
-            if (response.data?.success) {
-                alert(
-                    `${documentName} document deleted successfully`
+            const confirmed =
+                window.confirm(
+                    `Are you sure you want to delete ${documentName} document?`
                 );
 
-                await loadPurchases();
-            } else {
+            if (!confirmed) {
+                return;
+            }
+
+            try {
+
+                const response =
+                    await API.delete(
+                        `/purchases/${purchaseId}/document/${documentType}`
+                    );
+
+                if (
+                    response.data?.success
+                ) {
+
+                    alert(
+                        `${documentName} document deleted successfully`
+                    );
+
+                    await loadPurchases();
+
+                } else {
+
+                    alert(
+                        response.data?.message ||
+                        "Failed to delete document"
+                    );
+                }
+
+            } catch (error) {
+
+                console.error(
+                    "Delete Document Error:",
+                    error
+                );
+
                 alert(
-                    response.data?.message ||
+                    error.response?.data?.message ||
                     "Failed to delete document"
                 );
             }
-        } catch (error) {
-            console.error("Delete Document Error:", error);
-
-            alert(
-                error.response?.data?.message ||
-                "Failed to delete document"
-            );
-        }
-    };
+        };
 
     // =====================================================
     // CLEAR FILTERS
     // =====================================================
 
-    const handleClearFilters = () => {
-        setSearch("");
-        setSelectedMonth("all");
-    };
+    const handleClearFilters =
+        () => {
+
+            setSearch("");
+
+            setSelectedMonth(
+                "all"
+            );
+        };
 
     const selectedMonthLabel =
-        selectedMonth === "all"
+        selectedMonth ===
+        "all"
             ? "All Months"
             : monthOptions.find(
-                  (month) =>
-                      month.value === selectedMonth
-              )?.label || "Selected Month";
+                  (
+                      month
+                  ) =>
+                      month.value ===
+                      selectedMonth
+              )?.label ||
+              "Selected Month";
 
     // =====================================================
     // RENDER
@@ -443,127 +1363,330 @@ function Purchase() {
 
     return (
         <div style={pageStyle}>
+
             <Sidebar />
 
             <div style={mainStyle}>
+
                 <Navbar />
 
-                <main style={contentStyle}>
+                <main
+                    style={
+                        contentStyle
+                    }
+                >
 
                     {/* HEADER */}
 
                     <div
-                        style={headerStyle}
+                        style={
+                            headerStyle
+                        }
                         className="purchase-header"
                     >
-                        <div style={headerContentStyle}>
-                            <div style={eyebrowStyle}>
+
+                        <div
+                            style={
+                                headerContentStyle
+                            }
+                        >
+
+                            <div
+                                style={
+                                    eyebrowStyle
+                                }
+                            >
                                 PURCHASE MANAGEMENT
                             </div>
 
-                            <h1 style={titleStyle}>
+                            <h1
+                                style={
+                                    titleStyle
+                                }
+                            >
                                 Purchases
                             </h1>
 
-                            <p style={subtitleStyle}>
+                            <p
+                                style={
+                                    subtitleStyle
+                                }
+                            >
                                 Manage company purchases
                                 and track purchase documents.
                             </p>
+
                         </div>
 
                         <div
-                            style={headerButtonsStyle}
+                            style={
+                                headerButtonsStyle
+                            }
                             className="purchase-header-buttons"
                         >
+
+                            {/* REFRESH */}
+
                             <button
                                 type="button"
-                                onClick={handleRefresh}
-                                style={refreshButtonStyle}
+                                onClick={
+                                    handleRefresh
+                                }
+                                style={
+                                    refreshButtonStyle
+                                }
                             >
-                                <span style={buttonIconStyle}>
+                                <span
+                                    style={
+                                        buttonIconStyle
+                                    }
+                                >
                                     ↻
                                 </span>
+
                                 Refresh
                             </button>
 
+
+                            {/* EXCEL */}
+
                             <button
                                 type="button"
-                                onClick={handleAddPurchase}
-                                style={addButtonStyle}
+                                onClick={
+                                    handleExportExcel
+                                }
+                                disabled={
+                                    filteredPurchases.length ===
+                                    0
+                                }
+                                style={{
+                                    ...excelButtonStyle,
+
+                                    opacity:
+                                        filteredPurchases.length ===
+                                        0
+                                            ? 0.5
+                                            : 1,
+
+                                    cursor:
+                                        filteredPurchases.length ===
+                                        0
+                                            ? "not-allowed"
+                                            : "pointer"
+                                }}
                             >
-                                <span style={plusStyle}>
+
+                                <span
+                                    style={
+                                        exportIconStyle
+                                    }
+                                >
+                                    XLS
+                                </span>
+
+                                Excel
+
+                            </button>
+
+
+                            {/* PDF */}
+
+                            <button
+                                type="button"
+                                onClick={
+                                    handleExportPDF
+                                }
+                                disabled={
+                                    filteredPurchases.length ===
+                                    0
+                                }
+                                style={{
+                                    ...pdfButtonStyle,
+
+                                    opacity:
+                                        filteredPurchases.length ===
+                                        0
+                                            ? 0.5
+                                            : 1,
+
+                                    cursor:
+                                        filteredPurchases.length ===
+                                        0
+                                            ? "not-allowed"
+                                            : "pointer"
+                                }}
+                            >
+
+                                <span
+                                    style={
+                                        exportIconStyle
+                                    }
+                                >
+                                    PDF
+                                </span>
+
+                                PDF
+
+                            </button>
+
+
+                            {/* ADD */}
+
+                            <button
+                                type="button"
+                                onClick={
+                                    handleAddPurchase
+                                }
+                                style={
+                                    addButtonStyle
+                                }
+                            >
+
+                                <span
+                                    style={
+                                        plusStyle
+                                    }
+                                >
                                     +
                                 </span>
+
                                 Add Purchase
+
                             </button>
+
                         </div>
+
                     </div>
+
 
                     {/* FILTER */}
 
-                    <div style={filterBarStyle}>
-                        <div style={filterLeftStyle}>
-                            <div style={filterIconStyle}>
+                    <div
+                        style={
+                            filterBarStyle
+                        }
+                    >
+
+                        <div
+                            style={
+                                filterLeftStyle
+                            }
+                        >
+
+                            <div
+                                style={
+                                    filterIconStyle
+                                }
+                            >
                                 ◷
                             </div>
 
                             <div>
-                                <div style={filterTitleStyle}>
+
+                                <div
+                                    style={
+                                        filterTitleStyle
+                                    }
+                                >
                                     Purchase Period
                                 </div>
 
-                                <div style={filterSubtitleStyle}>
+                                <div
+                                    style={
+                                        filterSubtitleStyle
+                                    }
+                                >
                                     View purchases month-wise
                                 </div>
+
                             </div>
+
                         </div>
 
-                        <div style={filterRightStyle}>
+
+                        <div
+                            style={
+                                filterRightStyle
+                            }
+                        >
+
                             <select
-                                value={selectedMonth}
+                                value={
+                                    selectedMonth
+                                }
                                 onChange={(e) =>
                                     setSelectedMonth(
                                         e.target.value
                                     )
                                 }
-                                style={monthSelectStyle}
+                                style={
+                                    monthSelectStyle
+                                }
                             >
+
                                 <option value="all">
                                     All Months
                                 </option>
 
-                                {monthOptions.map((month) => (
-                                    <option
-                                        key={month.value}
-                                        value={month.value}
-                                    >
-                                        {month.label}
-                                    </option>
-                                ))}
+                                {monthOptions.map(
+                                    (
+                                        month
+                                    ) => (
+
+                                        <option
+                                            key={
+                                                month.value
+                                            }
+                                            value={
+                                                month.value
+                                            }
+                                        >
+                                            {
+                                                month.label
+                                            }
+                                        </option>
+
+                                    )
+                                )}
+
                             </select>
 
                             {(search ||
-                                selectedMonth !== "all") && (
+                                selectedMonth !==
+                                    "all") && (
+
                                 <button
                                     type="button"
-                                    onClick={handleClearFilters}
-                                    style={clearFilterStyle}
+                                    onClick={
+                                        handleClearFilters
+                                    }
+                                    style={
+                                        clearFilterStyle
+                                    }
                                 >
                                     Clear Filters
                                 </button>
+
                             )}
+
                         </div>
+
                     </div>
+
 
                     {/* SUMMARY */}
 
                     <div
-                        style={summaryGridStyle}
+                        style={
+                            summaryGridStyle
+                        }
                         className="purchase-summary-grid"
                     >
+
                         <SummaryCard
                             title={
-                                selectedMonth === "all"
+                                selectedMonth ===
+                                "all"
                                     ? "Total Purchases"
                                     : `${selectedMonthLabel} Purchases`
                             }
@@ -577,9 +1700,11 @@ function Purchase() {
 
                         <SummaryCard
                             title="Total Amount"
-                            value={formatAmount(
-                                filteredSummary.total_purchase_amount
-                            )}
+                            value={
+                                formatAmount(
+                                    filteredSummary.total_purchase_amount
+                                )
+                            }
                             icon="₹"
                             color="#7c3aed"
                             background="#f5f3ff"
@@ -604,124 +1729,289 @@ function Purchase() {
                             color="#16a34a"
                             background="#f0fdf4"
                         />
+
                     </div>
+
 
                     {/* TABLE */}
 
-                    <div style={tableCardStyle}>
-                        <div style={tableTopStyle}>
+                    <div
+                        style={
+                            tableCardStyle
+                        }
+                    >
+
+                        <div
+                            style={
+                                tableTopStyle
+                            }
+                        >
+
                             <div>
-                                <h2 style={tableTitleStyle}>
+
+                                <h2
+                                    style={
+                                        tableTitleStyle
+                                    }
+                                >
                                     Purchase Directory
                                 </h2>
 
-                                <p style={tableSubtitleStyle}>
-                                    {filteredPurchases.length} purchase
-                                    {filteredPurchases.length !== 1
-                                        ? "s"
-                                        : ""}{" "}
+                                <p
+                                    style={
+                                        tableSubtitleStyle
+                                    }
+                                >
+                                    {
+                                        filteredPurchases.length
+                                    }{" "}
+
+                                    purchase
+                                    {
+                                        filteredPurchases.length !==
+                                        1
+                                            ? "s"
+                                            : ""
+                                    }{" "}
+
                                     found
-                                    {selectedMonth !== "all" &&
+
+                                    {selectedMonth !==
+                                        "all" &&
                                         ` for ${selectedMonthLabel}`}
+
                                 </p>
+
                             </div>
 
-                            <div style={searchAreaStyle}>
-                                <div style={searchWrapperStyle}>
-                                    <span style={searchIconStyle}>
+
+                            {/* SEARCH */}
+
+                            <div
+                                style={
+                                    searchAreaStyle
+                                }
+                            >
+
+                                <div
+                                    style={
+                                        searchWrapperStyle
+                                    }
+                                >
+
+                                    <span
+                                        style={
+                                            searchIconStyle
+                                        }
+                                    >
                                         ⌕
                                     </span>
 
                                     <input
                                         type="text"
                                         placeholder="Search PO, invoice, vendor..."
-                                        value={search}
-                                        onChange={(e) =>
-                                            setSearch(e.target.value)
+                                        value={
+                                            search
                                         }
-                                        style={searchInputStyle}
+                                        onChange={(
+                                            e
+                                        ) =>
+                                            setSearch(
+                                                e.target.value
+                                            )
+                                        }
+                                        style={
+                                            searchInputStyle
+                                        }
                                     />
 
                                     {search && (
+
                                         <button
                                             type="button"
                                             onClick={() =>
-                                                setSearch("")
+                                                setSearch(
+                                                    ""
+                                                )
                                             }
-                                            style={clearButtonStyle}
+                                            style={
+                                                clearButtonStyle
+                                            }
                                         >
                                             ×
                                         </button>
+
                                     )}
+
                                 </div>
+
                             </div>
+
                         </div>
 
-                        <div style={tableWrapperStyle}>
-                            <table style={tableStyle}>
+
+                        <div
+                            style={
+                                tableWrapperStyle
+                            }
+                        >
+
+                            <table
+                                style={
+                                    tableStyle
+                                }
+                            >
+
                                 <thead>
+
                                     <tr>
-                                        <th style={thStyle}>ID</th>
-                                        <th style={thStyle}>
+
+                                        <th
+                                            style={
+                                                thStyle
+                                            }
+                                        >
+                                            ID
+                                        </th>
+
+                                        <th
+                                            style={
+                                                thStyle
+                                            }
+                                        >
                                             PO Number
                                         </th>
-                                        <th style={thStyle}>
+
+                                        <th
+                                            style={
+                                                thStyle
+                                            }
+                                        >
                                             Invoice
                                         </th>
-                                        <th style={thStyle}>
+
+                                        <th
+                                            style={
+                                                thStyle
+                                            }
+                                        >
                                             Vendor
                                         </th>
-                                        <th style={thStyle}>
+
+                                        <th
+                                            style={
+                                                thStyle
+                                            }
+                                        >
                                             Product
                                         </th>
-                                        <th style={thStyle}>
+
+                                        <th
+                                            style={
+                                                thStyle
+                                            }
+                                        >
                                             Purchase Date
                                         </th>
-                                        <th style={thStyle}>
+
+                                        <th
+                                            style={
+                                                thStyle
+                                            }
+                                        >
                                             Amount
                                         </th>
-                                        <th style={thStyle}>
+
+                                        <th
+                                            style={
+                                                thStyle
+                                            }
+                                        >
                                             Payment
                                         </th>
-                                        <th style={thStyle}>
+
+                                        <th
+                                            style={
+                                                thStyle
+                                            }
+                                        >
                                             Warranty
                                         </th>
-                                        <th style={thStyle}>
+
+                                        <th
+                                            style={
+                                                thStyle
+                                            }
+                                        >
                                             Remarks
                                         </th>
-                                        <th style={thStyle}>
+
+                                        <th
+                                            style={
+                                                thStyle
+                                            }
+                                        >
                                             Documents
                                         </th>
-                                        <th style={thStyle}>
+
+                                        <th
+                                            style={
+                                                thStyle
+                                            }
+                                        >
                                             Actions
                                         </th>
+
                                     </tr>
+
                                 </thead>
 
+
                                 <tbody>
+
                                     {loading ? (
+
                                         <tr>
+
                                             <td
                                                 colSpan="12"
-                                                style={emptyStyle}
+                                                style={
+                                                    emptyStyle
+                                                }
                                             >
-                                                <div style={loaderStyle}>
+
+                                                <div
+                                                    style={
+                                                        loaderStyle
+                                                    }
+                                                >
+
                                                     <div
                                                         style={
                                                             spinnerStyle
                                                         }
                                                     />
+
                                                 </div>
 
                                                 Loading purchases...
+
                                             </td>
+
                                         </tr>
-                                    ) : filteredPurchases.length === 0 ? (
+
+                                    ) : filteredPurchases.length ===
+                                      0 ? (
+
                                         <tr>
+
                                             <td
                                                 colSpan="12"
-                                                style={emptyStyle}
+                                                style={
+                                                    emptyStyle
+                                                }
                                             >
+
                                                 <div
                                                     style={
                                                         emptyIconStyle
@@ -742,24 +2032,38 @@ function Purchase() {
                                                             "#94a3b8"
                                                     }}
                                                 >
+
                                                     {selectedMonth !==
                                                     "all"
                                                         ? `No purchases found for ${selectedMonthLabel}`
                                                         : search
                                                         ? "Try changing your search"
                                                         : "Add your first purchase to get started"}
+
                                                 </p>
+
                                             </td>
+
                                         </tr>
+
                                     ) : (
+
                                         filteredPurchases.map(
-                                            (purchase) => (
+                                            (
+                                                purchase
+                                            ) => (
+
                                                 <tr
                                                     key={
                                                         purchase.purchase_id
                                                     }
-                                                    style={rowStyle}
+                                                    style={
+                                                        rowStyle
+                                                    }
                                                 >
+
+                                                    {/* ID */}
+
                                                     <td
                                                         style={{
                                                             ...tdStyle,
@@ -767,40 +2071,74 @@ function Purchase() {
                                                                 "#64748b"
                                                         }}
                                                     >
+
                                                         #
                                                         {
                                                             purchase.purchase_id
                                                         }
+
                                                     </td>
 
-                                                    <td style={tdStyle}>
+
+                                                    {/* PO */}
+
+                                                    <td
+                                                        style={
+                                                            tdStyle
+                                                        }
+                                                    >
+
                                                         <span
                                                             style={
                                                                 poNumberStyle
                                                             }
                                                         >
-                                                            {purchase.po_number ||
-                                                                "-"}
+                                                            {
+                                                                purchase.po_number ||
+                                                                "-"
+                                                            }
                                                         </span>
+
                                                     </td>
 
-                                                    <td style={tdStyle}>
-                                                        {purchase.invoice_number ||
-                                                            "-"}
+
+                                                    {/* INVOICE */}
+
+                                                    <td
+                                                        style={
+                                                            tdStyle
+                                                        }
+                                                    >
+                                                        {
+                                                            purchase.invoice_number ||
+                                                            "-"
+                                                        }
                                                     </td>
 
-                                                    <td style={tdStyle}>
+
+                                                    {/* VENDOR */}
+
+                                                    <td
+                                                        style={
+                                                            tdStyle
+                                                        }
+                                                    >
+
                                                         <div>
+
                                                             <div
                                                                 style={
                                                                     vendorNameStyle
                                                                 }
                                                             >
-                                                                {purchase.vendor_name ||
-                                                                    "-"}
+                                                                {
+                                                                    purchase.vendor_name ||
+                                                                    "-"
+                                                                }
                                                             </div>
 
                                                             {purchase.vendor_code && (
+
                                                                 <div
                                                                     style={
                                                                         vendorCodeStyle
@@ -810,17 +2148,30 @@ function Purchase() {
                                                                         purchase.vendor_code
                                                                     }
                                                                 </div>
+
                                                             )}
+
                                                         </div>
+
                                                     </td>
 
-                                                    <td style={tdStyle}>
+
+                                                    {/* PRODUCT */}
+
+                                                    <td
+                                                        style={
+                                                            tdStyle
+                                                        }
+                                                    >
+
                                                         <div
                                                             style={
                                                                 productCellStyle
                                                             }
                                                         >
+
                                                             {purchase.product_category && (
+
                                                                 <span
                                                                     style={
                                                                         productCategoryStyle
@@ -830,6 +2181,7 @@ function Purchase() {
                                                                         purchase.product_category
                                                                     }
                                                                 </span>
+
                                                             )}
 
                                                             <span
@@ -837,17 +2189,31 @@ function Purchase() {
                                                                     productNameStyle
                                                                 }
                                                             >
-                                                                {purchase.product_name ||
-                                                                    "-"}
+                                                                {
+                                                                    purchase.product_name ||
+                                                                    "-"
+                                                                }
                                                             </span>
+
                                                         </div>
+
                                                     </td>
 
-                                                    <td style={tdStyle}>
+
+                                                    {/* PURCHASE DATE */}
+
+                                                    <td
+                                                        style={
+                                                            tdStyle
+                                                        }
+                                                    >
                                                         {formatDate(
                                                             purchase.purchase_date
                                                         )}
                                                     </td>
+
+
+                                                    {/* AMOUNT */}
 
                                                     <td
                                                         style={
@@ -859,10 +2225,19 @@ function Purchase() {
                                                         )}
                                                     </td>
 
-                                                    <td style={tdStyle}>
+
+                                                    {/* PAYMENT */}
+
+                                                    <td
+                                                        style={
+                                                            tdStyle
+                                                        }
+                                                    >
+
                                                         <span
                                                             style={{
                                                                 ...paymentBadgeStyle,
+
                                                                 background:
                                                                     purchase.payment_status ===
                                                                     "Paid"
@@ -874,6 +2249,7 @@ function Purchase() {
                                                                           "Partially Paid"
                                                                         ? "#fef3c7"
                                                                         : "#fff7ed",
+
                                                                 color:
                                                                     purchase.payment_status ===
                                                                     "Paid"
@@ -887,6 +2263,7 @@ function Purchase() {
                                                                         : "#9a3412"
                                                             }}
                                                         >
+
                                                             <span
                                                                 style={{
                                                                     width:
@@ -900,18 +2277,37 @@ function Purchase() {
                                                                 }}
                                                             />
 
-                                                            {purchase.payment_status ||
-                                                                "-"}
+                                                            {
+                                                                purchase.payment_status ||
+                                                                "-"
+                                                            }
+
                                                         </span>
+
                                                     </td>
 
-                                                    <td style={tdStyle}>
+
+                                                    {/* WARRANTY */}
+
+                                                    <td
+                                                        style={
+                                                            tdStyle
+                                                        }
+                                                    >
                                                         {formatDate(
                                                             purchase.warranty_expiry
                                                         )}
                                                     </td>
 
-                                                    <td style={tdStyle}>
+
+                                                    {/* REMARKS */}
+
+                                                    <td
+                                                        style={
+                                                            tdStyle
+                                                        }
+                                                    >
+
                                                         <span
                                                             style={
                                                                 remarksStyle
@@ -921,19 +2317,29 @@ function Purchase() {
                                                                 ""
                                                             }
                                                         >
-                                                            {purchase.remarks ||
-                                                                "-"}
+                                                            {
+                                                                purchase.remarks ||
+                                                                "-"
+                                                            }
                                                         </span>
+
                                                     </td>
+
 
                                                     {/* DOCUMENTS */}
 
-                                                    <td style={tdStyle}>
+                                                    <td
+                                                        style={
+                                                            tdStyle
+                                                        }
+                                                    >
+
                                                         <div
                                                             style={
                                                                 documentContainerStyle
                                                             }
                                                         >
+
                                                             <DocumentRow
                                                                 label="PO"
                                                                 exists={
@@ -985,17 +2391,26 @@ function Purchase() {
                                                                 }
                                                                 uploadText="Upload Invoice"
                                                             />
+
                                                         </div>
+
                                                     </td>
+
 
                                                     {/* ACTIONS */}
 
-                                                    <td style={tdStyle}>
+                                                    <td
+                                                        style={
+                                                            tdStyle
+                                                        }
+                                                    >
+
                                                         <div
                                                             style={
                                                                 actionStyle
                                                             }
                                                         >
+
                                                             <button
                                                                 type="button"
                                                                 onClick={() =>
@@ -1023,18 +2438,30 @@ function Purchase() {
                                                             >
                                                                 Delete
                                                             </button>
+
                                                         </div>
+
                                                     </td>
+
                                                 </tr>
+
                                             )
                                         )
+
                                     )}
+
                                 </tbody>
+
                             </table>
+
                         </div>
+
                     </div>
+
                 </main>
+
             </div>
+
 
             <style>
                 {`
@@ -1048,7 +2475,7 @@ function Purchase() {
                         }
                     }
 
-                    @media (max-width: 1100px) {
+                    @media (max-width: 1150px) {
                         .purchase-header {
                             align-items: flex-start !important;
                         }
@@ -1068,7 +2495,7 @@ function Purchase() {
                         }
                     }
 
-                    @media (max-width: 600px) {
+                    @media (max-width: 650px) {
                         .purchase-summary-grid {
                             grid-template-columns: 1fr !important;
                         }
@@ -1091,6 +2518,7 @@ function Purchase() {
                     }
                 `}
             </style>
+
         </div>
     );
 }
@@ -1109,46 +2537,76 @@ function DocumentRow({
     uploadText
 }) {
     return (
-        <div style={documentRowStyle}>
-            <span style={documentLabelStyle}>
+        <div
+            style={
+                documentRowStyle
+            }
+        >
+
+            <span
+                style={
+                    documentLabelStyle
+                }
+            >
                 {label}
             </span>
 
             {exists ? (
+
                 <>
                     <button
                         type="button"
-                        onClick={onView}
-                        style={viewButtonStyle}
+                        onClick={
+                            onView
+                        }
+                        style={
+                            viewButtonStyle
+                        }
                     >
                         View
                     </button>
 
                     <button
                         type="button"
-                        onClick={onUpload}
-                        style={replaceButtonStyle}
+                        onClick={
+                            onUpload
+                        }
+                        style={
+                            replaceButtonStyle
+                        }
                     >
                         Replace
                     </button>
 
                     <button
                         type="button"
-                        onClick={onDelete}
-                        style={documentDeleteButtonStyle}
+                        onClick={
+                            onDelete
+                        }
+                        style={
+                            documentDeleteButtonStyle
+                        }
                     >
                         Delete
                     </button>
                 </>
+
             ) : (
+
                 <button
                     type="button"
-                    onClick={onUpload}
-                    style={uploadButtonStyle}
+                    onClick={
+                        onUpload
+                    }
+                    style={
+                        uploadButtonStyle
+                    }
                 >
                     {uploadText}
                 </button>
+
             )}
+
         </div>
     );
 }
@@ -1166,7 +2624,12 @@ function SummaryCard({
     background
 }) {
     return (
-        <div style={summaryCardStyle}>
+        <div
+            style={
+                summaryCardStyle
+            }
+        >
+
             <div
                 style={{
                     ...summaryIconStyle,
@@ -1177,15 +2640,30 @@ function SummaryCard({
                 {icon}
             </div>
 
-            <div style={{ minWidth: 0 }}>
-                <div style={summaryTitleStyle}>
+            <div
+                style={{
+                    minWidth: 0
+                }}
+            >
+
+                <div
+                    style={
+                        summaryTitleStyle
+                    }
+                >
                     {title}
                 </div>
 
-                <div style={summaryValueStyle}>
+                <div
+                    style={
+                        summaryValueStyle
+                    }
+                >
                     {value}
                 </div>
+
             </div>
+
         </div>
     );
 }
@@ -1198,8 +2676,10 @@ function SummaryCard({
 const pageStyle = {
     display: "flex",
     minHeight: "100vh",
-    background: "var(--app-background, #f5f7fb)",
-    color: "var(--text-color, #0f172a)"
+    background:
+        "var(--app-background, #f5f7fb)",
+    color:
+        "var(--text-color, #0f172a)"
 };
 
 const mainStyle = {
@@ -1235,8 +2715,16 @@ const headerStyle = {
     background: `
         radial-gradient(
             circle at 76% 115%,
-            color-mix(in srgb, var(--primary-color, #437aff) 35%, transparent) 0,
-            color-mix(in srgb, var(--primary-color, #437aff) 16%, transparent) 95px,
+            color-mix(
+                in srgb,
+                var(--primary-color, #437aff) 35%,
+                transparent
+            ) 0,
+            color-mix(
+                in srgb,
+                var(--primary-color, #437aff) 16%,
+                transparent
+            ) 95px,
             transparent 96px
         ),
         linear-gradient(
@@ -1249,6 +2737,7 @@ const headerStyle = {
     `,
 
     borderRadius: "15px",
+
     boxShadow:
         "0 10px 28px rgba(15, 23, 42, 0.16)"
 };
@@ -1277,7 +2766,8 @@ const titleStyle = {
 
 const subtitleStyle = {
     margin: "8px 0 0",
-    color: "rgba(255,255,255,0.92)",
+    color:
+        "rgba(255,255,255,0.92)",
     fontSize: "12px",
     lineHeight: "1.5"
 };
@@ -1295,9 +2785,11 @@ const headerButtonsStyle = {
 const refreshButtonStyle = {
     height: "35px",
     padding: "0 13px",
-    border: "1px solid rgba(255,255,255,0.28)",
+    border:
+        "1px solid rgba(255,255,255,0.28)",
     borderRadius: "7px",
-    background: "rgba(255,255,255,0.10)",
+    background:
+        "rgba(255,255,255,0.10)",
     color: "#ffffff",
     fontSize: "10px",
     fontWeight: "700",
@@ -1305,6 +2797,57 @@ const refreshButtonStyle = {
     transition:
         "background 0.18s ease, transform 0.18s ease",
     backdropFilter: "blur(5px)"
+};
+
+const excelButtonStyle = {
+    height: "35px",
+    padding: "0 13px",
+    border:
+        "1px solid rgba(255,255,255,0.20)",
+    borderRadius: "7px",
+    background: "#15803d",
+    color: "#ffffff",
+    fontSize: "10px",
+    fontWeight: "800",
+    cursor: "pointer",
+    boxShadow:
+        "0 4px 12px rgba(0,0,0,0.12)",
+    transition:
+        "transform 0.18s ease, box-shadow 0.18s ease"
+};
+
+const pdfButtonStyle = {
+    height: "35px",
+    padding: "0 13px",
+    border:
+        "1px solid rgba(255,255,255,0.20)",
+    borderRadius: "7px",
+    background: "#dc2626",
+    color: "#ffffff",
+    fontSize: "10px",
+    fontWeight: "800",
+    cursor: "pointer",
+    boxShadow:
+        "0 4px 12px rgba(0,0,0,0.12)",
+    transition:
+        "transform 0.18s ease, box-shadow 0.18s ease"
+};
+
+const exportIconStyle = {
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
+    minWidth: "22px",
+    height: "18px",
+    marginRight: "5px",
+    padding: "0 3px",
+    borderRadius: "4px",
+    background:
+        "rgba(255,255,255,0.18)",
+    fontSize: "8px",
+    fontWeight: "800",
+    letterSpacing: "0.3px",
+    verticalAlign: "middle"
 };
 
 const buttonIconStyle = {
@@ -1319,7 +2862,8 @@ const addButtonStyle = {
     border: "none",
     borderRadius: "7px",
     background: "#ffffff",
-    color: "var(--primary-color, #1851b5)",
+    color:
+        "var(--primary-color, #1851b5)",
     fontSize: "10px",
     fontWeight: "800",
     cursor: "pointer",
@@ -1348,8 +2892,10 @@ const filterBarStyle = {
     flexWrap: "wrap",
     padding: "15px 18px",
     marginBottom: "18px",
-    background: "var(--card-background, #ffffff)",
-    border: "1px solid var(--border-color, #e5eaf0)",
+    background:
+        "var(--card-background, #ffffff)",
+    border:
+        "1px solid var(--border-color, #e5eaf0)",
     borderRadius: "12px",
     boxShadow:
         "0 2px 8px rgba(15,23,42,0.025)"
@@ -1368,8 +2914,10 @@ const filterIconStyle = {
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    background: "var(--primary-light, #eff6ff)",
-    color: "var(--primary-color, #2563eb)",
+    background:
+        "var(--primary-light, #eff6ff)",
+    color:
+        "var(--primary-color, #2563eb)",
     fontSize: "18px",
     fontWeight: "700"
 };
@@ -1377,13 +2925,15 @@ const filterIconStyle = {
 const filterTitleStyle = {
     fontSize: "13px",
     fontWeight: "700",
-    color: "var(--text-color, #1e293b)"
+    color:
+        "var(--text-color, #1e293b)"
 };
 
 const filterSubtitleStyle = {
     marginTop: "3px",
     fontSize: "11px",
-    color: "var(--muted-text-color, #94a3b8)"
+    color:
+        "var(--muted-text-color, #94a3b8)"
 };
 
 const filterRightStyle = {
@@ -1397,11 +2947,14 @@ const monthSelectStyle = {
     height: "40px",
     minWidth: "170px",
     padding: "0 12px",
-    border: "1px solid var(--border-color, #dbe2ea)",
+    border:
+        "1px solid var(--border-color, #dbe2ea)",
     borderRadius: "8px",
     outline: "none",
-    background: "var(--card-background, #ffffff)",
-    color: "var(--text-color, #334155)",
+    background:
+        "var(--card-background, #ffffff)",
+    color:
+        "var(--text-color, #334155)",
     fontSize: "13px",
     fontWeight: "600",
     cursor: "pointer"
@@ -1410,7 +2963,8 @@ const monthSelectStyle = {
 const clearFilterStyle = {
     height: "40px",
     padding: "0 13px",
-    border: "1px solid #fecaca",
+    border:
+        "1px solid #fecaca",
     borderRadius: "8px",
     background: "#fff5f5",
     color: "#dc2626",
@@ -1433,8 +2987,10 @@ const summaryGridStyle = {
 };
 
 const summaryCardStyle = {
-    background: "var(--card-background, #ffffff)",
-    border: "1px solid var(--border-color, #e8edf3)",
+    background:
+        "var(--card-background, #ffffff)",
+    border:
+        "1px solid var(--border-color, #e8edf3)",
     borderRadius: "12px",
     padding: "18px 20px",
     display: "flex",
@@ -1457,7 +3013,8 @@ const summaryIconStyle = {
 };
 
 const summaryTitleStyle = {
-    color: "var(--muted-text-color, #64748b)",
+    color:
+        "var(--muted-text-color, #64748b)",
     fontSize: "12px",
     marginBottom: "4px"
 };
@@ -1465,7 +3022,8 @@ const summaryTitleStyle = {
 const summaryValueStyle = {
     fontSize: "23px",
     fontWeight: "750",
-    color: "var(--text-color, #0f172a)",
+    color:
+        "var(--text-color, #0f172a)",
     whiteSpace: "nowrap"
 };
 
@@ -1475,8 +3033,10 @@ const summaryValueStyle = {
 // =====================================================
 
 const tableCardStyle = {
-    background: "var(--card-background, #ffffff)",
-    border: "1px solid var(--border-color, #e5eaf0)",
+    background:
+        "var(--card-background, #ffffff)",
+    border:
+        "1px solid var(--border-color, #e5eaf0)",
     borderRadius: "14px",
     boxShadow:
         "0 4px 14px rgba(15,23,42,0.04)",
@@ -1498,12 +3058,14 @@ const tableTitleStyle = {
     margin: 0,
     fontSize: "17px",
     fontWeight: "700",
-    color: "var(--text-color, #1e293b)"
+    color:
+        "var(--text-color, #1e293b)"
 };
 
 const tableSubtitleStyle = {
     margin: "5px 0 0",
-    color: "var(--muted-text-color, #94a3b8)",
+    color:
+        "var(--muted-text-color, #94a3b8)",
     fontSize: "12px"
 };
 
@@ -1523,15 +3085,18 @@ const searchWrapperStyle = {
     height: "42px",
     display: "flex",
     alignItems: "center",
-    background: "var(--input-background, #f8fafc)",
-    border: "1px solid var(--border-color, #dbe2ea)",
+    background:
+        "var(--input-background, #f8fafc)",
+    border:
+        "1px solid var(--border-color, #dbe2ea)",
     borderRadius: "9px",
     padding: "0 11px",
     boxSizing: "border-box"
 };
 
 const searchIconStyle = {
-    color: "var(--muted-text-color, #94a3b8)",
+    color:
+        "var(--muted-text-color, #94a3b8)",
     fontSize: "20px",
     marginRight: "7px"
 };
@@ -1544,7 +3109,8 @@ const searchInputStyle = {
     outline: "none",
     background: "transparent",
     fontSize: "13px",
-    color: "var(--text-color, #0f172a)"
+    color:
+        "var(--text-color, #0f172a)"
 };
 
 const clearButtonStyle = {
@@ -1574,8 +3140,10 @@ const tableStyle = {
 const thStyle = {
     padding: "13px 16px",
     textAlign: "left",
-    background: "var(--table-header-background, #f8fafc)",
-    color: "var(--muted-text-color, #64748b)",
+    background:
+        "var(--table-header-background, #f8fafc)",
+    color:
+        "var(--muted-text-color, #64748b)",
     fontSize: "11px",
     fontWeight: "700",
     textTransform: "uppercase",
@@ -1587,7 +3155,8 @@ const thStyle = {
 
 const tdStyle = {
     padding: "14px 16px",
-    color: "var(--secondary-text-color, #475569)",
+    color:
+        "var(--secondary-text-color, #475569)",
     fontSize: "13px",
     borderBottom:
         "1px solid var(--border-color, #f0f2f5)",
@@ -1608,18 +3177,21 @@ const rowStyle = {
 // =====================================================
 
 const poNumberStyle = {
-    color: "var(--primary-color, #2563eb)",
+    color:
+        "var(--primary-color, #2563eb)",
     fontWeight: "650"
 };
 
 const vendorNameStyle = {
-    color: "var(--text-color, #1e293b)",
+    color:
+        "var(--text-color, #1e293b)",
     fontSize: "13px",
     fontWeight: "650"
 };
 
 const vendorCodeStyle = {
-    color: "var(--muted-text-color, #94a3b8)",
+    color:
+        "var(--muted-text-color, #94a3b8)",
     fontSize: "11px",
     marginTop: "3px"
 };
@@ -1635,21 +3207,25 @@ const productCategoryStyle = {
     width: "fit-content",
     padding: "3px 7px",
     borderRadius: "5px",
-    background: "var(--table-header-background, #f1f5f9)",
-    color: "var(--secondary-text-color, #475569)",
+    background:
+        "var(--table-header-background, #f1f5f9)",
+    color:
+        "var(--secondary-text-color, #475569)",
     fontSize: "10px",
     fontWeight: "700"
 };
 
 const productNameStyle = {
-    color: "var(--secondary-text-color, #334155)",
+    color:
+        "var(--secondary-text-color, #334155)",
     fontSize: "12px",
     fontWeight: "600"
 };
 
 const amountStyle = {
     padding: "14px 16px",
-    color: "var(--text-color, #1e293b)",
+    color:
+        "var(--text-color, #1e293b)",
     fontSize: "13px",
     fontWeight: "650",
     borderBottom:
@@ -1663,7 +3239,8 @@ const remarksStyle = {
     maxWidth: "180px",
     overflow: "hidden",
     textOverflow: "ellipsis",
-    color: "var(--muted-text-color, #64748b)"
+    color:
+        "var(--muted-text-color, #64748b)"
 };
 
 
@@ -1702,13 +3279,16 @@ const documentLabelStyle = {
     minWidth: "48px",
     fontWeight: "650",
     fontSize: "11px",
-    color: "var(--text-color, #334155)"
+    color:
+        "var(--text-color, #334155)"
 };
 
 const viewButtonStyle = {
     padding: "5px 8px",
-    border: "1px solid #16a34a",
-    background: "var(--card-background, #ffffff)",
+    border:
+        "1px solid #16a34a",
+    background:
+        "var(--card-background, #ffffff)",
     color: "#16a34a",
     borderRadius: "6px",
     cursor: "pointer",
@@ -1718,9 +3298,12 @@ const viewButtonStyle = {
 
 const replaceButtonStyle = {
     padding: "5px 8px",
-    border: "1px solid var(--primary-color, #2563eb)",
-    background: "var(--card-background, #ffffff)",
-    color: "var(--primary-color, #2563eb)",
+    border:
+        "1px solid var(--primary-color, #2563eb)",
+    background:
+        "var(--card-background, #ffffff)",
+    color:
+        "var(--primary-color, #2563eb)",
     borderRadius: "6px",
     cursor: "pointer",
     fontSize: "10px",
@@ -1729,8 +3312,10 @@ const replaceButtonStyle = {
 
 const documentDeleteButtonStyle = {
     padding: "5px 8px",
-    border: "1px solid #dc2626",
-    background: "var(--card-background, #ffffff)",
+    border:
+        "1px solid #dc2626",
+    background:
+        "var(--card-background, #ffffff)",
     color: "#dc2626",
     borderRadius: "6px",
     cursor: "pointer",
@@ -1741,7 +3326,8 @@ const documentDeleteButtonStyle = {
 const uploadButtonStyle = {
     padding: "5px 9px",
     border: "none",
-    background: "var(--primary-color, #2563eb)",
+    background:
+        "var(--primary-color, #2563eb)",
     color: "#ffffff",
     borderRadius: "6px",
     cursor: "pointer",
@@ -1762,10 +3348,13 @@ const actionStyle = {
 
 const editButtonStyle = {
     padding: "7px 11px",
-    border: "1px solid var(--border-color, #dbe2ea)",
+    border:
+        "1px solid var(--border-color, #dbe2ea)",
     borderRadius: "7px",
-    background: "var(--card-background, #ffffff)",
-    color: "var(--primary-color, #2563eb)",
+    background:
+        "var(--card-background, #ffffff)",
+    color:
+        "var(--primary-color, #2563eb)",
     fontSize: "11px",
     fontWeight: "600",
     cursor: "pointer"
@@ -1773,7 +3362,8 @@ const editButtonStyle = {
 
 const deleteButtonStyle = {
     padding: "7px 11px",
-    border: "1px solid #fecaca",
+    border:
+        "1px solid #fecaca",
     borderRadius: "7px",
     background: "#fff5f5",
     color: "#dc2626",
@@ -1790,7 +3380,8 @@ const deleteButtonStyle = {
 const emptyStyle = {
     padding: "55px 20px",
     textAlign: "center",
-    color: "var(--muted-text-color, #64748b)",
+    color:
+        "var(--muted-text-color, #64748b)",
     fontSize: "13px"
 };
 
@@ -1809,7 +3400,8 @@ const loaderStyle = {
 const spinnerStyle = {
     width: "22px",
     height: "22px",
-    border: "3px solid var(--primary-light, #dbeafe)",
+    border:
+        "3px solid var(--primary-light, #dbeafe)",
     borderTop:
         "3px solid var(--primary-color, #2563eb)",
     borderRadius: "50%",

@@ -1,4 +1,4 @@
-// Vendors.jsx
+// src/pages/Vendors.jsx
 
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -25,9 +25,14 @@ function Vendors() {
 
             const response = await API.get("/vendors");
 
-            setVendors(response.data?.data || []);
+            setVendors(
+                response.data?.data || []
+            );
         } catch (error) {
-            console.error("Load Vendors Error:", error);
+            console.error(
+                "Load Vendors Error:",
+                error
+            );
 
             alert(
                 error.response?.data?.message ||
@@ -46,23 +51,38 @@ function Vendors() {
     // DELETE VENDOR
     // =====================================================
 
-    const handleDelete = async (vendor) => {
-        const confirmed = window.confirm(
-            `Are you sure you want to delete "${vendor.vendor_name}"?`
-        );
+    const handleDelete = async (
+        vendor
+    ) => {
+        const confirmed =
+            window.confirm(
+                `Are you sure you want to delete "${vendor.vendor_name}"?`
+            );
 
-        if (!confirmed) return;
+        if (!confirmed) {
+            return;
+        }
 
         try {
-            setDeletingId(vendor.vendor_id);
+            setDeletingId(
+                vendor.vendor_id
+            );
 
-            await API.delete(`/vendors/${vendor.vendor_id}`);
+            await API.delete(
+                `/vendors/${vendor.vendor_id}`
+            );
 
-            alert("Vendor deleted successfully");
+            alert(
+                "Vendor deleted successfully"
+            );
 
             await loadVendors();
+
         } catch (error) {
-            console.error("Delete Vendor Error:", error);
+            console.error(
+                "Delete Vendor Error:",
+                error
+            );
 
             alert(
                 error.response?.data?.message ||
@@ -78,28 +98,42 @@ function Vendors() {
     // =====================================================
 
     const filteredVendors = useMemo(() => {
-        const keyword = search.trim().toLowerCase();
+
+        const keyword =
+            search
+                .trim()
+                .toLowerCase();
 
         if (!keyword) {
             return vendors;
         }
 
-        return vendors.filter((vendor) => {
-            const searchableText = `
-                ${vendor.vendor_id || ""}
-                ${vendor.vendor_code || ""}
-                ${vendor.vendor_name || ""}
-                ${vendor.contact_person || ""}
-                ${vendor.email || ""}
-                ${vendor.phone || ""}
-                ${vendor.mobile || ""}
-                ${vendor.mobile_number || ""}
-                ${vendor.address || ""}
-                ${vendor.status || ""}
-            `.toLowerCase();
+        return vendors.filter(
+            (vendor) => {
 
-            return searchableText.includes(keyword);
-        });
+                const searchableText = `
+                    ${vendor.vendor_id || ""}
+                    ${vendor.vendor_code || ""}
+                    ${vendor.vendor_name || ""}
+                    ${vendor.contact_person || ""}
+                    ${vendor.email || ""}
+                    ${vendor.phone || ""}
+                    ${vendor.mobile || ""}
+                    ${vendor.mobile_number || ""}
+                    ${vendor.address || ""}
+                    ${vendor.city || ""}
+                    ${vendor.state || ""}
+                    ${vendor.country || ""}
+                    ${vendor.gst_number || ""}
+                    ${vendor.status || ""}
+                `.toLowerCase();
+
+                return searchableText.includes(
+                    keyword
+                );
+            }
+        );
+
     }, [vendors, search]);
 
     // =====================================================
@@ -107,23 +141,661 @@ function Vendors() {
     // =====================================================
 
     const stats = useMemo(() => {
-        const active = vendors.filter(
-            (vendor) => vendor.status === "Active"
-        ).length;
 
-        const inactive = vendors.filter(
-            (vendor) =>
-                vendor.status &&
-                vendor.status !== "Active"
-        ).length;
+        const active =
+            vendors.filter(
+                (vendor) =>
+                    vendor.status ===
+                    "Active"
+            ).length;
+
+        const inactive =
+            vendors.filter(
+                (vendor) =>
+                    vendor.status &&
+                    vendor.status !==
+                        "Active"
+            ).length;
 
         return {
             total: vendors.length,
             active,
             inactive,
-            showing: filteredVendors.length
+            showing:
+                filteredVendors.length
         };
-    }, [vendors, filteredVendors]);
+
+    }, [
+        vendors,
+        filteredVendors
+    ]);
+
+    // =====================================================
+    // EXPORT HELPERS
+    // =====================================================
+
+    const getExportValue = (
+        value
+    ) => {
+
+        if (
+            value === null ||
+            value === undefined ||
+            value === ""
+        ) {
+            return "-";
+        }
+
+        return String(value);
+    };
+
+    const escapeHTML = (
+        value
+    ) => {
+
+        return String(value)
+            .replace(
+                /&/g,
+                "&amp;"
+            )
+            .replace(
+                /</g,
+                "&lt;"
+            )
+            .replace(
+                />/g,
+                "&gt;"
+            )
+            .replace(
+                /"/g,
+                "&quot;"
+            )
+            .replace(
+                /'/g,
+                "&#039;"
+            );
+    };
+
+    const escapeExcelValue = (
+        value
+    ) => {
+
+        return String(value)
+            .replace(
+                /&/g,
+                "&amp;"
+            )
+            .replace(
+                /</g,
+                "&lt;"
+            )
+            .replace(
+                />/g,
+                "&gt;"
+            );
+    };
+
+    const formatExportDate = (
+        value
+    ) => {
+
+        if (
+            !value
+        ) {
+            return "-";
+        }
+
+        const date =
+            new Date(value);
+
+        if (
+            Number.isNaN(
+                date.getTime()
+            )
+        ) {
+            return String(value);
+        }
+
+        return date.toLocaleDateString(
+            "en-IN",
+            {
+                day: "2-digit",
+                month: "2-digit",
+                year: "numeric"
+            }
+        );
+    };
+
+    const getVendorExportRows =
+        () => {
+
+            return filteredVendors.map(
+                (vendor) => ({
+
+                    "Vendor ID":
+                        getExportValue(
+                            vendor.vendor_id
+                        ),
+
+                    "Vendor Code":
+                        getExportValue(
+                            vendor.vendor_code
+                        ),
+
+                    "Vendor Name":
+                        getExportValue(
+                            vendor.vendor_name
+                        ),
+
+                    "Contact Person":
+                        getExportValue(
+                            vendor.contact_person
+                        ),
+
+                    "Email":
+                        getExportValue(
+                            vendor.email
+                        ),
+
+                    "Phone":
+                        getExportValue(
+                            vendor.phone ||
+                            vendor.mobile ||
+                            vendor.mobile_number
+                        ),
+
+                    "Mobile":
+                        getExportValue(
+                            vendor.mobile ||
+                            vendor.mobile_number
+                        ),
+
+                    "Address":
+                        getExportValue(
+                            vendor.address
+                        ),
+
+                    "City":
+                        getExportValue(
+                            vendor.city
+                        ),
+
+                    "State":
+                        getExportValue(
+                            vendor.state
+                        ),
+
+                    "Country":
+                        getExportValue(
+                            vendor.country
+                        ),
+
+                    "GST Number":
+                        getExportValue(
+                            vendor.gst_number
+                        ),
+
+                    "Status":
+                        getExportValue(
+                            vendor.status
+                        ),
+
+                    "Created Date":
+                        formatExportDate(
+                            vendor.created_at
+                        ),
+
+                    "Updated Date":
+                        formatExportDate(
+                            vendor.updated_at
+                        )
+
+                })
+            );
+        };
+
+    // =====================================================
+    // EXPORT EXCEL
+    // =====================================================
+
+    const handleExportExcel =
+        () => {
+
+            if (
+                filteredVendors.length ===
+                0
+            ) {
+
+                alert(
+                    "No vendors available to export."
+                );
+
+                return;
+            }
+
+            const rows =
+                getVendorExportRows();
+
+            const headers =
+                Object.keys(
+                    rows[0]
+                );
+
+            const tableHeader =
+                headers
+                    .map(
+                        (header) =>
+                            `<th>${escapeExcelValue(
+                                header
+                            )}</th>`
+                    )
+                    .join("");
+
+            const tableRows =
+                rows
+                    .map(
+                        (row) => `
+                            <tr>
+                                ${headers
+                                    .map(
+                                        (
+                                            header
+                                        ) =>
+                                            `<td>${escapeExcelValue(
+                                                row[
+                                                    header
+                                                ]
+                                            )}</td>`
+                                    )
+                                    .join("")}
+                            </tr>
+                        `
+                    )
+                    .join("");
+
+            const excelHTML = `
+                <html>
+                    <head>
+                        <meta charset="UTF-8" />
+
+                        <style>
+                            table {
+                                border-collapse: collapse;
+                                width: 100%;
+                                font-family: Arial, sans-serif;
+                            }
+
+                            th {
+                                background: #1e3a8a;
+                                color: #ffffff;
+                                border: 1px solid #cbd5e1;
+                                padding: 8px;
+                                font-weight: 700;
+                                white-space: nowrap;
+                            }
+
+                            td {
+                                border: 1px solid #dbe2ea;
+                                padding: 8px;
+                                vertical-align: top;
+                            }
+                        </style>
+                    </head>
+
+                    <body>
+                        <table>
+
+                            <thead>
+                                <tr>
+                                    ${tableHeader}
+                                </tr>
+                            </thead>
+
+                            <tbody>
+                                ${tableRows}
+                            </tbody>
+
+                        </table>
+                    </body>
+                </html>
+            `;
+
+            const blob =
+                new Blob(
+                    [excelHTML],
+                    {
+                        type:
+                            "application/vnd.ms-excel"
+                    }
+                );
+
+            const url =
+                window.URL.createObjectURL(
+                    blob
+                );
+
+            const link =
+                document.createElement(
+                    "a"
+                );
+
+            link.href = url;
+
+            link.download =
+                `AssetSphere_Vendors_${new Date()
+                    .toISOString()
+                    .slice(
+                        0,
+                        10
+                    )}.xls`;
+
+            document.body.appendChild(
+                link
+            );
+
+            link.click();
+
+            document.body.removeChild(
+                link
+            );
+
+            window.URL.revokeObjectURL(
+                url
+            );
+        };
+
+    // =====================================================
+    // EXPORT PDF
+    // =====================================================
+
+    const handleExportPDF =
+        () => {
+
+            if (
+                filteredVendors.length ===
+                0
+            ) {
+
+                alert(
+                    "No vendors available to export."
+                );
+
+                return;
+            }
+
+            const rows =
+                getVendorExportRows();
+
+            const headers =
+                Object.keys(
+                    rows[0]
+                );
+
+            const tableHeader =
+                headers
+                    .map(
+                        (header) =>
+                            `<th>${escapeHTML(
+                                header
+                            )}</th>`
+                    )
+                    .join("");
+
+            const tableRows =
+                rows
+                    .map(
+                        (row) => `
+                            <tr>
+                                ${headers
+                                    .map(
+                                        (
+                                            header
+                                        ) =>
+                                            `<td>${escapeHTML(
+                                                row[
+                                                    header
+                                                ]
+                                            )}</td>`
+                                    )
+                                    .join("")}
+                            </tr>
+                        `
+                    )
+                    .join("");
+
+            const printWindow =
+                window.open(
+                    "",
+                    "_blank",
+                    "width=1500,height=900"
+                );
+
+            if (!printWindow) {
+
+                alert(
+                    "Please allow pop-ups in your browser to export PDF."
+                );
+
+                return;
+            }
+
+            const generatedDate =
+                new Date().toLocaleString(
+                    "en-IN",
+                    {
+                        day: "2-digit",
+                        month: "2-digit",
+                        year: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit"
+                    }
+                );
+
+            printWindow.document.write(`
+                <!DOCTYPE html>
+
+                <html>
+
+                    <head>
+
+                        <meta charset="UTF-8" />
+
+                        <title>
+                            AssetSphere - Vendor Report
+                        </title>
+
+                        <style>
+
+                            @page {
+                                size: A4 landscape;
+                                margin: 10mm;
+                            }
+
+                            * {
+                                box-sizing: border-box;
+                            }
+
+                            body {
+                                margin: 0;
+                                padding: 0;
+                                font-family:
+                                    Arial,
+                                    Helvetica,
+                                    sans-serif;
+                                color: #111827;
+                                background: #ffffff;
+                            }
+
+                            .report-header {
+                                margin-bottom: 16px;
+                            }
+
+                            .report-title {
+                                margin: 0;
+                                font-size: 22px;
+                                font-weight: 700;
+                                color: #111827;
+                            }
+
+                            .report-subtitle {
+                                margin: 5px 0 0;
+                                font-size: 11px;
+                                color: #6b7280;
+                            }
+
+                            .report-summary {
+                                display: flex;
+                                gap: 20px;
+                                margin-top: 10px;
+                                font-size: 10px;
+                                color: #374151;
+                            }
+
+                            table {
+                                width: 100%;
+                                border-collapse: collapse;
+                                table-layout: auto;
+                            }
+
+                            thead {
+                                display: table-header-group;
+                            }
+
+                            th {
+                                background: #1e3a8a;
+                                color: #ffffff;
+                                border: 1px solid #cbd5e1;
+                                padding: 6px 5px;
+                                font-size: 7px;
+                                text-align: left;
+                                white-space: nowrap;
+                            }
+
+                            td {
+                                border: 1px solid #dbe2ea;
+                                padding: 5px;
+                                font-size: 7px;
+                                color: #1f2937;
+                                vertical-align: top;
+                            }
+
+                            tr {
+                                page-break-inside: avoid;
+                            }
+
+                            .footer {
+                                margin-top: 12px;
+                                font-size: 8px;
+                                color: #6b7280;
+                                text-align: right;
+                            }
+
+                        </style>
+
+                    </head>
+
+                    <body>
+
+                        <div class="report-header">
+
+                            <h1 class="report-title">
+                                AssetSphere - Vendor Report
+                            </h1>
+
+                            <p class="report-subtitle">
+                                Vendor directory export
+                            </p>
+
+                            <div class="report-summary">
+
+                                <span>
+                                    Total Records:
+                                    <strong>
+                                        ${filteredVendors.length}
+                                    </strong>
+                                </span>
+
+                                <span>
+                                    Active:
+                                    <strong>
+                                        ${stats.active}
+                                    </strong>
+                                </span>
+
+                                <span>
+                                    Inactive:
+                                    <strong>
+                                        ${stats.inactive}
+                                    </strong>
+                                </span>
+
+                                <span>
+                                    Search:
+                                    <strong>
+                                        ${
+                                            search
+                                                ? escapeHTML(
+                                                      search
+                                                  )
+                                                : "All Vendors"
+                                        }
+                                    </strong>
+                                </span>
+
+                            </div>
+
+                        </div>
+
+                        <table>
+
+                            <thead>
+
+                                <tr>
+                                    ${tableHeader}
+                                </tr>
+
+                            </thead>
+
+                            <tbody>
+                                ${tableRows}
+                            </tbody>
+
+                        </table>
+
+                        <div class="footer">
+
+                            Generated on:
+                            ${escapeHTML(
+                                generatedDate
+                            )}
+
+                        </div>
+
+                        <script>
+
+                            window.onload =
+                                function () {
+
+                                    window.focus();
+
+                                    window.print();
+
+                                };
+
+                        </script>
+
+                    </body>
+
+                </html>
+            `);
+
+            printWindow.document.close();
+
+            printWindow.onafterprint =
+                () => {
+                    printWindow.close();
+                };
+        };
 
     // =====================================================
     // UI
@@ -131,89 +803,237 @@ function Vendors() {
 
     return (
         <div style={pageStyle}>
+
             <Sidebar />
 
             <div style={contentStyle}>
+
                 <Navbar />
 
-                <main style={mainStyle}>
+                <main
+                    style={
+                        mainStyle
+                    }
+                >
 
                     {/* =================================================
                         PAGE HEADER
-                        THEME COLORS ARE NOW CONNECTED TO
-                        THE SAME CSS VARIABLES USED BY DASHBOARD
                     ================================================= */}
 
-                    <div style={heroHeader}>
+                    <div
+                        style={
+                            heroHeader
+                        }
+                    >
 
-                        <div style={heroLeft}>
+                        <div
+                            style={
+                                heroLeft
+                            }
+                        >
 
-                            <div style={heroIcon}>
+                            <div
+                                style={
+                                    heroIcon
+                                }
+                            >
                                 ▣
                             </div>
 
                             <div>
-                                <div style={heroBreadcrumb}>
+
+                                <div
+                                    style={
+                                        heroBreadcrumb
+                                    }
+                                >
                                     Dashboard
-                                    <span style={heroSlash}>/</span>
+
+                                    <span
+                                        style={
+                                            heroSlash
+                                        }
+                                    >
+                                        /
+                                    </span>
+
                                     Vendors
                                 </div>
 
-                                <h1 style={heroTitle}>
+                                <h1
+                                    style={
+                                        heroTitle
+                                    }
+                                >
                                     Vendors
                                 </h1>
 
-                                <p style={heroDescription}>
-                                    Manage company vendors and their information.
+                                <p
+                                    style={
+                                        heroDescription
+                                    }
+                                >
+                                    Manage company vendors
+                                    and their information.
                                 </p>
+
                             </div>
 
                         </div>
 
 
-                        <div style={heroActions}>
+                        <div
+                            style={
+                                heroActions
+                            }
+                        >
+
+                            {/* REFRESH */}
 
                             <button
                                 type="button"
-                                onClick={loadVendors}
-                                disabled={loading}
+                                onClick={
+                                    loadVendors
+                                }
+                                disabled={
+                                    loading
+                                }
                                 style={{
                                     ...heroSecondaryButton,
-                                    opacity: loading ? 0.7 : 1,
-                                    cursor: loading
-                                        ? "not-allowed"
-                                        : "pointer"
+                                    opacity:
+                                        loading
+                                            ? 0.7
+                                            : 1,
+                                    cursor:
+                                        loading
+                                            ? "not-allowed"
+                                            : "pointer"
                                 }}
                             >
+
                                 <span
                                     style={{
                                         ...refreshIcon,
-                                        animation: loading
-                                            ? "vendorSpin 0.8s linear infinite"
-                                            : "none"
+                                        animation:
+                                            loading
+                                                ? "vendorSpin 0.8s linear infinite"
+                                                : "none"
                                     }}
                                 >
                                     ↻
                                 </span>
 
-                                {loading
-                                    ? "Refreshing..."
-                                    : "Refresh"}
+                                {
+                                    loading
+                                        ? "Refreshing..."
+                                        : "Refresh"
+                                }
+
                             </button>
 
+
+                            {/* EXCEL */}
+
+                            <button
+                                type="button"
+                                onClick={
+                                    handleExportExcel
+                                }
+                                disabled={
+                                    filteredVendors.length ===
+                                    0
+                                }
+                                style={{
+                                    ...heroExcelButton,
+                                    opacity:
+                                        filteredVendors.length ===
+                                        0
+                                            ? 0.5
+                                            : 1,
+                                    cursor:
+                                        filteredVendors.length ===
+                                        0
+                                            ? "not-allowed"
+                                            : "pointer"
+                                }}
+                            >
+
+                                <span
+                                    style={
+                                        exportIcon
+                                    }
+                                >
+                                    XLS
+                                </span>
+
+                                Excel
+
+                            </button>
+
+
+                            {/* PDF */}
+
+                            <button
+                                type="button"
+                                onClick={
+                                    handleExportPDF
+                                }
+                                disabled={
+                                    filteredVendors.length ===
+                                    0
+                                }
+                                style={{
+                                    ...heroPdfButton,
+                                    opacity:
+                                        filteredVendors.length ===
+                                        0
+                                            ? 0.5
+                                            : 1,
+                                    cursor:
+                                        filteredVendors.length ===
+                                        0
+                                            ? "not-allowed"
+                                            : "pointer"
+                                }}
+                            >
+
+                                <span
+                                    style={
+                                        exportIcon
+                                    }
+                                >
+                                    PDF
+                                </span>
+
+                                PDF
+
+                            </button>
+
+
+                            {/* ADD VENDOR */}
 
                             <button
                                 type="button"
                                 onClick={() =>
-                                    navigate("/vendors/add")
+                                    navigate(
+                                        "/vendors/add"
+                                    )
                                 }
-                                style={heroPrimaryButton}
+                                style={
+                                    heroPrimaryButton
+                                }
                             >
-                                <span style={plusIcon}>
+
+                                <span
+                                    style={
+                                        plusIcon
+                                    }
+                                >
                                     +
                                 </span>
 
                                 Add Vendor
+
                             </button>
 
                         </div>
@@ -225,11 +1045,17 @@ function Vendors() {
                         SUMMARY CARDS
                     ================================================= */}
 
-                    <div style={statsGrid}>
+                    <div
+                        style={
+                            statsGrid
+                        }
+                    >
 
                         <StatCard
                             title="Total Vendors"
-                            value={stats.total}
+                            value={
+                                stats.total
+                            }
                             icon="▣"
                             iconColor="var(--primary-color)"
                             iconBackground="var(--primary-light)"
@@ -237,7 +1063,9 @@ function Vendors() {
 
                         <StatCard
                             title="Active"
-                            value={stats.active}
+                            value={
+                                stats.active
+                            }
                             icon="✓"
                             iconColor="var(--success-color)"
                             iconBackground="var(--success-light)"
@@ -245,7 +1073,9 @@ function Vendors() {
 
                         <StatCard
                             title="Inactive"
-                            value={stats.inactive}
+                            value={
+                                stats.inactive
+                            }
                             icon="!"
                             iconColor="var(--danger-color)"
                             iconBackground="var(--danger-light)"
@@ -253,7 +1083,9 @@ function Vendors() {
 
                         <StatCard
                             title="Search Results"
-                            value={stats.showing}
+                            value={
+                                stats.showing
+                            }
                             icon="⌕"
                             iconColor="var(--secondary-color)"
                             iconBackground="var(--secondary-light)"
@@ -266,51 +1098,104 @@ function Vendors() {
                         TABLE CARD
                     ================================================= */}
 
-                    <div style={tableCard}>
+                    <div
+                        style={
+                            tableCard
+                        }
+                    >
 
-                        <div style={tableHeader}>
+                        <div
+                            style={
+                                tableHeader
+                            }
+                        >
 
                             <div>
-                                <h2 style={tableTitle}>
+
+                                <h2
+                                    style={
+                                        tableTitle
+                                    }
+                                >
                                     Vendor Directory
                                 </h2>
 
-                                <p style={tableSubtitle}>
-                                    {filteredVendors.length} vendor
-                                    {filteredVendors.length !== 1
-                                        ? "s"
-                                        : ""}{" "}
+                                <p
+                                    style={
+                                        tableSubtitle
+                                    }
+                                >
+
+                                    {
+                                        filteredVendors.length
+                                    }{" "}
+
+                                    vendor
+
+                                    {
+                                        filteredVendors.length !==
+                                        1
+                                            ? "s"
+                                            : ""
+                                    }{" "}
+
                                     found
+
                                 </p>
+
                             </div>
 
 
-                            <div style={searchWrapper}>
+                            {/* SEARCH */}
 
-                                <span style={searchIcon}>
+                            <div
+                                style={
+                                    searchWrapper
+                                }
+                            >
+
+                                <span
+                                    style={
+                                        searchIcon
+                                    }
+                                >
                                     ⌕
                                 </span>
 
                                 <input
                                     type="text"
                                     placeholder="Search vendors, contact, email..."
-                                    value={search}
-                                    onChange={(e) =>
-                                        setSearch(e.target.value)
+                                    value={
+                                        search
                                     }
-                                    style={searchInput}
+                                    onChange={(
+                                        e
+                                    ) =>
+                                        setSearch(
+                                            e.target.value
+                                        )
+                                    }
+                                    style={
+                                        searchInput
+                                    }
                                 />
 
                                 {search && (
+
                                     <button
                                         type="button"
                                         onClick={() =>
-                                            setSearch("")
+                                            setSearch(
+                                                ""
+                                            )
                                         }
-                                        style={clearSearch}
+                                        style={
+                                            clearSearch
+                                        }
                                     >
                                         ×
                                     </button>
+
                                 )}
 
                             </div>
@@ -322,46 +1207,83 @@ function Vendors() {
                             TABLE
                         ================================================= */}
 
-                        <div style={tableScroll}>
+                        <div
+                            style={
+                                tableScroll
+                            }
+                        >
 
-                            <table style={table}>
+                            <table
+                                style={
+                                    table
+                                }
+                            >
 
                                 <thead>
 
                                     <tr>
 
-                                        <th style={thStyle}>
+                                        <th
+                                            style={
+                                                thStyle
+                                            }
+                                        >
                                             ID
                                         </th>
 
-                                        <th style={thStyle}>
+                                        <th
+                                            style={
+                                                thStyle
+                                            }
+                                        >
                                             Vendor Code
                                         </th>
 
-                                        <th style={thStyle}>
+                                        <th
+                                            style={
+                                                thStyle
+                                            }
+                                        >
                                             Vendor
                                         </th>
 
-                                        <th style={thStyle}>
+                                        <th
+                                            style={
+                                                thStyle
+                                            }
+                                        >
                                             Contact Person
                                         </th>
 
-                                        <th style={thStyle}>
+                                        <th
+                                            style={
+                                                thStyle
+                                            }
+                                        >
                                             Email
                                         </th>
 
-                                        <th style={thStyle}>
+                                        <th
+                                            style={
+                                                thStyle
+                                            }
+                                        >
                                             Phone
                                         </th>
 
-                                        <th style={thStyle}>
+                                        <th
+                                            style={
+                                                thStyle
+                                            }
+                                        >
                                             Status
                                         </th>
 
                                         <th
                                             style={{
                                                 ...thStyle,
-                                                textAlign: "right"
+                                                textAlign:
+                                                    "right"
                                             }}
                                         >
                                             Action
@@ -375,18 +1297,35 @@ function Vendors() {
                                 <tbody>
 
                                     {loading ? (
-                                        <>
-                                            {[1, 2, 3, 4, 5].map(
-                                                (row) => (
-                                                    <tr key={row}>
 
-                                                        {Array.from({
-                                                            length: 8
-                                                        }).map(
+                                        <>
+                                            {[
+                                                1,
+                                                2,
+                                                3,
+                                                4,
+                                                5
+                                            ].map(
+                                                (
+                                                    row
+                                                ) => (
+
+                                                    <tr
+                                                        key={
+                                                            row
+                                                        }
+                                                    >
+
+                                                        {Array.from(
+                                                            {
+                                                                length: 8
+                                                            }
+                                                        ).map(
                                                             (
                                                                 _,
                                                                 index
                                                             ) => (
+
                                                                 <td
                                                                     key={
                                                                         index
@@ -395,50 +1334,67 @@ function Vendors() {
                                                                         tdStyle
                                                                     }
                                                                 >
+
                                                                     <div
                                                                         style={{
                                                                             ...skeleton,
                                                                             width:
-                                                                                index === 2
+                                                                                index ===
+                                                                                2
                                                                                     ? "170px"
                                                                                     : "75%"
                                                                         }}
                                                                     />
+
                                                                 </td>
+
                                                             )
                                                         )}
 
                                                     </tr>
+
                                                 )
                                             )}
                                         </>
-                                    ) : filteredVendors.length === 0 ? (
+
+                                    ) : filteredVendors.length ===
+                                      0 ? (
 
                                         <tr>
 
                                             <td
                                                 colSpan="8"
-                                                style={emptyCell}
+                                                style={
+                                                    emptyCell
+                                                }
                                             >
 
                                                 <div
-                                                    style={emptyIcon}
+                                                    style={
+                                                        emptyIcon
+                                                    }
                                                 >
                                                     ▣
                                                 </div>
 
                                                 <div
-                                                    style={emptyTitle}
+                                                    style={
+                                                        emptyTitle
+                                                    }
                                                 >
                                                     No vendors found
                                                 </div>
 
                                                 <div
-                                                    style={emptyText}
+                                                    style={
+                                                        emptyText
+                                                    }
                                                 >
-                                                    {search
-                                                        ? "Try changing your search."
-                                                        : "No vendors are available yet."}
+                                                    {
+                                                        search
+                                                            ? "Try changing your search."
+                                                            : "No vendors are available yet."
+                                                    }
                                                 </div>
 
                                             </td>
@@ -448,20 +1404,32 @@ function Vendors() {
                                     ) : (
 
                                         filteredVendors.map(
-                                            (vendor) => (
+                                            (
+                                                vendor
+                                            ) => (
 
                                                 <tr
                                                     key={
                                                         vendor.vendor_id
                                                     }
-                                                    style={rowStyle}
-                                                    onMouseEnter={(e) => {
+                                                    style={
+                                                        rowStyle
+                                                    }
+                                                    onMouseEnter={(
+                                                        e
+                                                    ) => {
+
                                                         e.currentTarget.style.background =
                                                             "var(--table-row-hover)";
+
                                                     }}
-                                                    onMouseLeave={(e) => {
+                                                    onMouseLeave={(
+                                                        e
+                                                    ) => {
+
                                                         e.currentTarget.style.background =
                                                             "var(--card-background)";
+
                                                     }}
                                                 >
 
@@ -470,6 +1438,7 @@ function Vendors() {
                                                             tdStyle
                                                         }
                                                     >
+
                                                         <span
                                                             style={
                                                                 idText
@@ -480,6 +1449,7 @@ function Vendors() {
                                                                 vendor.vendor_id
                                                             }
                                                         </span>
+
                                                     </td>
 
 
@@ -488,14 +1458,18 @@ function Vendors() {
                                                             tdStyle
                                                         }
                                                     >
+
                                                         <span
                                                             style={
                                                                 codeBadge
                                                             }
                                                         >
-                                                            {vendor.vendor_code ||
-                                                                "-"}
+                                                            {
+                                                                vendor.vendor_code ||
+                                                                "-"
+                                                            }
                                                         </span>
+
                                                     </td>
 
 
@@ -540,8 +1514,10 @@ function Vendors() {
                                                                         vendorName
                                                                     }
                                                                 >
-                                                                    {vendor.vendor_name ||
-                                                                        "-"}
+                                                                    {
+                                                                        vendor.vendor_name ||
+                                                                        "-"
+                                                                    }
                                                                 </button>
 
                                                                 <div
@@ -549,8 +1525,10 @@ function Vendors() {
                                                                         vendorSmallCode
                                                                     }
                                                                 >
-                                                                    {vendor.vendor_code ||
-                                                                        "Vendor"}
+                                                                    {
+                                                                        vendor.vendor_code ||
+                                                                        "Vendor"
+                                                                    }
                                                                 </div>
 
                                                             </div>
@@ -565,8 +1543,10 @@ function Vendors() {
                                                             tdStyle
                                                         }
                                                     >
-                                                        {vendor.contact_person ||
-                                                            "-"}
+                                                        {
+                                                            vendor.contact_person ||
+                                                            "-"
+                                                        }
                                                     </td>
 
 
@@ -575,8 +1555,10 @@ function Vendors() {
                                                             tdStyle
                                                         }
                                                     >
-                                                        {vendor.email ||
-                                                            "-"}
+                                                        {
+                                                            vendor.email ||
+                                                            "-"
+                                                        }
                                                     </td>
 
 
@@ -585,10 +1567,12 @@ function Vendors() {
                                                             tdStyle
                                                         }
                                                     >
-                                                        {vendor.phone ||
+                                                        {
+                                                            vendor.phone ||
                                                             vendor.mobile ||
                                                             vendor.mobile_number ||
-                                                            "-"}
+                                                            "-"
+                                                        }
                                                     </td>
 
 
@@ -601,11 +1585,13 @@ function Vendors() {
                                                         <span
                                                             style={{
                                                                 ...statusBadge,
+
                                                                 color:
                                                                     vendor.status ===
                                                                     "Active"
                                                                         ? "var(--success-color)"
                                                                         : "var(--muted-text)",
+
                                                                 background:
                                                                     vendor.status ===
                                                                     "Active"
@@ -616,8 +1602,10 @@ function Vendors() {
 
                                                             <span
                                                                 style={{
-                                                                    width: "6px",
-                                                                    height: "6px",
+                                                                    width:
+                                                                        "6px",
+                                                                    height:
+                                                                        "6px",
                                                                     borderRadius:
                                                                         "50%",
                                                                     background:
@@ -628,8 +1616,10 @@ function Vendors() {
                                                                 }}
                                                             />
 
-                                                            {vendor.status ||
-                                                                "-"}
+                                                            {
+                                                                vendor.status ||
+                                                                "-"
+                                                            }
 
                                                         </span>
 
@@ -647,7 +1637,8 @@ function Vendors() {
                                                         <div
                                                             style={
                                                                 actionWrapper
-                                                            }>
+                                                            }
+                                                        >
 
                                                             <button
                                                                 type="button"
@@ -707,10 +1698,14 @@ function Vendors() {
                                                                             : "pointer"
                                                                 }}
                                                             >
-                                                                {deletingId ===
-                                                                vendor.vendor_id
-                                                                    ? "..."
-                                                                    : "⌫"}
+
+                                                                {
+                                                                    deletingId ===
+                                                                    vendor.vendor_id
+                                                                        ? "..."
+                                                                        : "⌫"
+                                                                }
+
                                                             </button>
 
                                                         </div>
@@ -759,7 +1754,7 @@ function Vendors() {
                         color: var(--muted-text);
                     }
 
-                    @media (max-width: 900px) {
+                    @media (max-width: 1050px) {
                         .vendor-hero-header {
                             flex-direction: column !important;
                             align-items: flex-start !important;
@@ -767,10 +1762,22 @@ function Vendors() {
 
                         .vendor-hero-actions {
                             width: 100% !important;
+                            justify-content: flex-start !important;
+                        }
+                    }
+
+                    @media (max-width: 750px) {
+                        .vendor-hero-actions {
+                            display: grid !important;
+                            grid-template-columns: repeat(
+                                2,
+                                minmax(0, 1fr)
+                            ) !important;
+                            width: 100% !important;
                         }
 
                         .vendor-hero-actions button {
-                            flex: 1;
+                            width: 100%;
                         }
                     }
 
@@ -789,11 +1796,7 @@ function Vendors() {
                         }
 
                         .vendor-hero-actions {
-                            flex-direction: column !important;
-                        }
-
-                        .vendor-hero-actions button {
-                            width: 100%;
+                            grid-template-columns: 1fr !important;
                         }
 
                         .vendor-stats {
@@ -820,13 +1823,19 @@ function StatCard({
     iconBackground
 }) {
     return (
-        <div style={statCard}>
+        <div
+            style={
+                statCard
+            }
+        >
 
             <div
                 style={{
                     ...statIcon,
-                    color: iconColor,
-                    background: iconBackground
+                    color:
+                        iconColor,
+                    background:
+                        iconBackground
                 }}
             >
                 {icon}
@@ -834,11 +1843,19 @@ function StatCard({
 
             <div>
 
-                <div style={statTitle}>
+                <div
+                    style={
+                        statTitle
+                    }
+                >
                     {title}
                 </div>
 
-                <div style={statValue}>
+                <div
+                    style={
+                        statValue
+                    }
+                >
                     {value}
                 </div>
 
@@ -854,39 +1871,28 @@ function StatCard({
 // =====================================================
 
 const pageStyle = {
-
     display: "flex",
-
     minHeight: "100vh",
-
-    background: "var(--app-background)",
-
-    color: "var(--text-color)"
-
+    background:
+        "var(--app-background)",
+    color:
+        "var(--text-color)"
 };
 
 const contentStyle = {
-
     flex: 1,
-
     minWidth: 0
-
 };
 
 const mainStyle = {
-
     padding: "28px",
-
     maxWidth: "1800px",
-
     margin: "0 auto"
-
 };
 
 
 // =====================================================
 // HERO HEADER
-// SAME THEME SYSTEM AS DASHBOARD
 // =====================================================
 
 const heroHeader = {
@@ -895,19 +1901,25 @@ const heroHeader = {
 
     display: "flex",
 
-    justifyContent: "space-between",
+    justifyContent:
+        "space-between",
 
-    alignItems: "center",
+    alignItems:
+        "center",
 
     gap: "24px",
 
-    marginBottom: "24px",
+    marginBottom:
+        "24px",
 
-    padding: "25px 28px",
+    padding:
+        "25px 28px",
 
-    borderRadius: "16px",
+    borderRadius:
+        "16px",
 
-    overflow: "hidden",
+    overflow:
+        "hidden",
 
     background:
         "linear-gradient(135deg, var(--sidebar-color) 0%, var(--sidebar-color) 45%, var(--primary-color) 100%)",
@@ -921,7 +1933,8 @@ const heroLeft = {
 
     display: "flex",
 
-    alignItems: "center",
+    alignItems:
+        "center",
 
     gap: "15px",
 
@@ -935,25 +1948,31 @@ const heroIcon = {
 
     height: "48px",
 
-    borderRadius: "12px",
+    borderRadius:
+        "12px",
 
     flexShrink: 0,
 
-    background: "rgba(255,255,255,0.14)",
+    background:
+        "rgba(255,255,255,0.14)",
 
-    border: "1px solid rgba(255,255,255,0.16)",
+    border:
+        "1px solid rgba(255,255,255,0.16)",
 
     display: "flex",
 
-    alignItems: "center",
+    alignItems:
+        "center",
 
-    justifyContent: "center",
+    justifyContent:
+        "center",
 
     color: "#ffffff",
 
     fontSize: "22px",
 
-    fontWeight: "700",
+    fontWeight:
+        "700",
 
     boxShadow:
         "inset 0 1px 0 rgba(255,255,255,0.08)"
@@ -964,23 +1983,28 @@ const heroBreadcrumb = {
 
     display: "flex",
 
-    alignItems: "center",
+    alignItems:
+        "center",
 
     gap: "8px",
 
-    marginBottom: "4px",
+    marginBottom:
+        "4px",
 
-    color: "rgba(255,255,255,0.62)",
+    color:
+        "rgba(255,255,255,0.62)",
 
     fontSize: "11px",
 
-    fontWeight: "500"
+    fontWeight:
+        "500"
 
 };
 
 const heroSlash = {
 
-    color: "rgba(255,255,255,0.38)"
+    color:
+        "rgba(255,255,255,0.38)"
 
 };
 
@@ -988,27 +2012,36 @@ const heroTitle = {
 
     margin: 0,
 
-    color: "#ffffff",
+    color:
+        "#ffffff",
 
-    fontSize: "29px",
+    fontSize:
+        "29px",
 
-    lineHeight: 1.15,
+    lineHeight:
+        1.15,
 
-    fontWeight: "750",
+    fontWeight:
+        "750",
 
-    letterSpacing: "-0.02em"
+    letterSpacing:
+        "-0.02em"
 
 };
 
 const heroDescription = {
 
-    margin: "6px 0 0",
+    margin:
+        "6px 0 0",
 
-    color: "rgba(255,255,255,0.72)",
+    color:
+        "rgba(255,255,255,0.72)",
 
-    fontSize: "13px",
+    fontSize:
+        "13px",
 
-    lineHeight: 1.5
+    lineHeight:
+        1.5
 
 };
 
@@ -1016,11 +2049,15 @@ const heroActions = {
 
     display: "flex",
 
-    alignItems: "center",
+    alignItems:
+        "center",
 
     gap: "9px",
 
-    flexShrink: 0
+    flexShrink: 0,
+
+    flexWrap:
+        "wrap"
 
 };
 
@@ -1035,29 +2072,151 @@ const heroSecondaryButton = {
 
     padding: "0 15px",
 
-    border: "1px solid rgba(255,255,255,0.22)",
+    border:
+        "1px solid rgba(255,255,255,0.22)",
 
     borderRadius: "8px",
 
-    background: "rgba(255,255,255,0.10)",
+    background:
+        "rgba(255,255,255,0.10)",
 
-    color: "#ffffff",
+    color:
+        "#ffffff",
 
-    cursor: "pointer",
+    cursor:
+        "pointer",
 
     fontSize: "12px",
 
-    fontWeight: "600",
+    fontWeight:
+        "600",
 
     display: "flex",
 
-    alignItems: "center",
+    alignItems:
+        "center",
 
-    justifyContent: "center",
+    justifyContent:
+        "center",
 
     gap: "7px",
 
-    backdropFilter: "blur(8px)"
+    backdropFilter:
+        "blur(8px)"
+
+};
+
+const heroExcelButton = {
+
+    height: "40px",
+
+    padding: "0 14px",
+
+    border:
+        "1px solid rgba(255,255,255,0.18)",
+
+    borderRadius: "8px",
+
+    background:
+        "#15803d",
+
+    color:
+        "#ffffff",
+
+    cursor:
+        "pointer",
+
+    fontSize: "12px",
+
+    fontWeight:
+        "700",
+
+    display: "flex",
+
+    alignItems:
+        "center",
+
+    justifyContent:
+        "center",
+
+    gap: "5px",
+
+    boxShadow:
+        "0 4px 12px rgba(0,0,0,0.12)"
+
+};
+
+const heroPdfButton = {
+
+    height: "40px",
+
+    padding: "0 14px",
+
+    border:
+        "1px solid rgba(255,255,255,0.18)",
+
+    borderRadius: "8px",
+
+    background:
+        "#dc2626",
+
+    color:
+        "#ffffff",
+
+    cursor:
+        "pointer",
+
+    fontSize: "12px",
+
+    fontWeight:
+        "700",
+
+    display: "flex",
+
+    alignItems:
+        "center",
+
+    justifyContent:
+        "center",
+
+    gap: "5px",
+
+    boxShadow:
+        "0 4px 12px rgba(0,0,0,0.12)"
+
+};
+
+const exportIcon = {
+
+    display: "inline-flex",
+
+    alignItems:
+        "center",
+
+    justifyContent:
+        "center",
+
+    minWidth: "24px",
+
+    height: "19px",
+
+    padding:
+        "0 4px",
+
+    borderRadius:
+        "4px",
+
+    background:
+        "rgba(255,255,255,0.18)",
+
+    fontSize:
+        "8px",
+
+    fontWeight:
+        "800",
+
+    letterSpacing:
+        "0.3px"
 
 };
 
@@ -1071,21 +2230,29 @@ const heroPrimaryButton = {
 
     borderRadius: "8px",
 
-    background: "#ffffff",
+    background:
+        "#ffffff",
 
-    color: "var(--primary-color)",
+    color:
+        "var(--primary-color)",
 
-    cursor: "pointer",
+    cursor:
+        "pointer",
 
-    fontSize: "12px",
+    fontSize:
+        "12px",
 
-    fontWeight: "700",
+    fontWeight:
+        "700",
 
-    display: "flex",
+    display:
+        "flex",
 
-    alignItems: "center",
+    alignItems:
+        "center",
 
-    justifyContent: "center",
+    justifyContent:
+        "center",
 
     gap: "7px",
 
@@ -1126,54 +2293,73 @@ const statsGrid = {
 
     gap: "15px",
 
-    marginBottom: "22px"
+    marginBottom:
+        "22px"
 
 };
 
 const statCard = {
 
-    background: "var(--card-background)",
+    background:
+        "var(--card-background)",
 
-    border: "1px solid var(--border-color)",
+    border:
+        "1px solid var(--border-color)",
 
-    borderRadius: "11px",
+    borderRadius:
+        "11px",
 
-    padding: "18px",
+    padding:
+        "18px",
 
-    display: "flex",
+    display:
+        "flex",
 
-    alignItems: "center",
+    alignItems:
+        "center",
 
-    gap: "14px",
+    gap:
+        "14px",
 
-    minHeight: "82px",
+    minHeight:
+        "82px",
 
-    boxSizing: "border-box",
+    boxSizing:
+        "border-box",
 
     boxShadow:
         "0 1px 3px rgba(15,23,42,0.04)",
 
-    color: "var(--text-color)"
+    color:
+        "var(--text-color)"
 
 };
 
 const statIcon = {
 
-    width: "42px",
+    width:
+        "42px",
 
-    height: "42px",
+    height:
+        "42px",
 
-    borderRadius: "9px",
+    borderRadius:
+        "9px",
 
-    display: "flex",
+    display:
+        "flex",
 
-    alignItems: "center",
+    alignItems:
+        "center",
 
-    justifyContent: "center",
+    justifyContent:
+        "center",
 
-    fontSize: "20px",
+    fontSize:
+        "20px",
 
-    fontWeight: "700",
+    fontWeight:
+        "700",
 
     flexShrink: 0
 
@@ -1181,21 +2367,27 @@ const statIcon = {
 
 const statTitle = {
 
-    fontSize: "12px",
+    fontSize:
+        "12px",
 
-    color: "var(--muted-text)",
+    color:
+        "var(--muted-text)",
 
-    marginBottom: "4px"
+    marginBottom:
+        "4px"
 
 };
 
 const statValue = {
 
-    fontSize: "24px",
+    fontSize:
+        "24px",
 
-    fontWeight: "750",
+    fontWeight:
+        "750",
 
-    color: "var(--text-color)"
+    color:
+        "var(--text-color)"
 
 };
 
@@ -1206,37 +2398,48 @@ const statValue = {
 
 const tableCard = {
 
-    background: "var(--card-background)",
+    background:
+        "var(--card-background)",
 
-    border: "1px solid var(--border-color)",
+    border:
+        "1px solid var(--border-color)",
 
-    borderRadius: "12px",
+    borderRadius:
+        "12px",
 
-    overflow: "hidden",
+    overflow:
+        "hidden",
 
     boxShadow:
         "0 2px 5px rgba(15,23,42,0.04)",
 
-    color: "var(--text-color)"
+    color:
+        "var(--text-color)"
 
 };
 
 const tableHeader = {
 
-    padding: "18px 20px",
+    padding:
+        "18px 20px",
 
     borderBottom:
         "1px solid var(--border-color)",
 
-    display: "flex",
+    display:
+        "flex",
 
-    justifyContent: "space-between",
+    justifyContent:
+        "space-between",
 
-    alignItems: "center",
+    alignItems:
+        "center",
 
-    gap: "15px",
+    gap:
+        "15px",
 
-    flexWrap: "wrap"
+    flexWrap:
+        "wrap"
 
 };
 
@@ -1244,21 +2447,27 @@ const tableTitle = {
 
     margin: 0,
 
-    fontSize: "16px",
+    fontSize:
+        "16px",
 
-    color: "var(--text-color)",
+    color:
+        "var(--text-color)",
 
-    fontWeight: "700"
+    fontWeight:
+        "700"
 
 };
 
 const tableSubtitle = {
 
-    margin: "4px 0 0",
+    margin:
+        "4px 0 0",
 
-    color: "var(--muted-text)",
+    color:
+        "var(--muted-text)",
 
-    fontSize: "12px"
+    fontSize:
+        "12px"
 
 };
 
@@ -1269,37 +2478,45 @@ const tableSubtitle = {
 
 const searchWrapper = {
 
-    width: "360px",
+    width:
+        "360px",
 
-    maxWidth: "100%",
+    maxWidth:
+        "100%",
 
-    height: "40px",
+    height:
+        "40px",
 
     border:
         "1px solid var(--border-color)",
 
-    borderRadius: "8px",
+    borderRadius:
+        "8px",
 
-    display: "flex",
+    display:
+        "flex",
 
-    alignItems: "center",
+    alignItems:
+        "center",
 
-    background: "var(--input-background)",
+    background:
+        "var(--input-background)",
 
-    boxSizing: "border-box",
-
-    transition:
-        "border-color .15s, box-shadow .15s"
+    boxSizing:
+        "border-box"
 
 };
 
 const searchIcon = {
 
-    marginLeft: "12px",
+    marginLeft:
+        "12px",
 
-    color: "var(--muted-text)",
+    color:
+        "var(--muted-text)",
 
-    fontSize: "21px"
+    fontSize:
+        "21px"
 
 };
 
@@ -1309,35 +2526,46 @@ const searchInput = {
 
     minWidth: 0,
 
-    height: "100%",
+    height:
+        "100%",
 
     border: "none",
 
     outline: "none",
 
-    padding: "0 10px",
+    padding:
+        "0 10px",
 
-    color: "var(--text-color)",
+    color:
+        "var(--text-color)",
 
-    fontSize: "13px",
+    fontSize:
+        "13px",
 
-    background: "transparent"
+    background:
+        "transparent"
 
 };
 
 const clearSearch = {
 
-    border: "none",
+    border:
+        "none",
 
-    background: "transparent",
+    background:
+        "transparent",
 
-    color: "var(--muted-text)",
+    color:
+        "var(--muted-text)",
 
-    fontSize: "18px",
+    fontSize:
+        "18px",
 
-    cursor: "pointer",
+    cursor:
+        "pointer",
 
-    marginRight: "8px"
+    marginRight:
+        "8px"
 
 };
 
@@ -1348,37 +2576,49 @@ const clearSearch = {
 
 const tableScroll = {
 
-    width: "100%",
+    width:
+        "100%",
 
-    overflowX: "auto"
+    overflowX:
+        "auto"
 
 };
 
 const table = {
 
-    width: "100%",
+    width:
+        "100%",
 
-    minWidth: "1200px",
+    minWidth:
+        "1200px",
 
-    borderCollapse: "collapse"
+    borderCollapse:
+        "collapse"
 
 };
 
 const thStyle = {
 
-    padding: "13px 15px",
+    padding:
+        "13px 15px",
 
-    textAlign: "left",
+    textAlign:
+        "left",
 
-    whiteSpace: "nowrap",
+    whiteSpace:
+        "nowrap",
 
-    fontSize: "11px",
+    fontSize:
+        "11px",
 
-    textTransform: "uppercase",
+    textTransform:
+        "uppercase",
 
-    letterSpacing: ".04em",
+    letterSpacing:
+        ".04em",
 
-    color: "var(--muted-text)",
+    color:
+        "var(--muted-text)",
 
     background:
         "var(--table-header-background)",
@@ -1386,34 +2626,43 @@ const thStyle = {
     borderBottom:
         "1px solid var(--border-color)",
 
-    fontWeight: "700"
+    fontWeight:
+        "700"
 
 };
 
 const tdStyle = {
 
-    padding: "14px 15px",
+    padding:
+        "14px 15px",
 
-    textAlign: "left",
+    textAlign:
+        "left",
 
-    whiteSpace: "nowrap",
+    whiteSpace:
+        "nowrap",
 
-    fontSize: "13px",
+    fontSize:
+        "13px",
 
-    color: "var(--secondary-text)",
+    color:
+        "var(--secondary-text)",
 
     borderBottom:
         "1px solid var(--border-color)",
 
-    verticalAlign: "middle"
+    verticalAlign:
+        "middle"
 
 };
 
 const rowStyle = {
 
-    background: "var(--card-background)",
+    background:
+        "var(--card-background)",
 
-    transition: "background .15s"
+    transition:
+        "background .15s"
 
 };
 
@@ -1424,49 +2673,62 @@ const rowStyle = {
 
 const idText = {
 
-    color: "var(--muted-text)",
+    color:
+        "var(--muted-text)",
 
-    fontSize: "12px",
+    fontSize:
+        "12px",
 
-    fontWeight: "600"
+    fontWeight:
+        "600"
 
 };
 
 const codeBadge = {
 
-    padding: "4px 7px",
+    padding:
+        "4px 7px",
 
-    borderRadius: "5px",
+    borderRadius:
+        "5px",
 
     background:
         "var(--muted-background)",
 
-    color: "var(--secondary-text)",
+    color:
+        "var(--secondary-text)",
 
     border:
         "1px solid var(--border-color)",
 
-    fontSize: "11px"
+    fontSize:
+        "11px"
 
 };
 
 const vendorCell = {
 
-    display: "flex",
+    display:
+        "flex",
 
-    alignItems: "center",
+    alignItems:
+        "center",
 
-    gap: "10px"
+    gap:
+        "10px"
 
 };
 
 const vendorIcon = {
 
-    width: "36px",
+    width:
+        "36px",
 
-    height: "36px",
+    height:
+        "36px",
 
-    borderRadius: "8px",
+    borderRadius:
+        "8px",
 
     background:
         "var(--primary-light)",
@@ -1474,47 +2736,63 @@ const vendorIcon = {
     color:
         "var(--primary-color)",
 
-    display: "flex",
+    display:
+        "flex",
 
-    alignItems: "center",
+    alignItems:
+        "center",
 
-    justifyContent: "center",
+    justifyContent:
+        "center",
 
-    fontWeight: "700",
+    fontWeight:
+        "700",
 
-    fontSize: "14px",
+    fontSize:
+        "14px",
 
-    flexShrink: 0
+    flexShrink:
+        0
 
 };
 
 const vendorName = {
 
-    border: "none",
+    border:
+        "none",
 
-    background: "transparent",
+    background:
+        "transparent",
 
-    color: "var(--text-color)",
+    color:
+        "var(--text-color)",
 
-    cursor: "pointer",
+    cursor:
+        "pointer",
 
     padding: 0,
 
-    fontWeight: "650",
+    fontWeight:
+        "650",
 
-    fontSize: "13px",
+    fontSize:
+        "13px",
 
-    textAlign: "left"
+    textAlign:
+        "left"
 
 };
 
 const vendorSmallCode = {
 
-    color: "var(--muted-text)",
+    color:
+        "var(--muted-text)",
 
-    fontSize: "11px",
+    fontSize:
+        "11px",
 
-    marginTop: "3px"
+    marginTop:
+        "3px"
 
 };
 
@@ -1525,19 +2803,26 @@ const vendorSmallCode = {
 
 const statusBadge = {
 
-    display: "inline-flex",
+    display:
+        "inline-flex",
 
-    alignItems: "center",
+    alignItems:
+        "center",
 
-    gap: "6px",
+    gap:
+        "6px",
 
-    borderRadius: "20px",
+    borderRadius:
+        "20px",
 
-    padding: "5px 8px",
+    padding:
+        "5px 8px",
 
-    fontSize: "10px",
+    fontSize:
+        "10px",
 
-    fontWeight: "700"
+    fontWeight:
+        "700"
 
 };
 
@@ -1548,31 +2833,42 @@ const statusBadge = {
 
 const actionWrapper = {
 
-    display: "flex",
+    display:
+        "flex",
 
-    justifyContent: "flex-end",
+    justifyContent:
+        "flex-end",
 
-    gap: "6px"
+    gap:
+        "6px"
 
 };
 
 const actionBase = {
 
-    width: "31px",
+    width:
+        "31px",
 
-    height: "31px",
+    height:
+        "31px",
 
-    borderRadius: "7px",
+    borderRadius:
+        "7px",
 
-    cursor: "pointer",
+    cursor:
+        "pointer",
 
-    fontSize: "14px",
+    fontSize:
+        "14px",
 
-    display: "inline-flex",
+    display:
+        "inline-flex",
 
-    alignItems: "center",
+    alignItems:
+        "center",
 
-    justifyContent: "center",
+    justifyContent:
+        "center",
 
     padding: 0
 
@@ -1630,19 +2926,24 @@ const deleteButton = {
 
 const emptyCell = {
 
-    padding: "70px 20px",
+    padding:
+        "70px 20px",
 
-    textAlign: "center"
+    textAlign:
+        "center"
 
 };
 
 const emptyIcon = {
 
-    width: "48px",
+    width:
+        "48px",
 
-    height: "48px",
+    height:
+        "48px",
 
-    borderRadius: "12px",
+    borderRadius:
+        "12px",
 
     background:
         "var(--muted-background)",
@@ -1650,15 +2951,20 @@ const emptyIcon = {
     color:
         "var(--muted-text)",
 
-    display: "flex",
+    display:
+        "flex",
 
-    alignItems: "center",
+    alignItems:
+        "center",
 
-    justifyContent: "center",
+    justifyContent:
+        "center",
 
-    margin: "0 auto 12px",
+    margin:
+        "0 auto 12px",
 
-    fontSize: "20px"
+    fontSize:
+        "20px"
 
 };
 
@@ -1667,9 +2973,11 @@ const emptyTitle = {
     color:
         "var(--secondary-text)",
 
-    fontWeight: "700",
+    fontWeight:
+        "700",
 
-    fontSize: "14px"
+    fontSize:
+        "14px"
 
 };
 
@@ -1678,9 +2986,11 @@ const emptyText = {
     color:
         "var(--muted-text)",
 
-    fontSize: "12px",
+    fontSize:
+        "12px",
 
-    marginTop: "5px"
+    marginTop:
+        "5px"
 
 };
 
@@ -1691,16 +3001,20 @@ const emptyText = {
 
 const skeleton = {
 
-    height: "13px",
+    height:
+        "13px",
 
-    width: "75%",
+    width:
+        "75%",
 
-    borderRadius: "5px",
+    borderRadius:
+        "5px",
 
     background:
         "linear-gradient(90deg, var(--muted-background), var(--border-color), var(--muted-background))",
 
-    backgroundSize: "200% 100%",
+    backgroundSize:
+        "200% 100%",
 
     animation:
         "vendorSkeleton 1.4s ease-in-out infinite"
