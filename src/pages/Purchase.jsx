@@ -17,6 +17,13 @@ function Purchase() {
     const [loading, setLoading] = useState(true);
 
     // =====================================================
+    // VIEW PURCHASE STATE
+    // =====================================================
+
+    const [viewPurchase, setViewPurchase] = useState(null);
+    const [viewLoading, setViewLoading] = useState(false);
+
+    // =====================================================
     // LOAD PURCHASES
     // =====================================================
 
@@ -445,6 +452,77 @@ function Purchase() {
                 />/g,
                 "&gt;"
             );
+    };
+
+    // =====================================================
+    // VIEW PURCHASE DETAILS
+    // =====================================================
+
+    const handleViewPurchase = async (
+        purchase
+    ) => {
+
+        if (!purchase) {
+            return;
+        }
+
+        // Immediately open modal with row data
+        setViewPurchase(
+            purchase
+        );
+
+        const purchaseId =
+            purchase.purchase_id;
+
+        if (!purchaseId) {
+            return;
+        }
+
+        try {
+
+            setViewLoading(true);
+
+            const response =
+                await API.get(
+                    `/purchases/${purchaseId}`
+                );
+
+            const fullPurchase =
+                response.data?.data;
+
+            if (
+                fullPurchase &&
+                typeof fullPurchase ===
+                    "object"
+            ) {
+                setViewPurchase({
+                    ...purchase,
+                    ...fullPurchase
+                });
+            }
+
+        } catch (error) {
+
+            console.error(
+                "View Purchase Details Error:",
+                error
+            );
+
+            // Existing row data will remain visible
+        } finally {
+
+            setViewLoading(false);
+
+        }
+    };
+
+    // =====================================================
+    // CLOSE PURCHASE DETAILS
+    // =====================================================
+
+    const closePurchaseDetails = () => {
+        setViewPurchase(null);
+        setViewLoading(false);
     };
 
     // =====================================================
@@ -1797,6 +1875,7 @@ function Purchase() {
                                     style={
                                         searchWrapperStyle
                                     }
+                                    className="search-wrapper"
                                 >
 
                                     <span
@@ -2089,9 +2168,16 @@ function Purchase() {
                                                     >
 
                                                         <span
-                                                            style={
-                                                                poNumberStyle
+                                                            style={{
+                                                                ...poNumberStyle,
+                                                                cursor: "pointer"
+                                                            }}
+                                                            onClick={() =>
+                                                                handleViewPurchase(
+                                                                    purchase
+                                                                )
                                                             }
+                                                            title="View purchase details"
                                                         >
                                                             {
                                                                 purchase.po_number ||
@@ -2105,9 +2191,16 @@ function Purchase() {
                                                     {/* INVOICE */}
 
                                                     <td
-                                                        style={
-                                                            tdStyle
+                                                        style={{
+                                                            ...tdStyle,
+                                                            cursor: "pointer"
+                                                        }}
+                                                        onClick={() =>
+                                                            handleViewPurchase(
+                                                                purchase
+                                                            )
                                                         }
+                                                        title="View purchase details"
                                                     >
                                                         {
                                                             purchase.invoice_number ||
@@ -2124,7 +2217,17 @@ function Purchase() {
                                                         }
                                                     >
 
-                                                        <div>
+                                                        <div
+                                                            style={{
+                                                                cursor: "pointer"
+                                                            }}
+                                                            onClick={() =>
+                                                                handleViewPurchase(
+                                                                    purchase
+                                                                )
+                                                            }
+                                                            title="View purchase details"
+                                                        >
 
                                                             <div
                                                                 style={
@@ -2165,9 +2268,16 @@ function Purchase() {
                                                     >
 
                                                         <div
-                                                            style={
-                                                                productCellStyle
+                                                            style={{
+                                                                ...productCellStyle,
+                                                                cursor: "pointer"
+                                                            }}
+                                                            onClick={() =>
+                                                                handleViewPurchase(
+                                                                    purchase
+                                                                )
                                                             }
+                                                            title="View purchase details"
                                                         >
 
                                                             {purchase.product_category && (
@@ -2411,6 +2521,26 @@ function Purchase() {
                                                             }
                                                         >
 
+                                                            {/* VIEW */}
+
+                                                            <button
+                                                                type="button"
+                                                                onClick={() =>
+                                                                    handleViewPurchase(
+                                                                        purchase
+                                                                    )
+                                                                }
+                                                                style={
+                                                                    viewPurchaseButtonStyle
+                                                                }
+                                                                title="View Purchase"
+                                                            >
+                                                                View
+                                                            </button>
+
+
+                                                            {/* EDIT */}
+
                                                             <button
                                                                 type="button"
                                                                 onClick={() =>
@@ -2424,6 +2554,8 @@ function Purchase() {
                                                             >
                                                                 Edit
                                                             </button>
+
+                                                            {/* DELETE */}
 
                                                             <button
                                                                 type="button"
@@ -2461,6 +2593,326 @@ function Purchase() {
                 </main>
 
             </div>
+
+
+            {/* =====================================================
+                VIEW PURCHASE DETAILS MODAL
+            ===================================================== */}
+
+            {viewPurchase && (
+                <div
+                    style={
+                        viewModalOverlayStyle
+                    }
+                    onClick={
+                        closePurchaseDetails
+                    }
+                >
+
+                    <div
+                        style={
+                            viewModalStyle
+                        }
+                        onClick={(e) =>
+                            e.stopPropagation()
+                        }
+                    >
+
+                        {/* HEADER */}
+
+                        <div
+                            style={
+                                viewModalHeaderStyle
+                            }
+                        >
+
+                            <div>
+
+                                <div
+                                    style={
+                                        viewModalEyebrowStyle
+                                    }
+                                >
+                                    PURCHASE INFORMATION
+                                </div>
+
+                                <h2
+                                    style={
+                                        viewModalTitleStyle
+                                    }
+                                >
+                                    Purchase Details
+                                </h2>
+
+                                <p
+                                    style={
+                                        viewModalSubtitleStyle
+                                    }
+                                >
+                                    Purchase #
+                                    {
+                                        viewPurchase.purchase_id ||
+                                        "-"
+                                    }
+                                </p>
+
+                            </div>
+
+
+                            <button
+                                type="button"
+                                onClick={
+                                    closePurchaseDetails
+                                }
+                                style={
+                                    viewModalCloseStyle
+                                }
+                                title="Close"
+                            >
+                                ×
+                            </button>
+
+                        </div>
+
+
+                        {/* LOADING */}
+
+                        {viewLoading && (
+                            <div
+                                style={
+                                    viewLoadingStyle
+                                }
+                            >
+
+                                <div
+                                    style={
+                                        viewSpinnerStyle
+                                    }
+                                />
+
+                                <span>
+                                    Loading full purchase details...
+                                </span>
+
+                            </div>
+                        )}
+
+
+                        {/* DETAILS */}
+
+                        <div
+                            style={
+                                viewDetailGridStyle
+                            }
+                            className="purchase-view-detail-grid"
+                        >
+
+                            <DetailItem
+                                label="Purchase ID"
+                                value={
+                                    viewPurchase.purchase_id
+                                        ? `#${viewPurchase.purchase_id}`
+                                        : "-"
+                                }
+                            />
+
+                            <DetailItem
+                                label="PO Number"
+                                value={
+                                    viewPurchase.po_number
+                                }
+                            />
+
+                            <DetailItem
+                                label="Invoice Number"
+                                value={
+                                    viewPurchase.invoice_number
+                                }
+                            />
+
+                            <DetailItem
+                                label="Vendor ID"
+                                value={
+                                    viewPurchase.vendor_id
+                                }
+                            />
+
+                            <DetailItem
+                                label="Vendor Code"
+                                value={
+                                    viewPurchase.vendor_code
+                                }
+                            />
+
+                            <DetailItem
+                                label="Vendor Name"
+                                value={
+                                    viewPurchase.vendor_name
+                                }
+                            />
+
+                            <DetailItem
+                                label="Product Category"
+                                value={
+                                    viewPurchase.product_category
+                                }
+                            />
+
+                            <DetailItem
+                                label="Product Name"
+                                value={
+                                    viewPurchase.product_name
+                                }
+                            />
+
+                            <DetailItem
+                                label="Product Description"
+                                value={
+                                    viewPurchase.product_description
+                                }
+                            />
+
+                            <DetailItem
+                                label="Purchase Date"
+                                value={
+                                    formatDate(
+                                        viewPurchase.purchase_date
+                                    )
+                                }
+                            />
+
+                            <DetailItem
+                                label="Amount"
+                                value={
+                                    formatAmount(
+                                        viewPurchase.amount
+                                    )
+                                }
+                            />
+
+                            <DetailItem
+                                label="Payment Status"
+                                value={
+                                    viewPurchase.payment_status
+                                }
+                            />
+
+                            <DetailItem
+                                label="Warranty Expiry"
+                                value={
+                                    formatDate(
+                                        viewPurchase.warranty_expiry
+                                    )
+                                }
+                            />
+
+                            <DetailItem
+                                label="Remarks"
+                                value={
+                                    viewPurchase.remarks
+                                }
+                            />
+
+                            <DetailItem
+                                label="PO Document"
+                                value={
+                                    viewPurchase.po_document
+                                        ? "Uploaded"
+                                        : "Not Uploaded"
+                                }
+                            />
+
+                            <DetailItem
+                                label="Invoice Document"
+                                value={
+                                    viewPurchase.invoice_document
+                                        ? "Uploaded"
+                                        : "Not Uploaded"
+                                }
+                            />
+
+                        </div>
+
+
+                        {/* DOCUMENT SECTION */}
+
+                        <div
+                            style={
+                                viewDocumentSectionStyle
+                            }
+                        >
+
+                            <h3
+                                style={
+                                    viewSectionTitleStyle
+                                }
+                            >
+                                Purchase Documents
+                            </h3>
+
+                            <div
+                                style={
+                                    viewDocumentCardsStyle
+                                }
+                            >
+
+                                <ViewDocumentCard
+                                    title="Purchase Order"
+                                    exists={
+                                        !!viewPurchase.po_document
+                                    }
+                                    onView={() =>
+                                        handleViewDocument(
+                                            viewPurchase.purchase_id,
+                                            "po"
+                                        )
+                                    }
+                                />
+
+                                <ViewDocumentCard
+                                    title="Invoice"
+                                    exists={
+                                        !!viewPurchase.invoice_document
+                                    }
+                                    onView={() =>
+                                        handleViewDocument(
+                                            viewPurchase.purchase_id,
+                                            "invoice"
+                                        )
+                                    }
+                                />
+
+                            </div>
+
+                        </div>
+
+
+                        {/* FOOTER */}
+
+                        <div
+                            style={
+                                viewModalFooterStyle
+                            }
+                        >
+
+                            <button
+                                type="button"
+                                onClick={
+                                    closePurchaseDetails
+                                }
+                                style={
+                                    modalCloseButtonStyle
+                                }
+                            >
+                                Close
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+            )}
 
 
             <style>
@@ -2515,6 +2967,10 @@ function Purchase() {
                         .search-wrapper {
                             width: 100% !important;
                         }
+
+                        .purchase-view-detail-grid {
+                            grid-template-columns: 1fr !important;
+                        }
                     }
                 `}
             </style>
@@ -2554,6 +3010,7 @@ function DocumentRow({
             {exists ? (
 
                 <>
+
                     <button
                         type="button"
                         onClick={
@@ -2589,6 +3046,7 @@ function DocumentRow({
                     >
                         Delete
                     </button>
+
                 </>
 
             ) : (
@@ -2663,6 +3121,105 @@ function SummaryCard({
                 </div>
 
             </div>
+
+        </div>
+    );
+}
+
+
+// =====================================================
+// DETAIL ITEM
+// =====================================================
+
+function DetailItem({
+    label,
+    value
+}) {
+    return (
+        <div
+            style={
+                detailItemStyle
+            }
+        >
+
+            <div
+                style={
+                    detailLabelStyle
+                }
+            >
+                {label}
+            </div>
+
+            <div
+                style={
+                    detailValueStyle
+                }
+            >
+                {value !== null &&
+                value !== undefined &&
+                value !== ""
+                    ? value
+                    : "-"}
+            </div>
+
+        </div>
+    );
+}
+
+
+// =====================================================
+// VIEW DOCUMENT CARD
+// =====================================================
+
+function ViewDocumentCard({
+    title,
+    exists,
+    onView
+}) {
+    return (
+        <div
+            style={
+                viewDocumentCardStyle
+            }
+        >
+
+            <div>
+
+                <div
+                    style={
+                        viewDocumentTitleStyle
+                    }
+                >
+                    {title}
+                </div>
+
+                <div
+                    style={
+                        viewDocumentStatusStyle
+                    }
+                >
+                    {exists
+                        ? "Document available"
+                        : "Document not uploaded"}
+                </div>
+
+            </div>
+
+            {exists && (
+
+                <button
+                    type="button"
+                    onClick={
+                        onView
+                    }
+                    style={
+                        viewDocumentButtonStyle
+                    }
+                >
+                    View
+                </button>
+
+            )}
 
         </div>
     );
@@ -3346,6 +3903,18 @@ const actionStyle = {
     alignItems: "center"
 };
 
+const viewPurchaseButtonStyle = {
+    padding: "7px 11px",
+    border:
+        "1px solid #16a34a",
+    borderRadius: "7px",
+    background: "#f0fdf4",
+    color: "#15803d",
+    fontSize: "11px",
+    fontWeight: "700",
+    cursor: "pointer"
+};
+
 const editButtonStyle = {
     padding: "7px 11px",
     border:
@@ -3407,6 +3976,239 @@ const spinnerStyle = {
     borderRadius: "50%",
     animation:
         "spin 0.8s linear infinite"
+};
+
+
+// =====================================================
+// VIEW MODAL
+// =====================================================
+
+const viewModalOverlayStyle = {
+    position: "fixed",
+    inset: 0,
+    background:
+        "rgba(15, 23, 42, 0.58)",
+    backdropFilter:
+        "blur(4px)",
+    WebkitBackdropFilter:
+        "blur(4px)",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: "20px",
+    zIndex: 9999
+};
+
+const viewModalStyle = {
+    width: "100%",
+    maxWidth: "950px",
+    maxHeight: "90vh",
+    overflowY: "auto",
+    background:
+        "var(--card-background, #ffffff)",
+    border:
+        "1px solid var(--border-color, #e5eaf0)",
+    borderRadius: "15px",
+    boxShadow:
+        "0 25px 70px rgba(15,23,42,0.28)"
+};
+
+const viewModalHeaderStyle = {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+    gap: "15px",
+    padding: "20px 22px",
+    borderBottom:
+        "1px solid var(--border-color, #edf1f5)"
+};
+
+const viewModalEyebrowStyle = {
+    color:
+        "var(--primary-color, #2563eb)",
+    fontSize: "9px",
+    fontWeight: "800",
+    letterSpacing: "1px",
+    marginBottom: "5px"
+};
+
+const viewModalTitleStyle = {
+    margin: 0,
+    fontSize: "20px",
+    fontWeight: "800",
+    color:
+        "var(--text-color, #1e293b)"
+};
+
+const viewModalSubtitleStyle = {
+    margin: "5px 0 0",
+    fontSize: "11px",
+    color:
+        "var(--muted-text-color, #94a3b8)"
+};
+
+const viewModalCloseStyle = {
+    width: "34px",
+    height: "34px",
+    border:
+        "1px solid var(--border-color, #dbe2ea)",
+    borderRadius: "8px",
+    background:
+        "var(--card-background, #ffffff)",
+    color:
+        "var(--secondary-text-color, #64748b)",
+    fontSize: "20px",
+    cursor: "pointer",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    flexShrink: 0
+};
+
+const viewLoadingStyle = {
+    display: "flex",
+    alignItems: "center",
+    gap: "9px",
+    margin: "18px 22px 0",
+    padding: "10px 12px",
+    borderRadius: "8px",
+    background:
+        "var(--primary-light, #eff6ff)",
+    color:
+        "var(--primary-color, #2563eb)",
+    fontSize: "11px",
+    fontWeight: "650"
+};
+
+const viewSpinnerStyle = {
+    width: "14px",
+    height: "14px",
+    border:
+        "2px solid #bfdbfe",
+    borderTop:
+        "2px solid #2563eb",
+    borderRadius: "50%",
+    animation:
+        "spin 0.8s linear infinite",
+    flexShrink: 0
+};
+
+const viewDetailGridStyle = {
+    display: "grid",
+    gridTemplateColumns:
+        "repeat(2, minmax(0, 1fr))",
+    gap: "13px",
+    padding: "20px 22px"
+};
+
+const detailItemStyle = {
+    padding: "13px 14px",
+    border:
+        "1px solid var(--border-color, #e7ecf1)",
+    borderRadius: "10px",
+    background:
+        "var(--input-background, #f8fafc)"
+};
+
+const detailLabelStyle = {
+    marginBottom: "6px",
+    color:
+        "var(--muted-text-color, #94a3b8)",
+    fontSize: "9px",
+    fontWeight: "800",
+    textTransform: "uppercase",
+    letterSpacing: "0.5px"
+};
+
+const detailValueStyle = {
+    color:
+        "var(--text-color, #1e293b)",
+    fontSize: "13px",
+    fontWeight: "650",
+    lineHeight: "1.5",
+    whiteSpace: "normal",
+    wordBreak: "break-word"
+};
+
+const viewDocumentSectionStyle = {
+    padding: "0 22px 20px"
+};
+
+const viewSectionTitleStyle = {
+    margin: "0 0 12px",
+    fontSize: "14px",
+    fontWeight: "750",
+    color:
+        "var(--text-color, #1e293b)"
+};
+
+const viewDocumentCardsStyle = {
+    display: "grid",
+    gridTemplateColumns:
+        "repeat(2, minmax(0, 1fr))",
+    gap: "12px"
+};
+
+const viewDocumentCardStyle = {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    gap: "10px",
+    padding: "13px 14px",
+    border:
+        "1px solid var(--border-color, #e7ecf1)",
+    borderRadius: "10px",
+    background:
+        "var(--input-background, #f8fafc)"
+};
+
+const viewDocumentTitleStyle = {
+    color:
+        "var(--text-color, #1e293b)",
+    fontSize: "12px",
+    fontWeight: "700"
+};
+
+const viewDocumentStatusStyle = {
+    marginTop: "4px",
+    color:
+        "var(--muted-text-color, #94a3b8)",
+    fontSize: "10px"
+};
+
+const viewDocumentButtonStyle = {
+    padding: "7px 12px",
+    border: "none",
+    borderRadius: "7px",
+    background:
+        "var(--primary-color, #2563eb)",
+    color: "#ffffff",
+    fontSize: "10px",
+    fontWeight: "700",
+    cursor: "pointer",
+    flexShrink: 0
+};
+
+const viewModalFooterStyle = {
+    display: "flex",
+    justifyContent: "flex-end",
+    padding: "15px 22px",
+    borderTop:
+        "1px solid var(--border-color, #edf1f5)"
+};
+
+const modalCloseButtonStyle = {
+    padding: "8px 15px",
+    border:
+        "1px solid var(--border-color, #dbe2ea)",
+    borderRadius: "7px",
+    background:
+        "var(--card-background, #ffffff)",
+    color:
+        "var(--text-color, #334155)",
+    fontSize: "11px",
+    fontWeight: "700",
+    cursor: "pointer"
 };
 
 export default Purchase;

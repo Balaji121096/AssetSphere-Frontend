@@ -21,6 +21,13 @@ function Software() {
     const [deletingId, setDeletingId] = useState(null);
 
     // =====================================================
+    // VIEW SOFTWARE
+    // =====================================================
+
+    const [selectedSoftware, setSelectedSoftware] = useState(null);
+    const [viewLoading, setViewLoading] = useState(false);
+
+    // =====================================================
     // LOAD SOFTWARE
     // =====================================================
 
@@ -48,37 +55,80 @@ function Software() {
     }, []);
 
     // =====================================================
+    // VIEW SOFTWARE DETAILS
+    // =====================================================
+
+    const handleView = async (id) => {
+        try {
+            setViewLoading(true);
+            setSelectedSoftware(null);
+
+            const response = await API.get(
+                `/software/${id}`
+            );
+
+            setSelectedSoftware(
+                response.data?.data || null
+            );
+        } catch (error) {
+            console.error(
+                "View Software Error:",
+                error
+            );
+
+            alert(
+                error.response?.data?.message ||
+                    "Failed to load software details"
+            );
+        } finally {
+            setViewLoading(false);
+        }
+    };
+
+    // =====================================================
+    // CLOSE VIEW
+    // =====================================================
+
+    const closeView = () => {
+        setSelectedSoftware(null);
+    };
+
+    // =====================================================
     // EXPORT
     // =====================================================
 
     const handleExportExcel = () => {
         if (filteredSoftware.length === 0) {
-            alert("No software records available to export.");
-        return;
-    }
+            alert(
+                "No software records available to export."
+            );
+            return;
+        }
 
-    exportToExcel(
-        filteredSoftware,
-        `AssetSphere_Software_${new Date()
-            .toISOString()
-            .slice(0, 10)}.xls`
-    );
-};
+        exportToExcel(
+            filteredSoftware,
+            `AssetSphere_Software_${new Date()
+                .toISOString()
+                .slice(0, 10)}.xls`
+        );
+    };
 
     const handleExportPDF = () => {
         if (filteredSoftware.length === 0) {
-            alert("No software records available to export.");
-        return;
-    }
+            alert(
+                "No software records available to export."
+            );
+            return;
+        }
 
-    exportToPDF(
-        filteredSoftware,
-        "AssetSphere - Software License Report",
-        `AssetSphere_Software_${new Date()
-            .toISOString()
-            .slice(0, 10)}`
-    );
-};
+        exportToPDF(
+            filteredSoftware,
+            "AssetSphere - Software License Report",
+            `AssetSphere_Software_${new Date()
+                .toISOString()
+                .slice(0, 10)}`
+        );
+    };
 
     // =====================================================
     // DELETE SOFTWARE
@@ -100,7 +150,10 @@ function Software() {
 
             await loadSoftware();
         } catch (error) {
-            console.error("Delete Software Error:", error);
+            console.error(
+                "Delete Software Error:",
+                error
+            );
 
             alert(
                 error.response?.data?.message ||
@@ -124,7 +177,8 @@ function Software() {
             return {
                 text: "No Expiry",
                 color: "var(--muted-text-color)",
-                background: "var(--muted-background)",
+                background:
+                    "var(--muted-background)",
                 dot: "var(--muted-text-color)"
             };
         }
@@ -135,7 +189,8 @@ function Software() {
             return {
                 text: "Expired",
                 color: "var(--danger-color)",
-                background: "var(--danger-background)",
+                background:
+                    "var(--danger-background)",
                 dot: "var(--danger-color)"
             };
         }
@@ -144,7 +199,8 @@ function Software() {
             return {
                 text: "Critical",
                 color: "var(--danger-color)",
-                background: "var(--danger-background)",
+                background:
+                    "var(--danger-background)",
                 dot: "var(--danger-color)"
             };
         }
@@ -153,7 +209,8 @@ function Software() {
             return {
                 text: "10–20 Days",
                 color: "var(--warning-color)",
-                background: "var(--warning-background)",
+                background:
+                    "var(--warning-background)",
                 dot: "var(--warning-color)"
             };
         }
@@ -162,7 +219,8 @@ function Software() {
             return {
                 text: "20–30 Days",
                 color: "var(--warning-color)",
-                background: "var(--warning-background)",
+                background:
+                    "var(--warning-background)",
                 dot: "var(--warning-color)"
             };
         }
@@ -170,7 +228,8 @@ function Software() {
         return {
             text: "Active",
             color: "var(--success-color)",
-            background: "var(--success-background)",
+            background:
+                "var(--success-background)",
             dot: "var(--success-color)"
         };
     };
@@ -188,11 +247,14 @@ function Software() {
             return "-";
         }
 
-        return parsedDate.toLocaleDateString("en-IN", {
-            day: "2-digit",
-            month: "short",
-            year: "numeric"
-        });
+        return parsedDate.toLocaleDateString(
+            "en-IN",
+            {
+                day: "2-digit",
+                month: "short",
+                year: "numeric"
+            }
+        );
     };
 
     // =====================================================
@@ -254,7 +316,10 @@ function Software() {
                     Number(item.days_remaining) < 0;
             }
 
-            return matchesSearch && matchesFilter;
+            return (
+                matchesSearch &&
+                matchesFilter
+            );
         });
     }, [software, search, filter]);
 
@@ -346,85 +411,114 @@ function Software() {
 
                             <div style={headerActions}>
 
-    {/* REFRESH */}
+                                {/* REFRESH */}
 
-    <button
-        type="button"
-        onClick={loadSoftware}
-        disabled={loading}
-        style={{
-            ...secondaryButton,
-            opacity: loading ? 0.75 : 1,
-            cursor: loading
-                ? "not-allowed"
-                : "pointer"
-        }}
-    >
-        <span style={refreshIcon}>
-            ↻
-        </span>
+                                <button
+                                    type="button"
+                                    onClick={loadSoftware}
+                                    disabled={loading}
+                                    style={{
+                                        ...secondaryButton,
+                                        opacity: loading
+                                            ? 0.75
+                                            : 1,
+                                        cursor: loading
+                                            ? "not-allowed"
+                                            : "pointer"
+                                    }}
+                                >
+                                    <span
+                                        style={
+                                            refreshIcon
+                                        }
+                                    >
+                                        ↻
+                                    </span>
 
-        Refresh
-    </button>
-
-
-    {/* EXCEL */}
-
-    <button
-        type="button"
-        onClick={handleExportExcel}
-        disabled={loading || filteredSoftware.length === 0}
-        style={{
-            ...exportExcelButton,
-            opacity:
-                loading ||
-                filteredSoftware.length === 0
-                    ? 0.55
-                    : 1
-        }}
-    >
-        <span>▤</span>
-        Export Excel
-    </button>
+                                    Refresh
+                                </button>
 
 
-    {/* PDF */}
+                                {/* EXCEL */}
 
-    <button
-        type="button"
-        onClick={handleExportPDF}
-        disabled={loading || filteredSoftware.length === 0}
-        style={{
-            ...exportPdfButton,
-            opacity:
-                loading ||
-                filteredSoftware.length === 0
-                    ? 0.55
-                    : 1
-        }}
-    >
-        <span>▥</span>
-        Export PDF
-    </button>
+                                <button
+                                    type="button"
+                                    onClick={
+                                        handleExportExcel
+                                    }
+                                    disabled={
+                                        loading ||
+                                        filteredSoftware.length ===
+                                            0
+                                    }
+                                    style={{
+                                        ...exportExcelButton,
+                                        opacity:
+                                            loading ||
+                                            filteredSoftware.length ===
+                                                0
+                                                ? 0.55
+                                                : 1
+                                    }}
+                                >
+                                    <span>▤</span>
+                                    Export Excel
+                                </button>
 
 
-    {/* ADD */}
+                                {/* PDF */}
 
-    <button
-        type="button"
-        onClick={() =>
-            navigate("/software/add")
-        }
-        style={primaryButton}
-    >
-        <span style={plusIcon}>
-            +
-        </span>
+                                <button
+                                    type="button"
+                                    onClick={
+                                        handleExportPDF
+                                    }
+                                    disabled={
+                                        loading ||
+                                        filteredSoftware.length ===
+                                            0
+                                    }
+                                    style={{
+                                        ...exportPdfButton,
+                                        opacity:
+                                            loading ||
+                                            filteredSoftware.length ===
+                                                0
+                                                ? 0.55
+                                                : 1
+                                    }}
+                                >
+                                    <span>▥</span>
+                                    Export PDF
+                                </button>
 
-        Add Software
-    </button>
 
-</div>
+                                {/* ADD */}
+
+                                <button
+                                    type="button"
+                                    onClick={() =>
+                                        navigate(
+                                            "/software/add"
+                                        )
+                                    }
+                                    style={
+                                        primaryButton
+                                    }
+                                >
+                                    <span
+                                        style={
+                                            plusIcon
+                                        }
+                                    >
+                                        +
+                                    </span>
+
+                                    Add Software
+                                </button>
+
+                            </div>
+
                         </div>
 
                     </section>
@@ -509,7 +603,9 @@ function Software() {
                                     onClick={() =>
                                         setSearch("")
                                     }
-                                    style={clearSearch}
+                                    style={
+                                        clearSearch
+                                    }
                                 >
                                     ×
                                 </button>
@@ -518,7 +614,9 @@ function Software() {
                         </div>
 
 
-                        <div style={filterGroup}>
+                        <div
+                            style={filterGroup}
+                        >
 
                             {[
                                 "All",
@@ -559,16 +657,29 @@ function Software() {
 
                             <div>
 
-                                <h2 style={tableTitle}>
+                                <h2
+                                    style={
+                                        tableTitle
+                                    }
+                                >
                                     Software Inventory
                                 </h2>
 
-                                <p style={tableSubtitle}>
-                                    {filteredSoftware.length}{" "}
+                                <p
+                                    style={
+                                        tableSubtitle
+                                    }
+                                >
+                                    {
+                                        filteredSoftware.length
+                                    }{" "}
                                     software
-                                    {filteredSoftware.length !== 1
-                                        ? " licenses"
-                                        : " license"}{" "}
+                                    {
+                                        filteredSoftware.length !==
+                                        1
+                                            ? " licenses"
+                                            : " license"
+                                    }{" "}
                                     found
                                 </p>
 
@@ -583,60 +694,107 @@ function Software() {
 
                         <div style={tableScroll}>
 
-                            <table style={table}>
+                            <table
+                                style={table}
+                            >
 
                                 <thead>
 
                                     <tr>
 
-                                        <th style={thStyle}>
+                                        <th
+                                            style={
+                                                thStyle
+                                            }
+                                        >
                                             ID
                                         </th>
 
-                                        <th style={thStyle}>
+                                        <th
+                                            style={
+                                                thStyle
+                                            }
+                                        >
                                             Software
                                         </th>
 
-                                        <th style={thStyle}>
+                                        <th
+                                            style={
+                                                thStyle
+                                            }
+                                        >
                                             Publisher
                                         </th>
 
-                                        <th style={thStyle}>
+                                        <th
+                                            style={
+                                                thStyle
+                                            }
+                                        >
                                             Version
                                         </th>
 
-                                        <th style={thStyle}>
+                                        <th
+                                            style={
+                                                thStyle
+                                            }
+                                        >
                                             License
                                         </th>
 
-                                        <th style={thStyle}>
+                                        <th
+                                            style={
+                                                thStyle
+                                            }
+                                        >
                                             Qty
                                         </th>
 
-                                        <th style={thStyle}>
+                                        <th
+                                            style={
+                                                thStyle
+                                            }
+                                        >
                                             Purchase
                                         </th>
 
-                                        <th style={thStyle}>
+                                        <th
+                                            style={
+                                                thStyle
+                                            }
+                                        >
                                             Expiry
                                         </th>
 
-                                        <th style={thStyle}>
+                                        <th
+                                            style={
+                                                thStyle
+                                            }
+                                        >
                                             Days Remaining
                                         </th>
 
-                                        <th style={thStyle}>
+                                        <th
+                                            style={
+                                                thStyle
+                                            }
+                                        >
                                             Cost
                                         </th>
 
-                                        <th style={thStyle}>
+                                        <th
+                                            style={
+                                                thStyle
+                                            }
+                                        >
                                             Status
                                         </th>
 
                                         <th
                                             style={{
                                                 ...thStyle,
-                                                textAlign: "right"
+                                                textAlign:
+                                                    "right"
                                             }}
                                         >
                                             Action
@@ -654,11 +812,17 @@ function Software() {
                                         <>
                                             {[1, 2, 3, 4, 5].map(
                                                 (row) => (
-                                                    <tr key={row}>
+                                                    <tr
+                                                        key={
+                                                            row
+                                                        }
+                                                    >
 
-                                                        {Array.from({
-                                                            length: 12
-                                                        }).map(
+                                                        {Array.from(
+                                                            {
+                                                                length: 12
+                                                            }
+                                                        ).map(
                                                             (
                                                                 _,
                                                                 index
@@ -775,9 +939,16 @@ function Software() {
                                                         >
 
                                                             <div
-                                                                style={
-                                                                    softwareCell
+                                                                style={{
+                                                                    ...softwareCell,
+                                                                    cursor: "pointer"
+                                                                }}
+                                                                onClick={() =>
+                                                                    handleView(
+                                                                        item.software_id
+                                                                    )
                                                                 }
+                                                                title="Click to view software details"
                                                             >
 
                                                                 <div
@@ -798,9 +969,10 @@ function Software() {
                                                                 <div>
 
                                                                     <div
-                                                                        style={
-                                                                            softwareName
-                                                                        }
+                                                                        style={{
+                                                                            ...softwareName,
+                                                                            cursor: "pointer"
+                                                                        }}
                                                                     >
                                                                         {
                                                                             item.software_name ||
@@ -809,9 +981,10 @@ function Software() {
                                                                     </div>
 
                                                                     <div
-                                                                        style={
-                                                                            softwareCode
-                                                                        }
+                                                                        style={{
+                                                                            ...softwareCode,
+                                                                            cursor: "pointer"
+                                                                        }}
                                                                     >
                                                                         {
                                                                             item.software_code ||
@@ -1133,6 +1306,395 @@ function Software() {
 
 
             {/* =====================================================
+                SOFTWARE VIEW MODAL - NEW
+            ===================================================== */}
+
+            {(viewLoading ||
+                selectedSoftware) && (
+
+                <div
+                    style={viewOverlay}
+                    onClick={closeView}
+                >
+
+                    <div
+                        style={viewModal}
+                        onClick={(e) =>
+                            e.stopPropagation()
+                        }
+                    >
+
+                        {/* MODAL HEADER */}
+
+                        <div
+                            style={
+                                viewModalHeader
+                            }
+                        >
+
+                            <div>
+
+                                <div
+                                    style={
+                                        viewModalEyebrow
+                                    }
+                                >
+                                    SOFTWARE DETAILS
+                                </div>
+
+                                <h2
+                                    style={
+                                        viewModalTitle
+                                    }
+                                >
+                                    {viewLoading
+                                        ? "Loading..."
+                                        : selectedSoftware?.software_name ||
+                                          "Software Details"}
+                                </h2>
+
+                                {!viewLoading &&
+                                    selectedSoftware && (
+                                        <div
+                                            style={
+                                                viewModalCode
+                                            }
+                                        >
+                                            {
+                                                selectedSoftware.software_code ||
+                                                "-"
+                                            }
+                                        </div>
+                                    )}
+
+                            </div>
+
+
+                            <button
+                                type="button"
+                                onClick={
+                                    closeView
+                                }
+                                style={
+                                    viewCloseButton
+                                }
+                                title="Close"
+                            >
+                                ×
+                            </button>
+
+                        </div>
+
+
+                        {/* MODAL BODY */}
+
+                        {viewLoading ? (
+
+                            <div
+                                style={
+                                    viewLoadingContainer
+                                }
+                            >
+
+                                <div
+                                    style={
+                                        viewLoadingIcon
+                                    }
+                                >
+                                    ↻
+                                </div>
+
+                                <div>
+                                    Loading software
+                                    details...
+                                </div>
+
+                            </div>
+
+                        ) : selectedSoftware ? (
+
+                            <div
+                                style={
+                                    viewModalBody
+                                }
+                            >
+
+                                {/* BASIC INFORMATION */}
+
+                                <div
+                                    style={
+                                        viewSection
+                                    }
+                                >
+
+                                    <h3
+                                        style={
+                                            viewSectionTitle
+                                        }
+                                    >
+                                        Basic Information
+                                    </h3>
+
+                                    <div
+                                        style={
+                                            viewDetailsGrid
+                                        }
+                                    >
+
+                                        <ViewDetail
+                                            label="Software ID"
+                                            value={
+                                                selectedSoftware.software_id
+                                            }
+                                        />
+
+                                        <ViewDetail
+                                            label="Software Code"
+                                            value={
+                                                selectedSoftware.software_code
+                                            }
+                                        />
+
+                                        <ViewDetail
+                                            label="Software Name"
+                                            value={
+                                                selectedSoftware.software_name
+                                            }
+                                        />
+
+                                        <ViewDetail
+                                            label="Publisher"
+                                            value={
+                                                selectedSoftware.publisher
+                                            }
+                                        />
+
+                                        <ViewDetail
+                                            label="Version"
+                                            value={
+                                                selectedSoftware.version
+                                            }
+                                        />
+
+                                        <ViewDetail
+                                            label="License Type"
+                                            value={
+                                                selectedSoftware.license_type
+                                            }
+                                        />
+
+                                    </div>
+
+                                </div>
+
+
+                                {/* LICENSE INFORMATION */}
+
+                                <div
+                                    style={
+                                        viewSection
+                                    }
+                                >
+
+                                    <h3
+                                        style={
+                                            viewSectionTitle
+                                        }
+                                    >
+                                        License Information
+                                    </h3>
+
+                                    <div
+                                        style={
+                                            viewDetailsGrid
+                                        }
+                                    >
+
+                                        <ViewDetail
+                                            label="Total Licenses"
+                                            value={
+                                                selectedSoftware.total_licenses
+                                            }
+                                        />
+
+                                        <ViewDetail
+                                            label="Purchase Date"
+                                            value={formatDate(
+                                                selectedSoftware.purchase_date
+                                            )}
+                                        />
+
+                                        <ViewDetail
+                                            label="Expiry Date"
+                                            value={formatDate(
+                                                selectedSoftware.expiry_date
+                                            )}
+                                        />
+
+                                        <ViewDetail
+                                            label="Days Remaining"
+                                            value={
+                                                selectedSoftware.days_remaining ??
+                                                "-"
+                                            }
+                                        />
+
+                                        <ViewDetail
+                                            label="Cost"
+                                            value={`₹ ${Number(
+                                                selectedSoftware.cost ||
+                                                    0
+                                            ).toLocaleString(
+                                                "en-IN"
+                                            )}`}
+                                        />
+
+                                        <ViewDetail
+                                            label="Vendor"
+                                            value={
+                                                selectedSoftware.vendor_name ||
+                                                selectedSoftware.vendor ||
+                                                "-"
+                                            }
+                                        />
+
+                                    </div>
+
+                                </div>
+
+
+                                {/* STATUS */}
+
+                                <div
+                                    style={
+                                        viewSection
+                                    }
+                                >
+
+                                    <h3
+                                        style={
+                                            viewSectionTitle
+                                        }
+                                    >
+                                        Status
+                                    </h3>
+
+                                    <div
+                                        style={
+                                            viewStatusContainer
+                                        }
+                                    >
+
+                                        <StatusBadge
+                                            status={getExpiryStatus(
+                                                selectedSoftware.days_remaining
+                                            )}
+                                        />
+
+                                        <span
+                                            style={
+                                                viewActualStatus
+                                            }
+                                        >
+                                            Application Status:{" "}
+                                            <strong>
+                                                {
+                                                    selectedSoftware.status ||
+                                                    "-"
+                                                }
+                                            </strong>
+                                        </span>
+
+                                    </div>
+
+                                </div>
+
+
+                                {/* DESCRIPTION */}
+
+                                <div
+                                    style={
+                                        viewSection
+                                    }
+                                >
+
+                                    <h3
+                                        style={
+                                            viewSectionTitle
+                                        }
+                                    >
+                                        Description
+                                    </h3>
+
+                                    <div
+                                        style={
+                                            viewDescription
+                                        }
+                                    >
+                                        {
+                                            selectedSoftware.description ||
+                                            "No description available."
+                                        }
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                        ) : null}
+
+
+                        {/* MODAL FOOTER */}
+
+                        {!viewLoading &&
+                            selectedSoftware && (
+
+                                <div
+                                    style={
+                                        viewModalFooter
+                                    }
+                                >
+
+                                    <button
+                                        type="button"
+                                        onClick={
+                                            closeView
+                                        }
+                                        style={
+                                            viewModalCloseButton
+                                        }
+                                    >
+                                        Close
+                                    </button>
+
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            closeView();
+
+                                            navigate(
+                                                `/software/edit/${selectedSoftware.software_id}`
+                                            );
+                                        }}
+                                        style={
+                                            viewModalEditButton
+                                        }
+                                    >
+                                        Edit Software
+                                    </button>
+
+                                </div>
+
+                            )}
+
+                    </div>
+
+                </div>
+
+            )}
+
+
+            {/* =====================================================
                 RESPONSIVE + ANIMATION
             ===================================================== */}
 
@@ -1150,6 +1712,18 @@ function Software() {
 
                         100% {
                             background-position: -200% 0;
+                        }
+                    }
+
+                    @keyframes viewModalIn {
+                        from {
+                            opacity: 0;
+                            transform: translateY(12px) scale(0.98);
+                        }
+
+                        to {
+                            opacity: 1;
+                            transform: translateY(0) scale(1);
                         }
                     }
 
@@ -1227,6 +1801,46 @@ function Software() {
 
                 `}
             </style>
+
+        </div>
+    );
+}
+
+
+// =====================================================
+// VIEW DETAIL COMPONENT - NEW
+// =====================================================
+
+function ViewDetail({
+    label,
+    value
+}) {
+    return (
+        <div
+            style={
+                viewDetailItem
+            }
+        >
+
+            <div
+                style={
+                    viewDetailLabel
+                }
+            >
+                {label}
+            </div>
+
+            <div
+                style={
+                    viewDetailValue
+                }
+            >
+                {value !== null &&
+                value !== undefined &&
+                value !== ""
+                    ? value
+                    : "-"}
+            </div>
 
         </div>
     );
@@ -1884,6 +2498,224 @@ const skeleton = {
     backgroundSize: "200% 100%",
     animation:
         "skeletonMove 1.3s ease-in-out infinite"
+};
+
+
+// =====================================================
+// VIEW MODAL STYLES - NEW
+// =====================================================
+
+const viewOverlay = {
+    position: "fixed",
+    inset: 0,
+    zIndex: 9999,
+    background:
+        "rgba(15, 23, 42, 0.58)",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: "20px",
+    backdropFilter: "blur(3px)",
+    WebkitBackdropFilter: "blur(3px)"
+};
+
+const viewModal = {
+    width: "100%",
+    maxWidth: "850px",
+    maxHeight: "90vh",
+    overflowY: "auto",
+    background: "var(--card-background)",
+    border: "1px solid var(--border-color)",
+    borderRadius: "15px",
+    boxShadow:
+        "0 25px 60px rgba(0,0,0,0.25)",
+    animation:
+        "viewModalIn .18s ease-out"
+};
+
+const viewModalHeader = {
+    position: "sticky",
+    top: 0,
+    zIndex: 2,
+    padding: "21px 23px",
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+    gap: "15px",
+    background:
+        "var(--card-background)",
+    borderBottom:
+        "1px solid var(--border-color)"
+};
+
+const viewModalEyebrow = {
+    fontSize: "9px",
+    fontWeight: "800",
+    letterSpacing: "1.2px",
+    color: "var(--primary-color)",
+    marginBottom: "5px"
+};
+
+const viewModalTitle = {
+    margin: 0,
+    fontSize: "20px",
+    fontWeight: "750",
+    color: "var(--text-color)"
+};
+
+const viewModalCode = {
+    marginTop: "5px",
+    fontSize: "11px",
+    color: "var(--muted-text-color)"
+};
+
+const viewCloseButton = {
+    width: "32px",
+    height: "32px",
+    border: "1px solid var(--border-color)",
+    borderRadius: "7px",
+    background:
+        "var(--table-header-background)",
+    color: "var(--muted-text-color)",
+    cursor: "pointer",
+    fontSize: "21px",
+    lineHeight: 1,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    flexShrink: 0
+};
+
+const viewModalBody = {
+    padding: "0"
+};
+
+const viewSection = {
+    padding: "19px 23px",
+    borderBottom:
+        "1px solid var(--border-color)"
+};
+
+const viewSectionTitle = {
+    margin: "0 0 13px",
+    fontSize: "12px",
+    fontWeight: "750",
+    color: "var(--text-color)"
+};
+
+const viewDetailsGrid = {
+    display: "grid",
+    gridTemplateColumns:
+        "repeat(3, minmax(0, 1fr))",
+    gap: "10px"
+};
+
+const viewDetailItem = {
+    padding: "11px 12px",
+    border: "1px solid var(--border-color)",
+    borderRadius: "8px",
+    background:
+        "var(--table-header-background)",
+    minWidth: 0
+};
+
+const viewDetailLabel = {
+    fontSize: "9px",
+    color: "var(--muted-text-color)",
+    fontWeight: "650",
+    marginBottom: "5px",
+    textTransform: "uppercase",
+    letterSpacing: ".03em"
+};
+
+const viewDetailValue = {
+    fontSize: "12px",
+    color: "var(--text-color)",
+    fontWeight: "650",
+    overflowWrap: "anywhere"
+};
+
+const viewStatusContainer = {
+    display: "flex",
+    alignItems: "center",
+    gap: "12px",
+    flexWrap: "wrap"
+};
+
+const viewActualStatus = {
+    fontSize: "11px",
+    color: "var(--muted-text-color)"
+};
+
+const viewDescription = {
+    minHeight: "65px",
+    padding: "12px",
+    borderRadius: "8px",
+    border: "1px solid var(--border-color)",
+    background:
+        "var(--table-header-background)",
+    color: "var(--text-color)",
+    fontSize: "11px",
+    lineHeight: 1.6,
+    whiteSpace: "pre-wrap",
+    overflowWrap: "anywhere"
+};
+
+const viewModalFooter = {
+    position: "sticky",
+    bottom: 0,
+    zIndex: 2,
+    padding: "13px 23px",
+    display: "flex",
+    justifyContent: "flex-end",
+    gap: "8px",
+    background:
+        "var(--card-background)",
+    borderTop:
+        "1px solid var(--border-color)"
+};
+
+const viewModalCloseButton = {
+    height: "34px",
+    padding: "0 14px",
+    border: "1px solid var(--border-color)",
+    borderRadius: "7px",
+    background:
+        "var(--table-header-background)",
+    color: "var(--text-color)",
+    cursor: "pointer",
+    fontSize: "10px",
+    fontWeight: "650"
+};
+
+const viewModalEditButton = {
+    height: "34px",
+    padding: "0 15px",
+    border: "none",
+    borderRadius: "7px",
+    background: "var(--primary-color)",
+    color: "#ffffff",
+    cursor: "pointer",
+    fontSize: "10px",
+    fontWeight: "700"
+};
+
+const viewLoadingContainer = {
+    minHeight: "300px",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: "10px",
+    color: "var(--muted-text-color)",
+    fontSize: "12px"
+};
+
+const viewLoadingIcon = {
+    fontSize: "28px",
+    color: "var(--primary-color)",
+    animation:
+        "viewModalIn .7s ease-in-out infinite alternate"
 };
 
 

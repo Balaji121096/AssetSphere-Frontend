@@ -16,6 +16,10 @@ function Employees() {
 
     const [currentPage, setCurrentPage] = useState(1);
 
+    // VIEW DETAILS
+    const [selectedEmployee, setSelectedEmployee] = useState(null);
+    const [viewLoading, setViewLoading] = useState(false);
+
     const employeesPerPage = 10;
 
     // =====================================================
@@ -84,6 +88,37 @@ function Employees() {
 
     const handleRefresh = () => {
         window.location.reload();
+    };
+
+    // =====================================================
+    // VIEW EMPLOYEE DETAILS
+    // =====================================================
+
+    const handleView = async (id) => {
+        try {
+            setViewLoading(true);
+
+            const response =
+                await API.get(`/employees/${id}`);
+
+            setSelectedEmployee(
+                response.data?.data || null
+            );
+
+        } catch (error) {
+            console.error(
+                "View Employee Error:",
+                error
+            );
+
+            alert(
+                error.response?.data?.message ||
+                "Failed to load employee details"
+            );
+
+        } finally {
+            setViewLoading(false);
+        }
     };
 
     // =====================================================
@@ -1251,7 +1286,7 @@ function Employees() {
 
 
                                                     {/* =================================================
-                                                        EMPLOYEE
+                                                        EMPLOYEE - CLICK TO VIEW
                                                     ================================================= */}
 
                                                     <td
@@ -1261,9 +1296,16 @@ function Employees() {
                                                     >
 
                                                         <div
-                                                            style={
-                                                                employeeCellStyle
+                                                            style={{
+                                                                ...employeeCellStyle,
+                                                                cursor: "pointer"
+                                                            }}
+                                                            onClick={() =>
+                                                                handleView(
+                                                                    employee.employee_id
+                                                                )
                                                             }
+                                                            title="Click to view employee details"
                                                         >
 
                                                             <div
@@ -1684,6 +1726,425 @@ function Employees() {
 
 
             {/* =====================================================
+                EMPLOYEE VIEW DETAILS MODAL
+            ===================================================== */}
+
+            {(viewLoading || selectedEmployee) && (
+
+                <div
+                    style={viewModalOverlay}
+                    onClick={() => {
+                        if (!viewLoading) {
+                            setSelectedEmployee(null);
+                        }
+                    }}
+                >
+
+                    <div
+                        style={viewModal}
+                        onClick={(e) =>
+                            e.stopPropagation()
+                        }
+                    >
+
+                        {viewLoading ? (
+
+                            <div
+                                style={
+                                    viewLoadingBox
+                                }
+                            >
+
+                                <div
+                                    style={
+                                        viewLoadingSpinner
+                                    }
+                                >
+                                    ↻
+                                </div>
+
+                                <div
+                                    style={
+                                        viewLoadingText
+                                    }
+                                >
+                                    Loading employee details...
+                                </div>
+
+                            </div>
+
+                        ) : (
+
+                            <>
+
+                                {/* =================================================
+                                    MODAL HEADER
+                                ================================================= */}
+
+                                <div
+                                    style={
+                                        viewModalHeader
+                                    }
+                                >
+
+                                    <div>
+
+                                        <div
+                                            style={
+                                                viewModalEyebrow
+                                            }
+                                        >
+                                            EMPLOYEE DETAILS
+                                        </div>
+
+                                        <h2
+                                            style={
+                                                viewModalTitle
+                                            }
+                                        >
+                                            {
+                                                selectedEmployee.display_name ||
+                                                "-"
+                                            }
+                                        </h2>
+
+                                        <div
+                                            style={
+                                                viewModalCode
+                                            }
+                                        >
+                                            {
+                                                selectedEmployee.employee_code ||
+                                                `Employee #${selectedEmployee.employee_id || "-"}`
+                                            }
+                                        </div>
+
+                                    </div>
+
+
+                                    <button
+                                        type="button"
+                                        onClick={() =>
+                                            setSelectedEmployee(
+                                                null
+                                            )
+                                        }
+                                        style={
+                                            viewCloseButton
+                                        }
+                                        title="Close"
+                                    >
+                                        ×
+                                    </button>
+
+                                </div>
+
+
+                                {/* =================================================
+                                    DETAILS
+                                ================================================= */}
+
+                                <div
+                                    className="employee-view-detail-grid"
+                                    style={
+                                        viewDetailGrid
+                                    }
+                                >
+
+                                    <DetailItem
+                                        label="Employee ID"
+                                        value={
+                                            selectedEmployee.employee_id
+                                        }
+                                    />
+
+                                    <DetailItem
+                                        label="Employee Code"
+                                        value={
+                                            selectedEmployee.employee_code
+                                        }
+                                    />
+
+                                    <DetailItem
+                                        label="Employee Name"
+                                        value={
+                                            selectedEmployee.display_name
+                                        }
+                                    />
+
+                                    <DetailItem
+                                        label="Official Email"
+                                        value={
+                                            selectedEmployee.official_email
+                                        }
+                                    />
+
+                                    <DetailItem
+                                        label="Mobile Number"
+                                        value={
+                                            selectedEmployee.mobile_number
+                                        }
+                                    />
+
+                                    <DetailItem
+                                        label="Department"
+                                        value={
+                                            selectedEmployee.department_name
+                                        }
+                                    />
+
+                                    <DetailItem
+                                        label="Designation"
+                                        value={
+                                            selectedEmployee.designation_name
+                                        }
+                                    />
+
+                                    <DetailItem
+                                        label="Work Location"
+                                        value={
+                                            selectedEmployee.work_location
+                                        }
+                                    />
+
+                                    <DetailItem
+                                        label="Employment Type"
+                                        value={
+                                            selectedEmployee.employment_type
+                                        }
+                                    />
+
+                                    <DetailItem
+                                        label="Joining Date"
+                                        value={
+                                            formatExportDate(
+                                                selectedEmployee.joining_date
+                                            )
+                                        }
+                                    />
+
+                                    <DetailItem
+                                        label="Status"
+                                        value={
+                                            selectedEmployee.status
+                                        }
+                                    />
+
+                                    <DetailItem
+                                        label="Created Date"
+                                        value={
+                                            formatExportDate(
+                                                selectedEmployee.created_at
+                                            )
+                                        }
+                                    />
+
+                                    <DetailItem
+                                        label="Updated Date"
+                                        value={
+                                            formatExportDate(
+                                                selectedEmployee.updated_at
+                                            )
+                                        }
+                                    />
+
+                                    <DetailItem
+                                        label="Employee ID / Reference"
+                                        value={
+                                            selectedEmployee.employee_id
+                                        }
+                                    />
+
+                                </div>
+
+
+                                {/* =================================================
+                                    EXTRA INFORMATION
+                                ================================================= */}
+
+                                {(selectedEmployee.address ||
+                                    selectedEmployee.city ||
+                                    selectedEmployee.state ||
+                                    selectedEmployee.pincode ||
+                                    selectedEmployee.date_of_birth ||
+                                    selectedEmployee.gender ||
+                                    selectedEmployee.personal_email ||
+                                    selectedEmployee.reporting_manager ||
+                                    selectedEmployee.manager_name) && (
+
+                                    <div
+                                        style={
+                                            viewExtraSection
+                                        }
+                                    >
+
+                                        <div
+                                            style={
+                                                viewSectionTitle
+                                            }
+                                        >
+                                            Additional Information
+                                        </div>
+
+                                        <div
+                                            className="employee-view-extra-grid"
+                                            style={
+                                                viewExtraGrid
+                                            }
+                                        >
+
+                                            {selectedEmployee.personal_email && (
+                                                <DetailItem
+                                                    label="Personal Email"
+                                                    value={
+                                                        selectedEmployee.personal_email
+                                                    }
+                                                />
+                                            )}
+
+                                            {selectedEmployee.date_of_birth && (
+                                                <DetailItem
+                                                    label="Date of Birth"
+                                                    value={
+                                                        formatExportDate(
+                                                            selectedEmployee.date_of_birth
+                                                        )
+                                                    }
+                                                />
+                                            )}
+
+                                            {selectedEmployee.gender && (
+                                                <DetailItem
+                                                    label="Gender"
+                                                    value={
+                                                        selectedEmployee.gender
+                                                    }
+                                                />
+                                            )}
+
+                                            {selectedEmployee.address && (
+                                                <DetailItem
+                                                    label="Address"
+                                                    value={
+                                                        selectedEmployee.address
+                                                    }
+                                                />
+                                            )}
+
+                                            {selectedEmployee.city && (
+                                                <DetailItem
+                                                    label="City"
+                                                    value={
+                                                        selectedEmployee.city
+                                                    }
+                                                />
+                                            )}
+
+                                            {selectedEmployee.state && (
+                                                <DetailItem
+                                                    label="State"
+                                                    value={
+                                                        selectedEmployee.state
+                                                    }
+                                                />
+                                            )}
+
+                                            {selectedEmployee.pincode && (
+                                                <DetailItem
+                                                    label="Pincode"
+                                                    value={
+                                                        selectedEmployee.pincode
+                                                    }
+                                                />
+                                            )}
+
+                                            {selectedEmployee.reporting_manager && (
+                                                <DetailItem
+                                                    label="Reporting Manager"
+                                                    value={
+                                                        selectedEmployee.reporting_manager
+                                                    }
+                                                />
+                                            )}
+
+                                            {selectedEmployee.manager_name && (
+                                                <DetailItem
+                                                    label="Manager"
+                                                    value={
+                                                        selectedEmployee.manager_name
+                                                    }
+                                                />
+                                            )}
+
+                                        </div>
+
+                                    </div>
+
+                                )}
+
+
+                                {/* =================================================
+                                    MODAL FOOTER
+                                ================================================= */}
+
+                                <div
+                                    style={
+                                        viewModalFooter
+                                    }
+                                >
+
+                                    <button
+                                        type="button"
+                                        onClick={() =>
+                                            setSelectedEmployee(
+                                                null
+                                            )
+                                        }
+                                        style={
+                                            viewCloseFooterButton
+                                        }
+                                    >
+                                        Close
+                                    </button>
+
+
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+
+                                            const id =
+                                                selectedEmployee.employee_id;
+
+                                            setSelectedEmployee(
+                                                null
+                                            );
+
+                                            navigate(
+                                                `/employees/edit/${id}`
+                                            );
+
+                                        }}
+                                        style={
+                                            viewEditButton
+                                        }
+                                    >
+                                        ✎ Edit Employee
+                                    </button>
+
+                                </div>
+
+                            </>
+
+                        )}
+
+                    </div>
+
+                </div>
+
+            )}
+
+
+            {/* =====================================================
                 SPINNER ANIMATION
             ===================================================== */}
 
@@ -1715,10 +2176,38 @@ function Employees() {
                         .employees-content {
                             padding: 18px !important;
                         }
+
+                        .employee-view-detail-grid,
+                        .employee-view-extra-grid {
+                            grid-template-columns: 1fr !important;
+                        }
                     }
                 `}
             </style>
 
+        </div>
+    );
+}
+
+
+// =====================================================
+// DETAIL ITEM
+// =====================================================
+
+function DetailItem({ label, value }) {
+    return (
+        <div style={detailItem}>
+            <div style={detailLabel}>
+                {label}
+            </div>
+
+            <div style={detailValue}>
+                {value !== null &&
+                value !== undefined &&
+                value !== ""
+                    ? String(value)
+                    : "-"}
+            </div>
         </div>
     );
 }
@@ -2677,6 +3166,309 @@ const currentPageStyle = {
     fontSize: "12px",
 
     fontWeight: "600"
+};
+
+
+/* =====================================================
+   VIEW DETAILS MODAL
+===================================================== */
+
+const viewModalOverlay = {
+    position: "fixed",
+
+    inset: 0,
+
+    background:
+        "rgba(15,23,42,0.55)",
+
+    backdropFilter: "blur(3px)",
+
+    WebkitBackdropFilter:
+        "blur(3px)",
+
+    display: "flex",
+
+    alignItems: "center",
+
+    justifyContent: "center",
+
+    padding: "20px",
+
+    zIndex: 9999
+};
+
+
+const viewModal = {
+    width: "100%",
+
+    maxWidth: "820px",
+
+    maxHeight: "90vh",
+
+    overflowY: "auto",
+
+    background:
+        "var(--card-background)",
+
+    border:
+        "1px solid var(--border-color)",
+
+    borderRadius: "15px",
+
+    boxShadow:
+        "0 25px 70px rgba(15,23,42,0.25)"
+};
+
+
+const viewModalHeader = {
+    padding: "20px 22px",
+
+    borderBottom:
+        "1px solid var(--border-color)",
+
+    display: "flex",
+
+    alignItems: "flex-start",
+
+    justifyContent: "space-between",
+
+    gap: "15px"
+};
+
+
+const viewModalEyebrow = {
+    color:
+        "var(--primary-color)",
+
+    fontSize: "9px",
+
+    fontWeight: "800",
+
+    letterSpacing: "1.2px",
+
+    marginBottom: "5px"
+};
+
+
+const viewModalTitle = {
+    margin: 0,
+
+    color:
+        "var(--text-color)",
+
+    fontSize: "20px",
+
+    fontWeight: "750"
+};
+
+
+const viewModalCode = {
+    marginTop: "4px",
+
+    color:
+        "var(--muted-text-color)",
+
+    fontSize: "10px"
+};
+
+
+const viewCloseButton = {
+    width: "32px",
+
+    height: "32px",
+
+    border:
+        "1px solid var(--border-color)",
+
+    borderRadius: "7px",
+
+    background:
+        "var(--muted-background)",
+
+    color:
+        "var(--muted-text-color)",
+
+    cursor: "pointer",
+
+    fontSize: "20px",
+
+    lineHeight: 1,
+
+    flexShrink: 0
+};
+
+
+const viewDetailGrid = {
+    padding: "20px 22px",
+
+    display: "grid",
+
+    gridTemplateColumns:
+        "repeat(2, minmax(0, 1fr))",
+
+    gap: "12px"
+};
+
+
+const detailItem = {
+    padding: "12px",
+
+    border:
+        "1px solid var(--border-color)",
+
+    borderRadius: "9px",
+
+    background:
+        "var(--table-header-background)"
+};
+
+
+const detailLabel = {
+    color:
+        "var(--muted-text-color)",
+
+    fontSize: "9px",
+
+    textTransform: "uppercase",
+
+    letterSpacing: ".04em",
+
+    fontWeight: "700",
+
+    marginBottom: "5px"
+};
+
+
+const detailValue = {
+    color:
+        "var(--text-color)",
+
+    fontSize: "12px",
+
+    fontWeight: "650",
+
+    wordBreak: "break-word"
+};
+
+
+const viewExtraSection = {
+    padding: "0 22px 20px"
+};
+
+
+const viewSectionTitle = {
+    color:
+        "var(--text-color)",
+
+    fontSize: "12px",
+
+    fontWeight: "700",
+
+    marginBottom: "10px"
+};
+
+
+const viewExtraGrid = {
+    display: "grid",
+
+    gridTemplateColumns:
+        "repeat(2, minmax(0, 1fr))",
+
+    gap: "12px"
+};
+
+
+const viewModalFooter = {
+    padding: "15px 22px",
+
+    borderTop:
+        "1px solid var(--border-color)",
+
+    display: "flex",
+
+    justifyContent: "flex-end",
+
+    gap: "8px"
+};
+
+
+const viewCloseFooterButton = {
+    height: "34px",
+
+    padding: "0 14px",
+
+    border:
+        "1px solid var(--border-color)",
+
+    borderRadius: "7px",
+
+    background:
+        "var(--muted-background)",
+
+    color:
+        "var(--text-color)",
+
+    cursor: "pointer",
+
+    fontSize: "10px",
+
+    fontWeight: "650"
+};
+
+
+const viewEditButton = {
+    height: "34px",
+
+    padding: "0 14px",
+
+    border: "none",
+
+    borderRadius: "7px",
+
+    background:
+        "var(--primary-color)",
+
+    color: "#ffffff",
+
+    cursor: "pointer",
+
+    fontSize: "10px",
+
+    fontWeight: "700"
+};
+
+
+const viewLoadingBox = {
+    minHeight: "260px",
+
+    display: "flex",
+
+    flexDirection: "column",
+
+    alignItems: "center",
+
+    justifyContent: "center",
+
+    gap: "10px"
+};
+
+
+const viewLoadingSpinner = {
+    fontSize: "28px",
+
+    color:
+        "var(--primary-color)",
+
+    animation:
+        "spin 0.8s linear infinite"
+};
+
+
+const viewLoadingText = {
+    color:
+        "var(--muted-text-color)",
+
+    fontSize: "12px"
 };
 
 
