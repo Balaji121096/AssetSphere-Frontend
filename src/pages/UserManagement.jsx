@@ -67,7 +67,7 @@ export default function UserManagement() {
     const [saving, setSaving] = useState(false);
 
     const [form, setForm] = useState({
-        employee_id: "",
+        employee_code: "",
         username: "",
         password: "",
         role: "Viewer",
@@ -165,6 +165,7 @@ export default function UserManagement() {
             setUsers(userList);
         } catch (err) {
             console.error("Load Users Error:", err);
+
             setError(
                 err.message ||
                     "Unable to load users."
@@ -238,7 +239,7 @@ export default function UserManagement() {
         setEditingUser(null);
 
         setForm({
-            employee_id: "",
+            employee_code: "",
             username: "",
             password: "",
             role: "Viewer",
@@ -258,8 +259,8 @@ export default function UserManagement() {
         setEditingUser(user);
 
         setForm({
-            employee_id:
-                user.employee_id ?? "",
+            employee_code:
+                user.employee_code ?? "",
             username:
                 user.username ?? "",
             password: "",
@@ -307,6 +308,26 @@ export default function UserManagement() {
                 );
             }
 
+            const employeeCode = String(
+                form.employee_code || ""
+            ).trim();
+
+            if (!employeeCode) {
+                throw new Error(
+                    "Employee Code is required."
+                );
+            }
+
+            const username = String(
+                form.username || ""
+            ).trim();
+
+            if (!username) {
+                throw new Error(
+                    "Username is required."
+                );
+            }
+
             const userId = getUserId(
                 editingUser
             );
@@ -320,10 +341,10 @@ export default function UserManagement() {
                 : "POST";
 
             const payload = {
-                employee_id:
-                    form.employee_id,
+                employee_code:
+                    employeeCode,
                 username:
-                    form.username,
+                    username,
                 role:
                     form.role,
                 status:
@@ -751,9 +772,8 @@ export default function UserManagement() {
                 <Navbar />
 
                 <main className="user-management-page">
-                    {/* =================================================
-                        HEADER
-                    ================================================= */}
+
+                    {/* HEADER */}
 
                     <section className="page-hero">
                         <div>
@@ -774,6 +794,7 @@ export default function UserManagement() {
                         </div>
 
                         <div className="hero-actions">
+
                             <button
                                 type="button"
                                 className="settings-button"
@@ -795,12 +816,11 @@ export default function UserManagement() {
                             >
                                 + Add User
                             </button>
+
                         </div>
                     </section>
 
-                    {/* =================================================
-                        ALERTS
-                    ================================================= */}
+                    {/* ALERTS */}
 
                     {error && (
                         <div className="alert alert-error">
@@ -814,11 +834,10 @@ export default function UserManagement() {
                         </div>
                     )}
 
-                    {/* =================================================
-                        STAT CARDS
-                    ================================================= */}
+                    {/* STAT CARDS */}
 
                     <section className="stats-grid">
+
                         <div className="stat-card">
                             <div className="stat-icon purple">
                                 👥
@@ -890,14 +909,15 @@ export default function UserManagement() {
                                 </div>
                             </div>
                         </div>
+
                     </section>
 
-                    {/* =================================================
-                        USERS TABLE
-                    ================================================= */}
+                    {/* USERS TABLE */}
 
                     <section className="users-section">
+
                         <div className="section-header">
+
                             <div>
                                 <div className="section-title">
                                     System Users
@@ -913,6 +933,7 @@ export default function UserManagement() {
                             <div className="user-count">
                                 {totalUsers} Users
                             </div>
+
                         </div>
 
                         {loading ? (
@@ -922,6 +943,7 @@ export default function UserManagement() {
                         ) : users.length ===
                           0 ? (
                             <div className="empty-box">
+
                                 <div className="empty-icon">
                                     👥
                                 </div>
@@ -934,15 +956,19 @@ export default function UserManagement() {
                                     No system users
                                     are available.
                                 </p>
+
                             </div>
                         ) : (
                             <div className="table-wrapper">
+
                                 <table className="users-table">
+
                                     <thead>
                                         <tr>
+
                                             <th>
                                                 EMPLOYEE
-                                                ID
+                                                CODE
                                             </th>
 
                                             <th>
@@ -964,15 +990,18 @@ export default function UserManagement() {
                                             <th>
                                                 ACTIONS
                                             </th>
+
                                         </tr>
                                     </thead>
 
                                     <tbody>
+
                                         {users.map(
                                             (
                                                 user,
                                                 index
                                             ) => {
+
                                                 const userId =
                                                     getUserId(
                                                         user
@@ -1001,15 +1030,18 @@ export default function UserManagement() {
                                                             index
                                                         }
                                                     >
+
                                                         <td>
-                                                            #
-                                                            {user.employee_id ??
-                                                                userId ??
-                                                                "-"}
+                                                            <span className="employee-code-badge">
+                                                                {user.employee_code ||
+                                                                    "-"}
+                                                            </span>
                                                         </td>
 
                                                         <td>
+
                                                             <div className="username-cell">
+
                                                                 <div className="avatar">
                                                                     {String(
                                                                         user.username ||
@@ -1026,10 +1058,13 @@ export default function UserManagement() {
                                                                         user.username
                                                                     }
                                                                 </strong>
+
                                                             </div>
+
                                                         </td>
 
                                                         <td>
+
                                                             <span
                                                                 className={`role-badge ${getRoleClass(
                                                                     role
@@ -1039,9 +1074,11 @@ export default function UserManagement() {
                                                                     role
                                                                 }
                                                             </span>
+
                                                         </td>
 
                                                         <td>
+
                                                             <span
                                                                 className={`status-badge ${getStatusClass(
                                                                     user.status
@@ -1052,6 +1089,7 @@ export default function UserManagement() {
                                                                     user.status
                                                                 }
                                                             </span>
+
                                                         </td>
 
                                                         <td>
@@ -1065,7 +1103,9 @@ export default function UserManagement() {
                                                         </td>
 
                                                         <td>
+
                                                             <div className="action-buttons">
+
                                                                 {/* EDIT */}
 
                                                                 <button
@@ -1081,19 +1121,7 @@ export default function UserManagement() {
                                                                     ✏️
                                                                 </button>
 
-                                                                {/* =================================================
-                                                                    RESET PASSWORD
-
-                                                                    IMPORTANT:
-                                                                    Button is intentionally visible for
-                                                                    every OTHER user.
-
-                                                                    Backend still protects the API and
-                                                                    allows only Super Admin.
-
-                                                                    This guarantees the button is actually
-                                                                    rendered in the UI.
-                                                                ================================================= */}
+                                                                {/* RESET PASSWORD */}
 
                                                                 {!current && (
                                                                     <button
@@ -1139,37 +1167,46 @@ export default function UserManagement() {
                                                                 >
                                                                     🗑️
                                                                 </button>
+
                                                             </div>
+
                                                         </td>
+
                                                     </tr>
                                                 );
                                             }
                                         )}
+
                                     </tbody>
+
                                 </table>
+
                             </div>
                         )}
+
                     </section>
 
-                    {/* =================================================
-                        ACCESS RULES
-                    ================================================= */}
+                    {/* ACCESS RULES */}
 
                     <section className="access-rules">
+
                         <div className="access-icon">
                             🛡️
                         </div>
 
                         <div>
+
                             <div className="access-title">
                                 User Access Rules
                             </div>
 
                             <div className="access-text">
+
                                 <strong>
                                     Super Admin
                                 </strong>{" "}
                                 has full access.{" "}
+
                                 <strong>
                                     Admin
                                 </strong>{" "}
@@ -1178,18 +1215,24 @@ export default function UserManagement() {
                                 modify or delete
                                 Super Admin
                                 accounts.{" "}
+
                                 <strong>
                                     Manager
                                 </strong>{" "}
                                 and{" "}
+
                                 <strong>
                                     Viewer
                                 </strong>{" "}
                                 do not have user
                                 management access.
+
                             </div>
+
                         </div>
+
                     </section>
+
                 </main>
             </div>
 
@@ -1199,9 +1242,13 @@ export default function UserManagement() {
 
             {showModal && (
                 <div className="modal-overlay">
+
                     <div className="modal-card">
+
                         <div className="modal-header">
+
                             <div>
+
                                 <h2>
                                     {editingUser
                                         ? "Edit User"
@@ -1213,6 +1260,7 @@ export default function UserManagement() {
                                         ? "Update user account details."
                                         : "Create a new AssetSphere user."}
                                 </p>
+
                             </div>
 
                             <button
@@ -1226,6 +1274,7 @@ export default function UserManagement() {
                             >
                                 ×
                             </button>
+
                         </div>
 
                         <form
@@ -1233,26 +1282,37 @@ export default function UserManagement() {
                                 handleSaveUser
                             }
                         >
+
                             <div className="form-grid">
+
+                                {/* EMPLOYEE CODE */}
+
                                 <div className="form-group">
+
                                     <label>
-                                        Employee ID
+                                        Employee Code
                                     </label>
 
                                     <input
                                         type="text"
-                                        name="employee_id"
+                                        name="employee_code"
                                         value={
-                                            form.employee_id
+                                            form.employee_code
                                         }
                                         onChange={
                                             handleChange
                                         }
+                                        placeholder="Enter Employee Code"
+                                        autoComplete="off"
                                         required
                                     />
+
                                 </div>
 
+                                {/* USERNAME */}
+
                                 <div className="form-group">
+
                                     <label>
                                         Username
                                     </label>
@@ -1268,9 +1328,13 @@ export default function UserManagement() {
                                         }
                                         required
                                     />
+
                                 </div>
 
+                                {/* PASSWORD */}
+
                                 <div className="form-group">
+
                                     <label>
                                         {editingUser
                                             ? "Password (leave blank to keep current)"
@@ -1290,9 +1354,13 @@ export default function UserManagement() {
                                             !editingUser
                                         }
                                     />
+
                                 </div>
 
+                                {/* ROLE */}
+
                                 <div className="form-group">
+
                                     <label>
                                         Role
                                     </label>
@@ -1306,6 +1374,7 @@ export default function UserManagement() {
                                             handleChange
                                         }
                                     >
+
                                         <option value="Viewer">
                                             Viewer
                                         </option>
@@ -1321,10 +1390,15 @@ export default function UserManagement() {
                                         <option value="Super Admin">
                                             Super Admin
                                         </option>
+
                                     </select>
+
                                 </div>
 
+                                {/* STATUS */}
+
                                 <div className="form-group">
+
                                     <label>
                                         Status
                                     </label>
@@ -1338,6 +1412,7 @@ export default function UserManagement() {
                                             handleChange
                                         }
                                     >
+
                                         <option value="Active">
                                             Active
                                         </option>
@@ -1345,11 +1420,15 @@ export default function UserManagement() {
                                         <option value="Inactive">
                                             Inactive
                                         </option>
+
                                     </select>
+
                                 </div>
+
                             </div>
 
                             <div className="modal-footer">
+
                                 <button
                                     type="button"
                                     className="cancel-button"
@@ -1378,9 +1457,13 @@ export default function UserManagement() {
                                         ? "Update User"
                                         : "Create User"}
                                 </button>
+
                             </div>
+
                         </form>
+
                     </div>
+
                 </div>
             )}
 
@@ -1390,9 +1473,12 @@ export default function UserManagement() {
 
             {showResetModal && (
                 <div className="modal-overlay">
+
                     <div className="reset-password-modal">
+
                         {!temporaryPassword ? (
                             <>
+
                                 <div className="reset-icon">
                                     🔑
                                 </div>
@@ -1408,7 +1494,9 @@ export default function UserManagement() {
                                 </p>
 
                                 <div className="reset-username">
-                                    {resetUser?.username}
+                                    {
+                                        resetUser?.username
+                                    }
                                 </div>
 
                                 <p className="reset-warning">
@@ -1427,6 +1515,7 @@ export default function UserManagement() {
                                 )}
 
                                 <div className="reset-modal-actions">
+
                                     <button
                                         type="button"
                                         className="cancel-button"
@@ -1454,10 +1543,13 @@ export default function UserManagement() {
                                             ? "Resetting..."
                                             : "Reset Password"}
                                     </button>
+
                                 </div>
+
                             </>
                         ) : (
                             <>
+
                                 <div className="success-reset-icon">
                                     ✓
                                 </div>
@@ -1479,6 +1571,7 @@ export default function UserManagement() {
                                 </div>
 
                                 <div className="temporary-password-box">
+
                                     <span>
                                         {
                                             temporaryPassword
@@ -1496,6 +1589,7 @@ export default function UserManagement() {
                                             ? "✓ Copied"
                                             : "Copy"}
                                     </button>
+
                                 </div>
 
                                 <div className="password-notice">
@@ -1507,6 +1601,7 @@ export default function UserManagement() {
                                 </div>
 
                                 <div className="reset-modal-actions">
+
                                     <button
                                         type="button"
                                         className="save-button close-reset-button"
@@ -1516,10 +1611,14 @@ export default function UserManagement() {
                                     >
                                         Done
                                     </button>
+
                                 </div>
+
                             </>
                         )}
+
                     </div>
+
                 </div>
             )}
 
@@ -1528,13 +1627,14 @@ export default function UserManagement() {
             ========================================================= */}
 
             <style>{`
+
                 * {
                     box-sizing: border-box;
                 }
 
                 .page-wrapper {
                     min-height: 100vh;
-                    background: #f5f7fb;
+                    background: #e0e3e7;
                     display: flex;
                 }
 
@@ -1563,7 +1663,12 @@ export default function UserManagement() {
                     color: white;
                     box-shadow:
                         0 12px 30px
-                        rgba(25, 47, 100, 0.15);
+                        rgba(
+                            25,
+                            47,
+                            100,
+                            0.15
+                        );
                 }
 
                 .breadcrumb {
@@ -1578,6 +1683,7 @@ export default function UserManagement() {
                     margin: 0;
                     font-size: 28px;
                     font-weight: 800;
+                    color: #dce7ff;
                 }
 
                 .page-hero p {
@@ -1757,6 +1863,19 @@ export default function UserManagement() {
                     border-bottom: none;
                 }
 
+                .employee-code-badge {
+                    display: inline-flex;
+                    align-items: center;
+                    padding: 6px 10px;
+                    border-radius: 7px;
+                    background: #f2f6ff;
+                    border: 1px solid #d5e0ff;
+                    color: #294b9b;
+                    font-size: 11px;
+                    font-weight: 800;
+                    letter-spacing: 0.3px;
+                }
+
                 .username-cell {
                     display: flex;
                     align-items: center;
@@ -1843,10 +1962,6 @@ export default function UserManagement() {
                     border: 1px solid #b8d5ff;
                     background: #f2f7ff;
                 }
-
-                /* =====================================================
-                   RESET BUTTON - CLEARLY VISIBLE
-                ===================================================== */
 
                 .reset-button {
                     border: 1px solid #bba6ff;
@@ -1937,10 +2052,6 @@ export default function UserManagement() {
                     color: #008b5b;
                     border: 1px solid #b3efd5;
                 }
-
-                /* =====================================================
-                   MODAL
-                ===================================================== */
 
                 .modal-overlay {
                     position: fixed;
@@ -2086,10 +2197,6 @@ export default function UserManagement() {
                     opacity: 0.6;
                     cursor: not-allowed;
                 }
-
-                /* =====================================================
-                   RESET PASSWORD MODAL
-                ===================================================== */
 
                 .reset-password-modal {
                     width: min(
@@ -2240,15 +2347,18 @@ export default function UserManagement() {
                 }
 
                 @media (max-width: 1000px) {
+
                     .stats-grid {
                         grid-template-columns: repeat(
                             2,
                             1fr
                         );
                     }
+
                 }
 
                 @media (max-width: 700px) {
+
                     .user-management-page {
                         padding: 15px;
                     }
@@ -2274,7 +2384,9 @@ export default function UserManagement() {
                     .form-grid {
                         grid-template-columns: 1fr;
                     }
+
                 }
+
             `}</style>
         </div>
     );
