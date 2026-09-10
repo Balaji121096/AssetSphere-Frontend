@@ -64,6 +64,9 @@ import SettingSecurity from "../pages/SettingSecurity";
 import ChangePassword from "../pages/ChangePassword";
 import UserManagement from "../pages/UserManagement";
 import Theme from "../pages/Theme";
+import CompanySettings from "../pages/CompanySettings";
+import MasterData from "../pages/MasterData";
+import DocumentSettings from "../pages/DocumentSettings";
 
 // =====================================================
 // PURCHASE
@@ -336,6 +339,37 @@ function AppRoutes() {
                 element={
                     <ProtectedRoute>
                         <Theme />
+                    </ProtectedRoute>
+                }
+            />
+
+            {/* =================================================
+                COMPANY SETTINGS
+            ================================================= */}
+
+            <Route
+                path="/settings/company"
+                element={
+                    <ProtectedRoute>
+                        <CompanySettings />
+                    </ProtectedRoute>
+                }
+            />
+
+            <Route
+                path="/settings/master-data"
+                element={
+                    <ProtectedRoute>
+                        <MasterData />
+                    </ProtectedRoute>
+                }
+            />
+
+            <Route
+                path="/settings/documents"
+                element={
+                    <ProtectedRoute>
+                        <DocumentSettings />
                     </ProtectedRoute>
                 }
             />
