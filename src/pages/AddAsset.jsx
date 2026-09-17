@@ -14,6 +14,7 @@ function AddAsset() {
     const [categories, setCategories] = useState([]);
     const [vendors, setVendors] = useState([]);
     const [locations, setLocations] = useState([]);
+    const [employees, setEmployees] = useState([]);
 
 
     const [loading, setLoading] = useState(false);
@@ -47,17 +48,21 @@ function AddAsset() {
         configuration_specs: "",
 
         vendor_id: "",
-
         purchase_date: "",
         purchase_cost: "",
         invoice_number: "",
 
+        warranty_started: "",
         warranty_expiry: "",
 
-        department: "",
+        current_employee_id: "",
 
+        department: "",
         location_id: "",
         floor: "",
+        designation: "",
+
+        last_used_by: "",
 
         remarks: ""
     });
@@ -79,7 +84,8 @@ function AddAsset() {
                 const [
                     categoryRes,
                     vendorRes,
-                    locationRes
+                    locationRes,
+                    employeeRes
                 ] = await Promise.all([
 
                     API.get(
@@ -92,6 +98,10 @@ function AddAsset() {
 
                     API.get(
                         "/locations"
+                    ),
+
+                    API.get(
+                        "/employees"
                     )
                 ]);
 
@@ -108,6 +118,11 @@ function AddAsset() {
 
                 setLocations(
                     locationRes.data.data || []
+                );
+
+
+                setEmployees(
+                    employeeRes.data.data || []
                 );
 
 
@@ -154,6 +169,87 @@ function AddAsset() {
             previous => ({
                 ...previous,
                 [name]: value
+            })
+        );
+    };
+
+
+    // =====================================================
+    // EMPLOYEE SELECTION
+    // =====================================================
+
+    const handleEmployeeChange = (e) => {
+
+        const employeeId =
+            e.target.value;
+
+
+        const selectedEmployee =
+            employees.find(
+                employee =>
+                    String(
+                        employee.employee_id
+                    ) === String(
+                        employeeId
+                    )
+            );
+
+
+        if (!selectedEmployee) {
+
+            setForm(
+                previous => ({
+                    ...previous,
+
+                    current_employee_id: "",
+                    department: "",
+                    designation: ""
+                })
+            );
+
+            return;
+        }
+
+
+        const employeeCode =
+            selectedEmployee.employee_code ||
+            selectedEmployee.employee_id ||
+            "";
+
+
+        const department =
+            selectedEmployee.department ||
+            selectedEmployee.department_name ||
+            "";
+
+
+        const designation =
+            selectedEmployee.designation ||
+            selectedEmployee.designation_name ||
+            "";
+
+
+        const displayName =
+            selectedEmployee.display_name ||
+            selectedEmployee.employee_name ||
+            selectedEmployee.name ||
+            "";
+
+
+        setForm(
+            previous => ({
+                ...previous,
+
+                current_employee_id:
+                    selectedEmployee.employee_id,
+
+                department,
+
+                designation,
+
+                last_used_by:
+                    displayName ||
+                    employeeCode
             })
         );
     };
@@ -402,6 +498,17 @@ function AddAsset() {
                 );
 
 
+            const selectedEmployee =
+                employees.find(
+                    employee =>
+                        String(
+                            employee.employee_id
+                        ) === String(
+                            form.current_employee_id
+                        )
+                );
+
+
             const payload = {
 
                 asset_code:
@@ -478,6 +585,10 @@ function AddAsset() {
                     form.invoice_number.trim() ||
                     null,
 
+                warranty_started:
+                    form.warranty_started ||
+                    null,
+
                 warranty_expiry:
                     form.warranty_expiry ||
                     null,
@@ -486,6 +597,14 @@ function AddAsset() {
                     form.warranty_expiry
                         ? "In Warranty"
                         : "Unknown",
+
+                current_employee_id:
+                    selectedEmployee?.employee_id ||
+                    null,
+
+                last_used_by:
+                    form.last_used_by.trim() ||
+                    null,
 
                 department:
                     form.department.trim() ||
@@ -498,6 +617,10 @@ function AddAsset() {
 
                 floor:
                     form.floor.trim() ||
+                    null,
+
+                designation:
+                    form.designation.trim() ||
                     null,
 
                 asset_status:
@@ -708,7 +831,7 @@ function AddAsset() {
                     >
 
                         {/* =================================================
-                            BASIC INFORMATION
+                            ASSET INFORMATION
                         ================================================= */}
 
                         <SectionHeader
@@ -738,7 +861,7 @@ function AddAsset() {
                                     onChange={
                                         handleChange
                                     }
-                                    placeholder="AST-001"
+                                    placeholder="URCTS-CH-LT-001"
                                     style={
                                         inputStyle
                                     }
@@ -824,7 +947,7 @@ function AddAsset() {
                                     onChange={
                                         handleChange
                                     }
-                                    placeholder="Dell Latitude Laptop"
+                                    placeholder="HP ZFirefly14G8 LAPTOP"
                                     style={
                                         inputStyle
                                     }
@@ -899,7 +1022,7 @@ function AddAsset() {
                                     onChange={
                                         handleChange
                                     }
-                                    placeholder="Dell"
+                                    placeholder="HP"
                                     style={
                                         inputStyle
                                     }
@@ -922,7 +1045,7 @@ function AddAsset() {
                                     onChange={
                                         handleChange
                                     }
-                                    placeholder="Latitude 5440"
+                                    placeholder="ZFirefly14G8"
                                     style={
                                         inputStyle
                                     }
@@ -945,7 +1068,7 @@ function AddAsset() {
                                     onChange={
                                         handleChange
                                     }
-                                    placeholder="SN123456789"
+                                    placeholder="Serial Number"
                                     style={
                                         inputStyle
                                     }
@@ -967,7 +1090,7 @@ function AddAsset() {
                                     onChange={
                                         handleChange
                                     }
-                                    placeholder="Intel Core i5"
+                                    placeholder="Intel Core i7 13th Gen"
                                     style={
                                         inputStyle
                                     }
@@ -977,7 +1100,7 @@ function AddAsset() {
 
 
                             <FormField
-                                label="RAM"
+                                label="Memory"
                             >
 
                                 <input
@@ -989,7 +1112,7 @@ function AddAsset() {
                                     onChange={
                                         handleChange
                                     }
-                                    placeholder="16 GB"
+                                    placeholder="32 GB"
                                     style={
                                         inputStyle
                                     }
@@ -999,7 +1122,7 @@ function AddAsset() {
 
 
                             <FormField
-                                label="RAM Capacity"
+                                label="Memory Specification"
                             >
 
                                 <input
@@ -1011,7 +1134,7 @@ function AddAsset() {
                                     onChange={
                                         handleChange
                                     }
-                                    placeholder="16 GB DDR4"
+                                    placeholder="32 GB DDR5"
                                     style={
                                         inputStyle
                                     }
@@ -1021,7 +1144,7 @@ function AddAsset() {
 
 
                             <FormField
-                                label="Storage"
+                                label="Drive Storage"
                             >
 
                                 <input
@@ -1043,7 +1166,7 @@ function AddAsset() {
 
 
                             <FormField
-                                label="Storage Specification"
+                                label="Drive Storage Specification"
                             >
 
                                 <input
@@ -1055,7 +1178,7 @@ function AddAsset() {
                                     onChange={
                                         handleChange
                                     }
-                                    placeholder="512 GB NVMe SSD"
+                                    placeholder="1 TB NVMe SSD"
                                     style={
                                         inputStyle
                                     }
@@ -1085,127 +1208,24 @@ function AddAsset() {
 
                             </FormField>
 
-                        </div>
-
-
-                        {/* =================================================
-                            CONFIGURATION
-                        ================================================= */}
-
-                        <SectionHeader
-                            icon="⚙️"
-                            title="Configuration & Specifications"
-                            subtitle="Add additional technical information"
-                        />
-
-
-                        <FormField
-                            label="Configuration / Specifications"
-                        >
-
-                            <textarea
-                                name="configuration_specs"
-                                value={
-                                    form.configuration_specs
-                                }
-                                onChange={
-                                    handleChange
-                                }
-                                rows="5"
-                                placeholder="Enter hardware configuration, specifications, accessories, etc."
-                                style={
-                                    textareaStyle
-                                }
-                            />
-
-                        </FormField>
-
-
-                        {/* =================================================
-                            PURCHASE INFORMATION
-                        ================================================= */}
-
-                        <SectionHeader
-                            icon="💰"
-                            title="Purchase Information"
-                            subtitle="Enter purchase and vendor details"
-                        />
-
-
-                        <div
-                            style={
-                                gridStyle
-                            }
-                        >
 
                             <FormField
-                                label="Vendor"
-                                required
+                                label="Configuration"
+                                fullWidth
                             >
 
-                                <select
-                                    name="vendor_id"
+                                <textarea
+                                    name="configuration_specs"
                                     value={
-                                        form.vendor_id
+                                        form.configuration_specs
                                     }
                                     onChange={
                                         handleChange
                                     }
-                                    disabled={
-                                        dropdownLoading
-                                    }
+                                    rows="4"
+                                    placeholder="Enter hardware configuration, specifications, accessories, etc."
                                     style={
-                                        inputStyle
-                                    }
-                                >
-
-                                    <option value="">
-                                        {dropdownLoading
-                                            ? "Loading vendors..."
-                                            : "Select Vendor"}
-                                    </option>
-
-
-                                    {vendors.map(
-                                        vendor => (
-
-                                            <option
-                                                key={
-                                                    vendor.vendor_id
-                                                }
-                                                value={
-                                                    vendor.vendor_id
-                                                }
-                                            >
-                                                {
-                                                    vendor.vendor_name
-                                                }
-                                            </option>
-
-                                        )
-                                    )}
-
-                                </select>
-
-                            </FormField>
-
-
-                            <FormField
-                                label="Purchase Date"
-                                required
-                            >
-
-                                <input
-                                    type="date"
-                                    name="purchase_date"
-                                    value={
-                                        form.purchase_date
-                                    }
-                                    onChange={
-                                        handleChange
-                                    }
-                                    style={
-                                        inputStyle
+                                        textareaStyle
                                     }
                                 />
 
@@ -1213,43 +1233,19 @@ function AddAsset() {
 
 
                             <FormField
-                                label="Purchase Cost"
-                            >
-
-                                <input
-                                    type="number"
-                                    name="purchase_cost"
-                                    value={
-                                        form.purchase_cost
-                                    }
-                                    onChange={
-                                        handleChange
-                                    }
-                                    min="0"
-                                    step="0.01"
-                                    placeholder="250000"
-                                    style={
-                                        inputStyle
-                                    }
-                                />
-
-                            </FormField>
-
-
-                            <FormField
-                                label="Invoice Number"
+                                label="Last Used By"
                             >
 
                                 <input
                                     type="text"
-                                    name="invoice_number"
+                                    name="last_used_by"
                                     value={
-                                        form.invoice_number
+                                        form.last_used_by
                                     }
                                     onChange={
                                         handleChange
                                     }
-                                    placeholder="INV-2026-001"
+                                    placeholder="Employee name"
                                     style={
                                         inputStyle
                                     }
@@ -1261,13 +1257,13 @@ function AddAsset() {
 
 
                         {/* =================================================
-                            WARRANTY
+                            WARRANTY INFORMATION
                         ================================================= */}
 
                         <SectionHeader
                             icon="🛡️"
                             title="Warranty Information"
-                            subtitle="Enter warranty details and upload warranty document"
+                            subtitle="Enter warranty period and upload warranty document"
                         />
 
 
@@ -1276,6 +1272,27 @@ function AddAsset() {
                                 gridStyle
                             }
                         >
+
+                            <FormField
+                                label="Warranty Started"
+                            >
+
+                                <input
+                                    type="date"
+                                    name="warranty_started"
+                                    value={
+                                        form.warranty_started
+                                    }
+                                    onChange={
+                                        handleChange
+                                    }
+                                    style={
+                                        inputStyle
+                                    }
+                                />
+
+                            </FormField>
+
 
                             <FormField
                                 label="Warranty Expiry"
@@ -1346,13 +1363,13 @@ function AddAsset() {
 
 
                         {/* =================================================
-                            LOCATION / DEPARTMENT
+                            ASSIGNMENT & LOCATION
                         ================================================= */}
 
                         <SectionHeader
                             icon="📍"
                             title="Assignment & Location"
-                            subtitle="Enter department and physical location"
+                            subtitle="Assign the asset and enter its physical location"
                         />
 
 
@@ -1361,6 +1378,109 @@ function AddAsset() {
                                 gridStyle
                             }
                         >
+
+                            <FormField
+                                label="Asset Assign"
+                            >
+
+                                <select
+                                    name="current_employee_id"
+                                    value={
+                                        form.current_employee_id
+                                    }
+                                    onChange={
+                                        handleEmployeeChange
+                                    }
+                                    disabled={
+                                        dropdownLoading
+                                    }
+                                    style={
+                                        inputStyle
+                                    }
+                                >
+
+                                    <option value="">
+                                        {dropdownLoading
+                                            ? "Loading employees..."
+                                            : "Not Assigned"}
+                                    </option>
+
+
+                                    {employees.map(
+                                        employee => {
+
+                                            const employeeName =
+                                                employee.display_name ||
+                                                employee.employee_name ||
+                                                employee.name ||
+                                                "Employee";
+
+
+                                            const employeeCode =
+                                                employee.employee_code ||
+                                                employee.employee_id ||
+                                                "";
+
+
+                                            return (
+
+                                                <option
+                                                    key={
+                                                        employee.employee_id
+                                                    }
+                                                    value={
+                                                        employee.employee_id
+                                                    }
+                                                >
+                                                    {
+                                                        employeeName
+                                                    }
+                                                    {" · "}
+                                                    {
+                                                        employeeCode
+                                                    }
+                                                </option>
+
+                                            );
+
+                                        }
+                                    )}
+
+                                </select>
+
+                            </FormField>
+
+
+                            <FormField
+                                label="Employee Code"
+                            >
+
+                                <input
+                                    type="text"
+                                    value={
+                                        form.current_employee_id
+                                            ? (
+                                                employees.find(
+                                                    employee =>
+                                                        String(
+                                                            employee.employee_id
+                                                        ) === String(
+                                                            form.current_employee_id
+                                                        )
+                                                )?.employee_code ||
+                                                form.current_employee_id
+                                            )
+                                            : ""
+                                    }
+                                    readOnly
+                                    placeholder="Employee Code"
+                                    style={
+                                        readOnlyInputStyle
+                                    }
+                                />
+
+                            </FormField>
+
 
                             <FormField
                                 label="Department"
@@ -1375,7 +1495,29 @@ function AddAsset() {
                                     onChange={
                                         handleChange
                                     }
-                                    placeholder="IT Department"
+                                    placeholder="Department"
+                                    style={
+                                        inputStyle
+                                    }
+                                />
+
+                            </FormField>
+
+
+                            <FormField
+                                label="Designation"
+                            >
+
+                                <input
+                                    type="text"
+                                    name="designation"
+                                    value={
+                                        form.designation
+                                    }
+                                    onChange={
+                                        handleChange
+                                    }
+                                    placeholder="Designation"
                                     style={
                                         inputStyle
                                     }
@@ -1461,6 +1603,155 @@ function AddAsset() {
 
 
                         {/* =================================================
+                            PURCHASE DETAILS
+                        ================================================= */}
+
+                        <div
+                            style={
+                                purchaseInfoStyle
+                            }
+                        >
+
+                            <div
+                                style={
+                                    purchaseInfoTitleStyle
+                                }
+                            >
+                                Purchase Details
+                            </div>
+
+
+                            <div
+                                style={
+                                    gridStyle
+                                }
+                            >
+
+                                <FormField
+                                    label="Vendor"
+                                    required
+                                >
+
+                                    <select
+                                        name="vendor_id"
+                                        value={
+                                            form.vendor_id
+                                        }
+                                        onChange={
+                                            handleChange
+                                        }
+                                        disabled={
+                                            dropdownLoading
+                                        }
+                                        style={
+                                            inputStyle
+                                        }
+                                    >
+
+                                        <option value="">
+                                            {dropdownLoading
+                                                ? "Loading vendors..."
+                                                : "Select Vendor"}
+                                        </option>
+
+
+                                        {vendors.map(
+                                            vendor => (
+
+                                                <option
+                                                    key={
+                                                        vendor.vendor_id
+                                                    }
+                                                    value={
+                                                        vendor.vendor_id
+                                                    }
+                                                >
+                                                    {
+                                                        vendor.vendor_name
+                                                    }
+                                                </option>
+
+                                            )
+                                        )}
+
+                                    </select>
+
+                                </FormField>
+
+
+                                <FormField
+                                    label="Purchase Date"
+                                    required
+                                >
+
+                                    <input
+                                        type="date"
+                                        name="purchase_date"
+                                        value={
+                                            form.purchase_date
+                                        }
+                                        onChange={
+                                            handleChange
+                                        }
+                                        style={
+                                            inputStyle
+                                        }
+                                    />
+
+                                </FormField>
+
+
+                                <FormField
+                                    label="Purchase Cost"
+                                >
+
+                                    <input
+                                        type="number"
+                                        name="purchase_cost"
+                                        value={
+                                            form.purchase_cost
+                                        }
+                                        onChange={
+                                            handleChange
+                                        }
+                                        min="0"
+                                        step="0.01"
+                                        placeholder="250000"
+                                        style={
+                                            inputStyle
+                                        }
+                                    />
+
+                                </FormField>
+
+
+                                <FormField
+                                    label="Invoice Number"
+                                >
+
+                                    <input
+                                        type="text"
+                                        name="invoice_number"
+                                        value={
+                                            form.invoice_number
+                                        }
+                                        onChange={
+                                            handleChange
+                                        }
+                                        placeholder="INV-2026-001"
+                                        style={
+                                            inputStyle
+                                        }
+                                    />
+
+                                </FormField>
+
+                            </div>
+
+                        </div>
+
+
+                        {/* =================================================
                             REMARKS
                         ================================================= */}
 
@@ -1473,6 +1764,7 @@ function AddAsset() {
 
                         <FormField
                             label="Remarks"
+                            fullWidth
                         >
 
                             <textarea
@@ -1666,14 +1958,20 @@ function SectionHeader({
 function FormField({
     label,
     required,
-    children
+    children,
+    fullWidth
 }) {
 
     return (
 
         <div
             style={
-                fieldStyle
+                fullWidth
+                    ? {
+                        ...fieldStyle,
+                        gridColumn: "1 / -1"
+                    }
+                    : fieldStyle
             }
         >
 
@@ -1947,6 +2245,18 @@ const inputStyle = {
 };
 
 
+const readOnlyInputStyle = {
+
+    ...inputStyle,
+
+    background: "#f8fafc",
+
+    color: "#475569",
+
+    cursor: "default"
+};
+
+
 const textareaStyle = {
 
     width: "100%",
@@ -2018,6 +2328,33 @@ const selectedFileStyle = {
     fontSize: "12px",
 
     wordBreak: "break-word"
+};
+
+
+const purchaseInfoStyle = {
+
+    marginTop: "10px",
+
+    padding: "20px",
+
+    borderRadius: "10px",
+
+    background: "#f8fafc",
+
+    border:
+        "1px solid #e2e8f0"
+};
+
+
+const purchaseInfoTitleStyle = {
+
+    fontSize: "14px",
+
+    fontWeight: "700",
+
+    color: "#334155",
+
+    marginBottom: "18px"
 };
 
 
