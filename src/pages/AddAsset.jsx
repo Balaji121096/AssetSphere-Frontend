@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 import Sidebar from "../components/Sidebar";
 import Navbar from "../components/Navbar";
@@ -10,17 +10,21 @@ function AddAsset() {
 
     const navigate = useNavigate();
 
+    const [searchParams] = useSearchParams();
+
+    const editId = searchParams.get("edit");
+
+    const isEditMode = Boolean(editId);
+
 
     const [categories, setCategories] = useState([]);
     const [vendors, setVendors] = useState([]);
     const [locations, setLocations] = useState([]);
     const [employees, setEmployees] = useState([]);
 
-
     const [loading, setLoading] = useState(false);
-    const [dropdownLoading, setDropdownLoading] =
-        useState(true);
-
+    const [pageLoading, setPageLoading] = useState(false);
+    const [dropdownLoading, setDropdownLoading] = useState(true);
 
     const [warrantyDocument, setWarrantyDocument] =
         useState(null);
@@ -47,24 +51,28 @@ function AddAsset() {
 
         configuration_specs: "",
 
-        vendor_id: "",
-        purchase_date: "",
-        purchase_cost: "",
-        invoice_number: "",
+        last_used_by: "",
 
         warranty_started: "",
         warranty_expiry: "",
 
         current_employee_id: "",
+        employee_code: "",
 
         department: "",
-        location_id: "",
-        floor: "",
         designation: "",
 
-        last_used_by: "",
+        location_id: "",
+        floor: "",
 
-        remarks: ""
+        vendor_id: "",
+        purchase_date: "",
+        purchase_cost: "",
+        invoice_number: "",
+
+        remarks: "",
+
+        asset_status: "In Stock"
     });
 
 
@@ -80,7 +88,6 @@ function AddAsset() {
 
                 setDropdownLoading(true);
 
-
                 const [
                     categoryRes,
                     vendorRes,
@@ -88,41 +95,30 @@ function AddAsset() {
                     employeeRes
                 ] = await Promise.all([
 
-                    API.get(
-                        "/categories"
-                    ),
+                    API.get("/categories"),
 
-                    API.get(
-                        "/vendors"
-                    ),
+                    API.get("/vendors"),
 
-                    API.get(
-                        "/locations"
-                    ),
+                    API.get("/locations"),
 
-                    API.get(
-                        "/employees"
-                    )
+                    API.get("/employees")
                 ]);
 
 
                 setCategories(
-                    categoryRes.data.data || []
+                    categoryRes.data?.data || []
                 );
-
 
                 setVendors(
-                    vendorRes.data.data || []
+                    vendorRes.data?.data || []
                 );
-
 
                 setLocations(
-                    locationRes.data.data || []
+                    locationRes.data?.data || []
                 );
 
-
                 setEmployees(
-                    employeeRes.data.data || []
+                    employeeRes.data?.data || []
                 );
 
 
@@ -132,7 +128,6 @@ function AddAsset() {
                     "Dropdown Load Error:",
                     error
                 );
-
 
                 alert(
                     error.response?.data?.message ||
@@ -145,12 +140,181 @@ function AddAsset() {
                 setDropdownLoading(false);
 
             }
+
         };
 
 
         loadDropdownData();
 
     }, []);
+
+
+    // =====================================================
+    // LOAD ASSET FOR EDIT
+    // =====================================================
+
+    useEffect(() => {
+
+        if (!isEditMode) {
+            return;
+        }
+
+
+        const loadAsset = async () => {
+
+            try {
+
+                setPageLoading(true);
+
+
+                const response =
+                    await API.get(
+                        `/assets/${editId}`
+                    );
+
+
+                const asset =
+                    response.data?.data;
+
+
+                if (!asset) {
+
+                    alert(
+                        "Asset not found"
+                    );
+
+                    navigate("/assets");
+
+                    return;
+                }
+
+
+                setForm({
+
+                    asset_code:
+                        asset.asset_code || "",
+
+                    asset_type:
+                        asset.asset_type || "",
+
+                    asset_name:
+                        asset.asset_name || "",
+
+                    category_id:
+                        asset.category_id || "",
+
+                    brand:
+                        asset.brand || "",
+
+                    model:
+                        asset.model || "",
+
+                    serial_number:
+                        asset.serial_number || "",
+
+                    processor:
+                        asset.processor || "",
+
+                    ram:
+                        asset.ram || "",
+
+                    ram_capacity:
+                        asset.ram_capacity || "",
+
+                    storage:
+                        asset.storage || "",
+
+                    storage_spec:
+                        asset.storage_spec || "",
+
+                    operating_system:
+                        asset.operating_system || "",
+
+                    configuration_specs:
+                        asset.configuration_specs || "",
+
+                    last_used_by:
+                        asset.last_used_by || "",
+
+                    warranty_started:
+                        asset.warranty_started || "",
+
+                    warranty_expiry:
+                        asset.warranty_expiry || "",
+
+                    current_employee_id:
+                        asset.current_employee_id || "",
+
+                    employee_code:
+                        asset.employee_id || asset.employee_code || "",
+
+                    department:
+                        asset.department || "",
+
+                    designation:
+                        asset.designation || "",
+
+                    location_id:
+                        asset.location_id || "",
+
+                    floor:
+                        asset.floor || "",
+
+                    vendor_id:
+                        asset.vendor_id || "",
+
+                    purchase_date:
+                        asset.purchase_date
+                            ? String(
+                                asset.purchase_date
+                            ).substring(0, 10)
+                            : "",
+
+                    purchase_cost:
+                        asset.purchase_cost ?? "",
+
+                    invoice_number:
+                        asset.invoice_number || "",
+
+                    remarks:
+                        asset.remarks || "",
+
+                    asset_status:
+                        asset.asset_status || "In Stock"
+                });
+
+
+            } catch (error) {
+
+                console.error(
+                    "Load Asset Error:",
+                    error
+                );
+
+                alert(
+                    error.response?.data?.message ||
+                    "Failed to load asset"
+                );
+
+                navigate("/assets");
+
+
+            } finally {
+
+                setPageLoading(false);
+
+            }
+
+        };
+
+
+        loadAsset();
+
+    }, [
+        editId,
+        isEditMode,
+        navigate
+    ]);
 
 
     // =====================================================
@@ -165,23 +329,43 @@ function AddAsset() {
         } = e.target;
 
 
-        setForm(
-            previous => ({
-                ...previous,
-                [name]: value
-            })
-        );
+        setForm(previous => ({
+
+            ...previous,
+
+            [name]: value
+
+        }));
+
     };
 
 
     // =====================================================
-    // EMPLOYEE SELECTION
+    // EMPLOYEE SELECT
+    // AUTO FILL EMPLOYEE CODE / DEPARTMENT / DESIGNATION
     // =====================================================
 
     const handleEmployeeChange = (e) => {
 
         const employeeId =
             e.target.value;
+
+
+        if (!employeeId) {
+
+            setForm(previous => ({
+
+                ...previous,
+
+                current_employee_id: "",
+                employee_code: "",
+                department: "",
+                designation: ""
+
+            }));
+
+            return;
+        }
 
 
         const selectedEmployee =
@@ -197,16 +381,6 @@ function AddAsset() {
 
         if (!selectedEmployee) {
 
-            setForm(
-                previous => ({
-                    ...previous,
-
-                    current_employee_id: "",
-                    department: "",
-                    designation: ""
-                })
-            );
-
             return;
         }
 
@@ -214,6 +388,7 @@ function AddAsset() {
         const employeeCode =
             selectedEmployee.employee_code ||
             selectedEmployee.employee_id ||
+            selectedEmployee.code ||
             "";
 
 
@@ -226,32 +401,28 @@ function AddAsset() {
         const designation =
             selectedEmployee.designation ||
             selectedEmployee.designation_name ||
+            selectedEmployee.job_title ||
             "";
 
 
-        const displayName =
-            selectedEmployee.display_name ||
-            selectedEmployee.employee_name ||
-            selectedEmployee.name ||
-            "";
+        setForm(previous => ({
 
+            ...previous,
 
-        setForm(
-            previous => ({
-                ...previous,
+            current_employee_id:
+                selectedEmployee.employee_id,
 
-                current_employee_id:
-                    selectedEmployee.employee_id,
+            employee_code:
+                employeeCode,
 
+            department:
                 department,
 
-                designation,
+            designation:
+                designation
 
-                last_used_by:
-                    displayName ||
-                    employeeCode
-            })
-        );
+        }));
+
     };
 
 
@@ -279,6 +450,7 @@ function AddAsset() {
             "image/jpeg",
             "image/png",
             "image/jpg"
+
         ];
 
 
@@ -296,7 +468,6 @@ function AddAsset() {
                 "Only PDF, JPG, JPEG and PNG files are allowed"
             );
 
-
             e.target.value = "";
 
             return;
@@ -311,7 +482,6 @@ function AddAsset() {
                 "File size must be 10 MB or less"
             );
 
-
             e.target.value = "";
 
             return;
@@ -319,6 +489,7 @@ function AddAsset() {
 
 
         setWarrantyDocument(file);
+
     };
 
 
@@ -328,9 +499,7 @@ function AddAsset() {
 
     const validateForm = () => {
 
-        if (
-            !form.asset_code.trim()
-        ) {
+        if (!form.asset_code.trim()) {
 
             alert(
                 "Asset Code is required"
@@ -340,9 +509,7 @@ function AddAsset() {
         }
 
 
-        if (
-            !form.asset_type.trim()
-        ) {
+        if (!form.asset_type.trim()) {
 
             alert(
                 "Asset Type is required"
@@ -352,9 +519,7 @@ function AddAsset() {
         }
 
 
-        if (
-            !form.asset_name.trim()
-        ) {
+        if (!form.asset_name.trim()) {
 
             alert(
                 "Asset Name is required"
@@ -364,9 +529,7 @@ function AddAsset() {
         }
 
 
-        if (
-            !form.category_id
-        ) {
+        if (!form.category_id) {
 
             alert(
                 "Please select a category"
@@ -376,9 +539,7 @@ function AddAsset() {
         }
 
 
-        if (
-            !form.brand.trim()
-        ) {
+        if (!form.brand.trim()) {
 
             alert(
                 "Brand is required"
@@ -388,9 +549,7 @@ function AddAsset() {
         }
 
 
-        if (
-            !form.model.trim()
-        ) {
+        if (!form.model.trim()) {
 
             alert(
                 "Model is required"
@@ -400,36 +559,10 @@ function AddAsset() {
         }
 
 
-        if (
-            !form.serial_number.trim()
-        ) {
+        if (!form.serial_number.trim()) {
 
             alert(
                 "Serial Number is required"
-            );
-
-            return false;
-        }
-
-
-        if (
-            !form.vendor_id
-        ) {
-
-            alert(
-                "Please select a vendor"
-            );
-
-            return false;
-        }
-
-
-        if (
-            !form.purchase_date
-        ) {
-
-            alert(
-                "Purchase Date is required"
             );
 
             return false;
@@ -449,9 +582,7 @@ function AddAsset() {
         }
 
 
-        if (
-            !form.location_id
-        ) {
+        if (!form.location_id) {
 
             alert(
                 "Please select a location"
@@ -462,6 +593,7 @@ function AddAsset() {
 
 
         return true;
+
     };
 
 
@@ -474,9 +606,7 @@ function AddAsset() {
         e.preventDefault();
 
 
-        if (
-            !validateForm()
-        ) {
+        if (!validateForm()) {
 
             return;
         }
@@ -494,17 +624,6 @@ function AddAsset() {
                             vendor.vendor_id
                         ) === Number(
                             form.vendor_id
-                        )
-                );
-
-
-            const selectedEmployee =
-                employees.find(
-                    employee =>
-                        String(
-                            employee.employee_id
-                        ) === String(
-                            form.current_employee_id
                         )
                 );
 
@@ -562,27 +681,8 @@ function AddAsset() {
                     form.configuration_specs.trim() ||
                     null,
 
-                vendor_id:
-                    Number(
-                        form.vendor_id
-                    ),
-
-                vendor_name:
-                    selectedVendor?.vendor_name ||
-                    null,
-
-                purchase_date:
-                    form.purchase_date,
-
-                purchase_cost:
-                    form.purchase_cost === ""
-                        ? null
-                        : Number(
-                            form.purchase_cost
-                        ),
-
-                invoice_number:
-                    form.invoice_number.trim() ||
+                last_used_by:
+                    form.last_used_by.trim() ||
                     null,
 
                 warranty_started:
@@ -599,15 +699,20 @@ function AddAsset() {
                         : "Unknown",
 
                 current_employee_id:
-                    selectedEmployee?.employee_id ||
-                    null,
+                    form.current_employee_id
+                        ? form.current_employee_id
+                        : null,
 
-                last_used_by:
-                    form.last_used_by.trim() ||
+                employee_code:
+                    form.employee_code.trim() ||
                     null,
 
                 department:
                     form.department.trim() ||
+                    null,
+
+                designation:
+                    form.designation.trim() ||
                     null,
 
                 location_id:
@@ -619,12 +724,39 @@ function AddAsset() {
                     form.floor.trim() ||
                     null,
 
-                designation:
-                    form.designation.trim() ||
+                vendor_id:
+                    form.vendor_id
+                        ? Number(
+                            form.vendor_id
+                        )
+                        : null,
+
+                vendor_name:
+                    selectedVendor?.vendor_name ||
+                    null,
+
+                purchase_date:
+                    form.purchase_date ||
+                    null,
+
+                purchase_cost:
+                    form.purchase_cost === ""
+                        ? null
+                        : Number(
+                            form.purchase_cost
+                        ),
+
+                invoice_number:
+                    form.invoice_number.trim() ||
                     null,
 
                 asset_status:
-                    "In Stock",
+                    form.current_employee_id
+                        ? "Assigned"
+                        : (
+                            form.asset_status ||
+                            "In Stock"
+                        ),
 
                 remarks:
                     form.remarks.trim() ||
@@ -632,11 +764,36 @@ function AddAsset() {
             };
 
 
-            const response =
-                await API.post(
-                    "/assets",
-                    payload
-                );
+            let response;
+
+
+            // =================================================
+            // EDIT
+            // =================================================
+
+            if (isEditMode) {
+
+                response =
+                    await API.put(
+                        `/assets/${editId}`,
+                        payload
+                    );
+
+            }
+
+            // =================================================
+            // ADD
+            // =================================================
+
+            else {
+
+                response =
+                    await API.post(
+                        "/assets",
+                        payload
+                    );
+
+            }
 
 
             if (
@@ -645,17 +802,67 @@ function AddAsset() {
 
                 throw new Error(
                     response.data?.message ||
-                    "Failed to add asset"
+                    (
+                        isEditMode
+                            ? "Failed to update asset"
+                            : "Failed to add asset"
+                    )
                 );
+
             }
 
 
             const assetId =
-                response.data.asset_id;
+                isEditMode
+                    ? editId
+                    : response.data.asset_id;
 
 
             // =================================================
-            // UPLOAD WARRANTY DOCUMENT
+            // ASSIGN EMPLOYEE
+            //
+            // This is important for ADD.
+            // The asset is first created and then employee
+            // assignment is saved through assign API.
+            // =================================================
+
+            if (
+                form.current_employee_id &&
+                assetId
+            ) {
+
+                await API.put(
+
+                    `/assets/${assetId}/assign`,
+
+                    {
+                        employee_id:
+                            form.current_employee_id
+                    }
+
+                );
+
+            }
+
+
+            // =================================================
+            // REMOVE EMPLOYEE WHEN EDITING
+            // =================================================
+
+            if (
+                isEditMode &&
+                !form.current_employee_id
+            ) {
+
+                await API.put(
+                    `/assets/${assetId}/return`
+                );
+
+            }
+
+
+            // =================================================
+            // WARRANTY DOCUMENT
             // =================================================
 
             if (
@@ -685,26 +892,34 @@ function AddAsset() {
                                 "multipart/form-data"
                         }
                     }
+
                 );
+
             }
 
 
             alert(
-                warrantyDocument
-                    ? "Asset and warranty document added successfully"
-                    : "Asset added successfully"
+
+                isEditMode
+
+                    ? "Asset updated successfully"
+
+                    : (
+                        form.current_employee_id
+                            ? "Asset added and assigned successfully"
+                            : "Asset added successfully"
+                    )
+
             );
 
 
-            navigate(
-                "/assets"
-            );
+            navigate("/assets");
 
 
         } catch (error) {
 
             console.error(
-                "Add Asset Error:",
+                "Save Asset Error:",
                 error
             );
 
@@ -712,7 +927,11 @@ function AddAsset() {
             alert(
                 error.response?.data?.message ||
                 error.message ||
-                "Failed to add asset"
+                (
+                    isEditMode
+                        ? "Failed to update asset"
+                        : "Failed to add asset"
+                )
             );
 
 
@@ -721,6 +940,7 @@ function AddAsset() {
             setLoading(false);
 
         }
+
     };
 
 
@@ -736,10 +956,30 @@ function AddAsset() {
         }
 
 
-        navigate(
-            "/assets"
-        );
+        navigate("/assets");
+
     };
+
+
+    // =====================================================
+    // LOADING
+    // =====================================================
+
+    if (pageLoading) {
+
+        return (
+
+            <div
+                style={loadingPageStyle}
+            >
+
+                Loading asset...
+
+            </div>
+
+        );
+
+    }
 
 
     return (
@@ -777,7 +1017,10 @@ function AddAsset() {
                                     breadcrumbStyle
                                 }
                             >
-                                Hardware Assets / Add Asset
+                                Hardware Assets /{" "}
+                                {isEditMode
+                                    ? "Edit Asset"
+                                    : "Add Asset"}
                             </div>
 
 
@@ -786,7 +1029,9 @@ function AddAsset() {
                                     titleStyle
                                 }
                             >
-                                Add Hardware Asset
+                                {isEditMode
+                                    ? "Edit Hardware Asset"
+                                    : "Add Hardware Asset"}
                             </h1>
 
 
@@ -795,7 +1040,9 @@ function AddAsset() {
                                     subtitleStyle
                                 }
                             >
-                                Add a new company hardware asset
+                                {isEditMode
+                                    ? "Update hardware asset details"
+                                    : "Add a new company hardware asset"}
                             </p>
 
                         </div>
@@ -947,7 +1194,7 @@ function AddAsset() {
                                     onChange={
                                         handleChange
                                     }
-                                    placeholder="HP ZFirefly14G8 LAPTOP"
+                                    placeholder="HP Victus Gaming Laptop"
                                     style={
                                         inputStyle
                                     }
@@ -1045,7 +1292,7 @@ function AddAsset() {
                                     onChange={
                                         handleChange
                                     }
-                                    placeholder="ZFirefly14G8"
+                                    placeholder="Victus Gaming Laptop"
                                     style={
                                         inputStyle
                                     }
@@ -1068,7 +1315,7 @@ function AddAsset() {
                                     onChange={
                                         handleChange
                                     }
-                                    placeholder="Serial Number"
+                                    placeholder="5CD2493CXX"
                                     style={
                                         inputStyle
                                     }
@@ -1090,7 +1337,7 @@ function AddAsset() {
                                     onChange={
                                         handleChange
                                     }
-                                    placeholder="Intel Core i7 13th Gen"
+                                    placeholder="i5 / 12Gen"
                                     style={
                                         inputStyle
                                     }
@@ -1112,7 +1359,7 @@ function AddAsset() {
                                     onChange={
                                         handleChange
                                     }
-                                    placeholder="32 GB"
+                                    placeholder="16GB"
                                     style={
                                         inputStyle
                                     }
@@ -1156,7 +1403,7 @@ function AddAsset() {
                                     onChange={
                                         handleChange
                                     }
-                                    placeholder="SSD"
+                                    placeholder="512GB SSD"
                                     style={
                                         inputStyle
                                     }
@@ -1200,32 +1447,9 @@ function AddAsset() {
                                     onChange={
                                         handleChange
                                     }
-                                    placeholder="Windows 11 Pro"
+                                    placeholder="WIN 11 Pro"
                                     style={
                                         inputStyle
-                                    }
-                                />
-
-                            </FormField>
-
-
-                            <FormField
-                                label="Configuration"
-                                fullWidth
-                            >
-
-                                <textarea
-                                    name="configuration_specs"
-                                    value={
-                                        form.configuration_specs
-                                    }
-                                    onChange={
-                                        handleChange
-                                    }
-                                    rows="4"
-                                    placeholder="Enter hardware configuration, specifications, accessories, etc."
-                                    style={
-                                        textareaStyle
                                     }
                                 />
 
@@ -1245,7 +1469,7 @@ function AddAsset() {
                                     onChange={
                                         handleChange
                                     }
-                                    placeholder="Employee name"
+                                    placeholder="Previous employee"
                                     style={
                                         inputStyle
                                     }
@@ -1257,7 +1481,40 @@ function AddAsset() {
 
 
                         {/* =================================================
-                            WARRANTY INFORMATION
+                            CONFIGURATION
+                        ================================================= */}
+
+                        <SectionHeader
+                            icon="⚙️"
+                            title="Configuration"
+                            subtitle="Enter additional hardware configuration"
+                        />
+
+
+                        <FormField
+                            label="Configuration"
+                        >
+
+                            <textarea
+                                name="configuration_specs"
+                                value={
+                                    form.configuration_specs
+                                }
+                                onChange={
+                                    handleChange
+                                }
+                                rows="5"
+                                placeholder="Enter hardware configuration, specifications, accessories, etc."
+                                style={
+                                    textareaStyle
+                                }
+                            />
+
+                        </FormField>
+
+
+                        {/* =================================================
+                            WARRANTY
                         ================================================= */}
 
                         <SectionHeader
@@ -1379,6 +1636,8 @@ function AddAsset() {
                             }
                         >
 
+                            {/* EMPLOYEE */}
+
                             <FormField
                                 label="Asset Assign"
                             >
@@ -1402,7 +1661,7 @@ function AddAsset() {
                                     <option value="">
                                         {dropdownLoading
                                             ? "Loading employees..."
-                                            : "Not Assigned"}
+                                            : "Select Employee"}
                                     </option>
 
 
@@ -1413,14 +1672,13 @@ function AddAsset() {
                                                 employee.display_name ||
                                                 employee.employee_name ||
                                                 employee.name ||
-                                                "Employee";
-
+                                                "";
 
                                             const employeeCode =
                                                 employee.employee_code ||
                                                 employee.employee_id ||
+                                                employee.code ||
                                                 "";
-
 
                                             return (
 
@@ -1434,8 +1692,8 @@ function AddAsset() {
                                                 >
                                                     {
                                                         employeeName
-                                                    }
-                                                    {" · "}
+                                                    }{" "}
+                                                    -{" "}
                                                     {
                                                         employeeCode
                                                     }
@@ -1451,36 +1709,31 @@ function AddAsset() {
                             </FormField>
 
 
+                            {/* EMPLOYEE CODE AUTO */}
+
                             <FormField
                                 label="Employee Code"
                             >
 
                                 <input
                                     type="text"
+                                    name="employee_code"
                                     value={
-                                        form.current_employee_id
-                                            ? (
-                                                employees.find(
-                                                    employee =>
-                                                        String(
-                                                            employee.employee_id
-                                                        ) === String(
-                                                            form.current_employee_id
-                                                        )
-                                                )?.employee_code ||
-                                                form.current_employee_id
-                                            )
-                                            : ""
+                                        form.employee_code
                                     }
                                     readOnly
-                                    placeholder="Employee Code"
-                                    style={
-                                        readOnlyInputStyle
-                                    }
+                                    placeholder="Auto filled"
+                                    style={{
+                                        ...inputStyle,
+                                        background:
+                                            "#f8fafc"
+                                    }}
                                 />
 
                             </FormField>
 
+
+                            {/* DEPARTMENT AUTO */}
 
                             <FormField
                                 label="Department"
@@ -1492,17 +1745,19 @@ function AddAsset() {
                                     value={
                                         form.department
                                     }
-                                    onChange={
-                                        handleChange
-                                    }
-                                    placeholder="Department"
-                                    style={
-                                        inputStyle
-                                    }
+                                    readOnly
+                                    placeholder="Auto filled"
+                                    style={{
+                                        ...inputStyle,
+                                        background:
+                                            "#f8fafc"
+                                    }}
                                 />
 
                             </FormField>
 
+
+                            {/* DESIGNATION AUTO */}
 
                             <FormField
                                 label="Designation"
@@ -1514,17 +1769,19 @@ function AddAsset() {
                                     value={
                                         form.designation
                                     }
-                                    onChange={
-                                        handleChange
-                                    }
-                                    placeholder="Designation"
-                                    style={
-                                        inputStyle
-                                    }
+                                    readOnly
+                                    placeholder="Auto filled"
+                                    style={{
+                                        ...inputStyle,
+                                        background:
+                                            "#f8fafc"
+                                    }}
                                 />
 
                             </FormField>
 
+
+                            {/* LOCATION */}
 
                             <FormField
                                 label="Location"
@@ -1578,6 +1835,8 @@ function AddAsset() {
                             </FormField>
 
 
+                            {/* FLOOR */}
+
                             <FormField
                                 label="Floor"
                             >
@@ -1591,7 +1850,7 @@ function AddAsset() {
                                     onChange={
                                         handleChange
                                     }
-                                    placeholder="2nd Floor"
+                                    placeholder="3rd Floor"
                                     style={
                                         inputStyle
                                     }
@@ -1608,17 +1867,17 @@ function AddAsset() {
 
                         <div
                             style={
-                                purchaseInfoStyle
+                                purchaseBoxStyle
                             }
                         >
 
-                            <div
+                            <h3
                                 style={
-                                    purchaseInfoTitleStyle
+                                    purchaseTitleStyle
                                 }
                             >
                                 Purchase Details
-                            </div>
+                            </h3>
 
 
                             <div
@@ -1629,7 +1888,6 @@ function AddAsset() {
 
                                 <FormField
                                     label="Vendor"
-                                    required
                                 >
 
                                     <select
@@ -1681,7 +1939,6 @@ function AddAsset() {
 
                                 <FormField
                                     label="Purchase Date"
-                                    required
                                 >
 
                                     <input
@@ -1764,7 +2021,6 @@ function AddAsset() {
 
                         <FormField
                             label="Remarks"
-                            fullWidth
                         >
 
                             <textarea
@@ -1810,8 +2066,9 @@ function AddAsset() {
                                         helpTextStyle
                                     }
                                 >
-                                    New assets are automatically added as
-                                    "In Stock".
+                                    {form.current_employee_id
+                                        ? 'Employee assigned - asset will be saved as "Assigned".'
+                                        : 'Asset will be saved as "In Stock" when no employee is selected.'}
                                 </p>
 
                             </div>
@@ -1819,17 +2076,23 @@ function AddAsset() {
 
                             <div
                                 style={
-                                    statusBadgeStyle
+                                    form.current_employee_id
+                                        ? assignedStatusBadgeStyle
+                                        : statusBadgeStyle
                                 }
                             >
 
                                 <span
                                     style={
-                                        statusDotStyle
+                                        form.current_employee_id
+                                            ? assignedStatusDotStyle
+                                            : statusDotStyle
                                     }
                                 />
 
-                                In Stock
+                                {form.current_employee_id
+                                    ? "Assigned"
+                                    : "In Stock"}
 
                             </div>
 
@@ -1880,8 +2143,18 @@ function AddAsset() {
                             >
 
                                 {loading
-                                    ? "Adding Asset..."
-                                    : "Add Hardware Asset"}
+
+                                    ? (
+                                        isEditMode
+                                            ? "Updating Asset..."
+                                            : "Adding Asset..."
+                                    )
+
+                                    : (
+                                        isEditMode
+                                            ? "Update Hardware Asset"
+                                            : "Add Hardware Asset"
+                                    )}
 
                             </button>
 
@@ -1894,7 +2167,9 @@ function AddAsset() {
             </div>
 
         </div>
+
     );
+
 }
 
 
@@ -1947,7 +2222,9 @@ function SectionHeader({
             </div>
 
         </div>
+
     );
+
 }
 
 
@@ -1958,20 +2235,14 @@ function SectionHeader({
 function FormField({
     label,
     required,
-    children,
-    fullWidth
+    children
 }) {
 
     return (
 
         <div
             style={
-                fullWidth
-                    ? {
-                        ...fieldStyle,
-                        gridColumn: "1 / -1"
-                    }
-                    : fieldStyle
+                fieldStyle
             }
         >
 
@@ -2001,13 +2272,34 @@ function FormField({
             {children}
 
         </div>
+
     );
+
 }
 
 
 // =====================================================
 // STYLES
 // =====================================================
+
+const loadingPageStyle = {
+
+    minHeight: "100vh",
+
+    display: "flex",
+
+    alignItems: "center",
+
+    justifyContent: "center",
+
+    background: "#f8fafc",
+
+    color: "#475569",
+
+    fontSize: "14px"
+
+};
+
 
 const pageStyle = {
 
@@ -2016,6 +2308,7 @@ const pageStyle = {
     minHeight: "100vh",
 
     background: "#f8fafc"
+
 };
 
 
@@ -2024,6 +2317,7 @@ const contentStyle = {
     flex: 1,
 
     minWidth: 0
+
 };
 
 
@@ -2034,6 +2328,7 @@ const mainStyle = {
     maxWidth: "1200px",
 
     margin: "0 auto"
+
 };
 
 
@@ -2048,6 +2343,7 @@ const headerStyle = {
     gap: "20px",
 
     marginBottom: "25px"
+
 };
 
 
@@ -2058,6 +2354,7 @@ const breadcrumbStyle = {
     fontSize: "13px",
 
     marginBottom: "8px"
+
 };
 
 
@@ -2070,6 +2367,7 @@ const titleStyle = {
     fontWeight: "700",
 
     color: "#0f172a"
+
 };
 
 
@@ -2080,6 +2378,7 @@ const subtitleStyle = {
     color: "#64748b",
 
     fontSize: "14px"
+
 };
 
 
@@ -2087,8 +2386,7 @@ const backButtonStyle = {
 
     padding: "9px 14px",
 
-    border:
-        "1px solid #cbd5e1",
+    border: "1px solid #cbd5e1",
 
     borderRadius: "7px",
 
@@ -2099,6 +2397,7 @@ const backButtonStyle = {
     cursor: "pointer",
 
     fontSize: "13px"
+
 };
 
 
@@ -2106,8 +2405,7 @@ const formCardStyle = {
 
     background: "#ffffff",
 
-    border:
-        "1px solid #e2e8f0",
+    border: "1px solid #e2e8f0",
 
     borderRadius: "12px",
 
@@ -2115,6 +2413,7 @@ const formCardStyle = {
 
     boxShadow:
         "0 2px 8px rgba(15, 23, 42, 0.05)"
+
 };
 
 
@@ -2132,8 +2431,8 @@ const sectionHeaderStyle = {
 
     marginBottom: "25px",
 
-    borderBottom:
-        "1px solid #e2e8f0"
+    borderBottom: "1px solid #e2e8f0"
+
 };
 
 
@@ -2154,6 +2453,7 @@ const sectionIconStyle = {
     justifyContent: "center",
 
     fontSize: "19px"
+
 };
 
 
@@ -2164,6 +2464,7 @@ const sectionTitleStyle = {
     fontSize: "17px",
 
     color: "#0f172a"
+
 };
 
 
@@ -2174,6 +2475,7 @@ const sectionSubtitleStyle = {
     color: "#64748b",
 
     fontSize: "12px"
+
 };
 
 
@@ -2187,6 +2489,7 @@ const gridStyle = {
     gap: "20px",
 
     marginBottom: "25px"
+
 };
 
 
@@ -2195,6 +2498,7 @@ const fieldStyle = {
     display: "flex",
 
     flexDirection: "column"
+
 };
 
 
@@ -2209,6 +2513,7 @@ const labelStyle = {
     fontWeight: "600",
 
     color: "#334155"
+
 };
 
 
@@ -2217,6 +2522,7 @@ const requiredStyle = {
     color: "#dc2626",
 
     marginLeft: "3px"
+
 };
 
 
@@ -2230,8 +2536,7 @@ const inputStyle = {
 
     boxSizing: "border-box",
 
-    border:
-        "1px solid #cbd5e1",
+    border: "1px solid #cbd5e1",
 
     borderRadius: "7px",
 
@@ -2242,18 +2547,7 @@ const inputStyle = {
     fontSize: "13px",
 
     outline: "none"
-};
 
-
-const readOnlyInputStyle = {
-
-    ...inputStyle,
-
-    background: "#f8fafc",
-
-    color: "#475569",
-
-    cursor: "default"
 };
 
 
@@ -2265,8 +2559,7 @@ const textareaStyle = {
 
     boxSizing: "border-box",
 
-    border:
-        "1px solid #cbd5e1",
+    border: "1px solid #cbd5e1",
 
     borderRadius: "7px",
 
@@ -2279,6 +2572,7 @@ const textareaStyle = {
     resize: "vertical",
 
     outline: "none"
+
 };
 
 
@@ -2290,14 +2584,14 @@ const fileInputStyle = {
 
     boxSizing: "border-box",
 
-    border:
-        "1px solid #cbd5e1",
+    border: "1px solid #cbd5e1",
 
     borderRadius: "7px",
 
     background: "#ffffff",
 
     fontSize: "13px"
+
 };
 
 
@@ -2310,6 +2604,7 @@ const helpTextStyle = {
     color: "#64748b",
 
     lineHeight: "1.5"
+
 };
 
 
@@ -2328,33 +2623,35 @@ const selectedFileStyle = {
     fontSize: "12px",
 
     wordBreak: "break-word"
+
 };
 
 
-const purchaseInfoStyle = {
+const purchaseBoxStyle = {
 
-    marginTop: "10px",
+    marginTop: "25px",
 
     padding: "20px",
 
-    borderRadius: "10px",
+    borderRadius: "9px",
 
     background: "#f8fafc",
 
-    border:
-        "1px solid #e2e8f0"
+    border: "1px solid #e2e8f0"
+
 };
 
 
-const purchaseInfoTitleStyle = {
+const purchaseTitleStyle = {
+
+    margin: "0 0 20px",
 
     fontSize: "14px",
 
     fontWeight: "700",
 
-    color: "#334155",
+    color: "#334155"
 
-    marginBottom: "18px"
 };
 
 
@@ -2368,8 +2665,7 @@ const statusSectionStyle = {
 
     background: "#f8fafc",
 
-    border:
-        "1px solid #e2e8f0",
+    border: "1px solid #e2e8f0",
 
     display: "flex",
 
@@ -2378,6 +2674,7 @@ const statusSectionStyle = {
     alignItems: "center",
 
     gap: "15px"
+
 };
 
 
@@ -2400,6 +2697,30 @@ const statusBadgeStyle = {
     fontSize: "12px",
 
     fontWeight: "600"
+
+};
+
+
+const assignedStatusBadgeStyle = {
+
+    display: "inline-flex",
+
+    alignItems: "center",
+
+    gap: "7px",
+
+    padding: "7px 12px",
+
+    borderRadius: "20px",
+
+    background: "#dbeafe",
+
+    color: "#1d4ed8",
+
+    fontSize: "12px",
+
+    fontWeight: "600"
+
 };
 
 
@@ -2412,6 +2733,20 @@ const statusDotStyle = {
     borderRadius: "50%",
 
     background: "#22c55e"
+
+};
+
+
+const assignedStatusDotStyle = {
+
+    width: "7px",
+
+    height: "7px",
+
+    borderRadius: "50%",
+
+    background: "#3b82f6"
+
 };
 
 
@@ -2427,8 +2762,8 @@ const buttonContainerStyle = {
 
     paddingTop: "20px",
 
-    borderTop:
-        "1px solid #e2e8f0"
+    borderTop: "1px solid #e2e8f0"
+
 };
 
 
@@ -2436,8 +2771,7 @@ const cancelButtonStyle = {
 
     padding: "10px 18px",
 
-    border:
-        "1px solid #cbd5e1",
+    border: "1px solid #cbd5e1",
 
     borderRadius: "7px",
 
@@ -2448,6 +2782,7 @@ const cancelButtonStyle = {
     cursor: "pointer",
 
     fontSize: "13px"
+
 };
 
 
@@ -2468,6 +2803,7 @@ const submitButtonStyle = {
     fontSize: "13px",
 
     fontWeight: "600"
+
 };
 
 

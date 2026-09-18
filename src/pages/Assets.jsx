@@ -45,12 +45,6 @@ function Assets() {
     const [viewAsset, setViewAsset] =
         useState(null);
 
-    const [editAsset, setEditAsset] =
-        useState(null);
-
-    const [saving, setSaving] =
-        useState(false);
-
 
     // =====================================================
     // LOAD ASSETS
@@ -122,6 +116,7 @@ function Assets() {
                 "Assigned",
                 "In Stock",
                 "Repair",
+                "Spare",
                 "Scrap",
                 "Lost"
             ].includes(urlStatus)
@@ -339,79 +334,6 @@ function Assets() {
 
 
     // =====================================================
-    // EDIT SAVE
-    // =====================================================
-
-    const handleEditSave = async (e) => {
-
-        e.preventDefault();
-
-        try {
-
-            setSaving(true);
-
-            await API.put(
-                `/assets/${editAsset.asset_id}`,
-                {
-                    asset_code:
-                        editAsset.asset_code,
-
-                    asset_name:
-                        editAsset.asset_name,
-
-                    brand:
-                        editAsset.brand,
-
-                    model:
-                        editAsset.model,
-
-                    serial_number:
-                        editAsset.serial_number,
-
-                    category_id:
-                        editAsset.category_id,
-
-                    vendor_id:
-                        editAsset.vendor_id,
-
-                    location_id:
-                        editAsset.location_id,
-
-                    asset_status:
-                        editAsset.asset_status
-                }
-            );
-
-            alert(
-                "Asset updated successfully"
-            );
-
-            setEditAsset(null);
-
-            await loadAssets();
-
-        } catch (error) {
-
-            console.error(
-                "Update Asset Error:",
-                error
-            );
-
-            alert(
-                error.response?.data?.message ||
-                "Failed to update asset"
-            );
-
-        } finally {
-
-            setSaving(false);
-
-        }
-
-    };
-
-
-    // =====================================================
     // FILTER
     // =====================================================
 
@@ -426,6 +348,7 @@ function Assets() {
                 ${asset.serial_number || ""}
                 ${asset.category_name || ""}
                 ${asset.display_name || ""}
+                ${asset.employee_code || asset.employee_id || ""}
                 ${asset.vendor_name || ""}
                 ${asset.location_name || ""}
                 ${asset.asset_status || ""}
@@ -1074,6 +997,10 @@ function Assets() {
                                     Repair
                                 </option>
 
+                                <option value="Spare">
+                                    Spare
+                                </option>
+
                                 <option value="Scrap">
                                     Scrap
                                 </option>
@@ -1263,9 +1190,14 @@ function Assets() {
                                                     {/* ASSET */}
 
                                                     <td
-                                                        style={
-                                                            tdStyle
+                                                        style={{
+                                                            ...tdStyle,
+                                                            cursor: "pointer"
+                                                        }}
+                                                        onClick={() =>
+                                                            setViewAsset(asset)
                                                         }
+                                                        title="Click to view asset details"
                                                     >
 
                                                         <div
@@ -1332,11 +1264,21 @@ function Assets() {
                                                                 employeeTextStyle
                                                             }
                                                         >
-                                                            {
-                                                                asset.display_name ||
-                                                                "Unassigned"
-                                                            }
+                                                            {asset.display_name ||
+                                                                "Unassigned"}
                                                         </div>
+
+                                                        {asset.display_name && (
+                                                            <div
+                                                                style={
+                                                                    employeeCodeStyle
+                                                                }
+                                                            >
+                                                                {asset.employee_code ||
+                                                                    asset.employee_id ||
+                                                                    "-"}
+                                                            </div>
+                                                        )}
 
                                                     </td>
 
@@ -1406,6 +1348,10 @@ function Assets() {
                                                                 Repair
                                                             </option>
 
+                                                            <option value="Spare">
+                                                                Spare
+                                                            </option>
+
                                                             <option value="Scrap">
                                                                 Scrap
                                                             </option>
@@ -1437,30 +1383,14 @@ function Assets() {
 
                                                             <button
                                                                 type="button"
-                                                                title="View Asset"
-                                                                aria-label="View Asset"
-                                                                onClick={() =>
-                                                                    setViewAsset(
-                                                                        asset
-                                                                    )
-                                                                }
-                                                                style={
-                                                                    iconViewButtonStyle
-                                                                }
-                                                            >
-                                                                👁
-                                                            </button>
-
-
-                                                            <button
-                                                                type="button"
                                                                 title="Edit Asset"
                                                                 aria-label="Edit Asset"
-                                                                onClick={() =>
-                                                                    setEditAsset({
-                                                                        ...asset
-                                                                    })
-                                                                }
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    navigate(
+                                                                        `/assets/add?edit=${asset.asset_id}`
+                                                                    );
+                                                                }}
                                                                 style={
                                                                     iconEditButtonStyle
                                                                 }
@@ -1473,11 +1403,12 @@ function Assets() {
                                                                 type="button"
                                                                 title="Delete Asset"
                                                                 aria-label="Delete Asset"
-                                                                onClick={() =>
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
                                                                     handleDelete(
                                                                         asset.asset_id
-                                                                    )
-                                                                }
+                                                                    );
+                                                                }}
                                                                 style={
                                                                     iconDeleteButtonStyle
                                                                 }
@@ -1498,64 +1429,17 @@ function Assets() {
                                                                         type="button"
                                                                         title="Assign Asset"
                                                                         aria-label="Assign Asset"
-                                                                        onClick={() =>
+                                                                        onClick={(e) => {
+                                                                            e.stopPropagation();
                                                                             navigate(
                                                                                 `/assets/assign/${asset.asset_id}`
-                                                                            )
-                                                                        }
+                                                                            );
+                                                                        }}
                                                                         style={
                                                                             iconAssignButtonStyle
                                                                         }
                                                                     >
                                                                         ➜
-                                                                    </button>
-
-                                                                )
-                                                            }
-
-
-                                                            {
-                                                                asset.asset_status ===
-                                                                    "Assigned" && (
-
-                                                                    <button
-                                                                        type="button"
-                                                                        title="Return Asset"
-                                                                        aria-label="Return Asset"
-                                                                        onClick={() =>
-                                                                            handleReturn(
-                                                                                asset.asset_id
-                                                                            )
-                                                                        }
-                                                                        style={
-                                                                            iconReturnButtonStyle
-                                                                        }
-                                                                    >
-                                                                        ↩
-                                                                    </button>
-
-                                                                )
-                                                            }
-
-
-                                                            {
-                                                                asset.asset_status !==
-                                                                    "Scrap" && (
-
-                                                                    <button
-                                                                        type="button"
-                                                                        title="Scrap Asset"
-                                                                        aria-label="Scrap Asset"
-                                                                        onClick={() =>
-                                                                            handleScrap(
-                                                                                asset.asset_id
-                                                                            )
-                                                                        }
-                                                                        style={
-                                                                            iconScrapButtonStyle
-                                                                        }
-                                                                    >
-                                                                        ♻
                                                                     </button>
 
                                                                 )
@@ -1638,78 +1522,42 @@ function Assets() {
                             }
                         >
 
-                            <Detail
-                                label="Asset Code"
-                                value={
-                                    viewAsset.asset_code
-                                }
-                            />
-
-                            <Detail
-                                label="Asset Name"
-                                value={
-                                    viewAsset.asset_name
-                                }
-                            />
-
-                            <Detail
-                                label="Brand"
-                                value={
-                                    viewAsset.brand
-                                }
-                            />
-
-                            <Detail
-                                label="Model"
-                                value={
-                                    viewAsset.model
-                                }
-                            />
-
-                            <Detail
-                                label="Serial Number"
-                                value={
-                                    viewAsset.serial_number
-                                }
-                            />
-
-                            <Detail
-                                label="Category"
-                                value={
-                                    viewAsset.category_name
-                                }
-                            />
-
+                            <Detail label="Asset Code" value={viewAsset.asset_code} />
+                            <Detail label="Asset Type" value={viewAsset.asset_type} />
+                            <Detail label="Asset Name" value={viewAsset.asset_name} />
+                            <Detail label="Category" value={viewAsset.category_name} />
+                            <Detail label="Brand" value={viewAsset.brand} />
+                            <Detail label="Model" value={viewAsset.model} />
+                            <Detail label="Serial Number" value={viewAsset.serial_number} />
+                            <Detail label="Processor" value={viewAsset.processor} />
+                            <Detail label="Memory" value={viewAsset.ram} />
+                            <Detail label="Memory Specification" value={viewAsset.ram_capacity} />
+                            <Detail label="Drive Storage" value={viewAsset.storage} />
+                            <Detail label="Drive Storage Specification" value={viewAsset.storage_spec} />
+                            <Detail label="Operating System" value={viewAsset.operating_system} />
+                            <Detail label="Configuration" value={viewAsset.configuration_specs} />
+                            <Detail label="Vendor" value={viewAsset.vendor_name || viewAsset.stored_vendor_name} />
+                            <Detail label="Purchase Date" value={viewAsset.purchase_date} />
+                            <Detail label="Purchase Cost" value={viewAsset.purchase_cost} />
+                            <Detail label="Invoice Number" value={viewAsset.invoice_number} />
+                            <Detail label="Warranty Started" value={viewAsset.warranty_started} />
+                            <Detail label="Warranty Expiry" value={viewAsset.warranty_expiry} />
+                            <Detail label="Warranty Document" value={viewAsset.warranty_document_name} />
                             <Detail
                                 label="Employee"
                                 value={
-                                    viewAsset.display_name ||
-                                    "-"
+                                    viewAsset.display_name
+                                        ? `${viewAsset.display_name} · ${viewAsset.employee_code || viewAsset.employee_id || "-"}`
+                                        : "Unassigned"
                                 }
                             />
-
-                            <Detail
-                                label="Vendor"
-                                value={
-                                    viewAsset.vendor_name ||
-                                    "-"
-                                }
-                            />
-
-                            <Detail
-                                label="Location"
-                                value={
-                                    viewAsset.location_name ||
-                                    "-"
-                                }
-                            />
-
-                            <Detail
-                                label="Status"
-                                value={
-                                    viewAsset.asset_status
-                                }
-                            />
+                            <Detail label="Last Used By" value={viewAsset.last_used_by || viewAsset.display_name} />
+                            <Detail label="Department" value={viewAsset.department} />
+                            <Detail label="Designation" value={viewAsset.designation} />
+                            <Detail label="Location" value={viewAsset.location_name} />
+                            <Detail label="Floor" value={viewAsset.floor} />
+                            <Detail label="Status" value={viewAsset.asset_status} />
+                            <Detail label="Remarks" value={viewAsset.remarks} />
 
                         </div>
 
@@ -1720,269 +1568,7 @@ function Assets() {
             )}
 
 
-            {/* =====================================================
-                EDIT MODAL
-            ===================================================== */}
 
-            {editAsset && (
-
-                <div style={overlayStyle}>
-
-                    <div
-                        style={{
-                            ...modalStyle,
-                            maxWidth: "600px"
-                        }}
-                    >
-
-                        <div
-                            style={
-                                modalHeaderStyle
-                            }
-                        >
-
-                            <div>
-
-                                <div
-                                    style={
-                                        modalEyebrowStyle
-                                    }
-                                >
-                                    ASSET MANAGEMENT
-                                </div>
-
-                                <h2
-                                    style={
-                                        modalTitleStyle
-                                    }
-                                >
-                                    Edit Asset
-                                </h2>
-
-                            </div>
-
-                            <button
-                                type="button"
-                                onClick={() =>
-                                    setEditAsset(null)
-                                }
-                                style={
-                                    closeButtonStyle
-                                }
-                            >
-                                ✕
-                            </button>
-
-                        </div>
-
-
-                        <form
-                            onSubmit={
-                                handleEditSave
-                            }
-                        >
-
-                            <label style={labelStyle}>
-                                Asset Code
-                            </label>
-
-                            <input
-                                value={
-                                    editAsset.asset_code ||
-                                    ""
-                                }
-                                onChange={(e) =>
-                                    setEditAsset({
-                                        ...editAsset,
-                                        asset_code:
-                                            e.target.value
-                                    })
-                                }
-                                style={
-                                    inputStyle
-                                }
-                                required
-                            />
-
-
-                            <label style={labelStyle}>
-                                Asset Name
-                            </label>
-
-                            <input
-                                value={
-                                    editAsset.asset_name ||
-                                    ""
-                                }
-                                onChange={(e) =>
-                                    setEditAsset({
-                                        ...editAsset,
-                                        asset_name:
-                                            e.target.value
-                                    })
-                                }
-                                style={
-                                    inputStyle
-                                }
-                                required
-                            />
-
-
-                            <label style={labelStyle}>
-                                Brand
-                            </label>
-
-                            <input
-                                value={
-                                    editAsset.brand ||
-                                    ""
-                                }
-                                onChange={(e) =>
-                                    setEditAsset({
-                                        ...editAsset,
-                                        brand:
-                                            e.target.value
-                                    })
-                                }
-                                style={
-                                    inputStyle
-                                }
-                            />
-
-
-                            <label style={labelStyle}>
-                                Model
-                            </label>
-
-                            <input
-                                value={
-                                    editAsset.model ||
-                                    ""
-                                }
-                                onChange={(e) =>
-                                    setEditAsset({
-                                        ...editAsset,
-                                        model:
-                                            e.target.value
-                                    })
-                                }
-                                style={
-                                    inputStyle
-                                }
-                            />
-
-
-                            <label style={labelStyle}>
-                                Serial Number
-                            </label>
-
-                            <input
-                                value={
-                                    editAsset.serial_number ||
-                                    ""
-                                }
-                                onChange={(e) =>
-                                    setEditAsset({
-                                        ...editAsset,
-                                        serial_number:
-                                            e.target.value
-                                    })
-                                }
-                                style={
-                                    inputStyle
-                                }
-                            />
-
-
-                            <label style={labelStyle}>
-                                Status
-                            </label>
-
-                            <select
-                                value={
-                                    editAsset.asset_status ||
-                                    "In Stock"
-                                }
-                                onChange={(e) =>
-                                    setEditAsset({
-                                        ...editAsset,
-                                        asset_status:
-                                            e.target.value
-                                    })
-                                }
-                                style={
-                                    inputStyle
-                                }
-                            >
-
-                                <option value="Assigned">
-                                    Assigned
-                                </option>
-
-                                <option value="In Stock">
-                                    In Stock
-                                </option>
-
-                                <option value="Repair">
-                                    Repair
-                                </option>
-
-                                <option value="Scrap">
-                                    Scrap
-                                </option>
-
-                                <option value="Lost">
-                                    Lost
-                                </option>
-
-                            </select>
-
-
-                            <div
-                                style={
-                                    formActionsStyle
-                                }
-                            >
-
-                                <button
-                                    type="button"
-                                    onClick={() =>
-                                        setEditAsset(null)
-                                    }
-                                    style={
-                                        cancelButtonStyle
-                                    }
-                                >
-                                    Cancel
-                                </button>
-
-                                <button
-                                    type="submit"
-                                    disabled={saving}
-                                    style={{
-                                        ...saveButtonStyle,
-                                        opacity:
-                                            saving
-                                                ? 0.7
-                                                : 1
-                                    }}
-                                >
-                                    {
-                                        saving
-                                            ? "Saving..."
-                                            : "Save Changes"
-                                    }
-                                </button>
-
-                            </div>
-
-                        </form>
-
-                    </div>
-
-                </div>
-
-            )}
 
         </div>
 
@@ -2820,6 +2406,18 @@ const employeeTextStyle = {
 };
 
 
+const employeeCodeStyle = {
+
+    color:
+        "var(--muted-text-color)",
+
+    fontSize: "11px",
+
+    marginTop: "3px"
+
+};
+
+
 const locationStyle = {
 
     color:
@@ -2899,20 +2497,7 @@ const iconBaseStyle = {
 };
 
 
-const iconViewButtonStyle = {
 
-    ...iconBaseStyle,
-
-    border:
-        "1px solid var(--border-color)",
-
-    background:
-        "var(--card-background)",
-
-    color:
-        "var(--secondary-text-color)"
-
-};
 
 
 const iconEditButtonStyle = {
@@ -2963,36 +2548,10 @@ const iconAssignButtonStyle = {
 };
 
 
-const iconReturnButtonStyle = {
-
-    ...iconBaseStyle,
-
-    border:
-        "1px solid var(--success-border)",
-
-    background:
-        "var(--success-light)",
-
-    color:
-        "var(--success-color)"
-
-};
 
 
-const iconScrapButtonStyle = {
 
-    ...iconBaseStyle,
 
-    border:
-        "1px solid var(--danger-border)",
-
-    background:
-        "var(--danger-light)",
-
-    color:
-        "var(--danger-color)"
-
-};
 
 
 // =====================================================
