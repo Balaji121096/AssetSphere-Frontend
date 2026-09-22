@@ -45,6 +45,10 @@ function Assets() {
     const [viewAsset, setViewAsset] =
         useState(null);
 
+    const [currentPage, setCurrentPage] = useState(1);
+
+        const itemsPerPage = 10;
+
 
     // =====================================================
     // LOAD ASSETS
@@ -67,6 +71,8 @@ function Assets() {
             setAssets(
                 response.data.data || []
             );
+
+            setCurrentPage(1);
 
         } catch (error) {
 
@@ -139,21 +145,23 @@ function Assets() {
 
     const handleStatusChange = (value) => {
 
-        setStatus(value);
+    setStatus(value);
 
-        if (value === "All") {
+    setCurrentPage(1);
 
-            setSearchParams({});
+    if (value === "All") {
 
-        } else {
+        setSearchParams({});
 
-            setSearchParams({
-                status: value
-            });
+    } else {
 
-        }
+        setSearchParams({
+            status: value
+        });
 
-    };
+    }
+
+};
 
 
     // =====================================================
@@ -165,6 +173,8 @@ function Assets() {
         setStatus("All");
         setSearch("");
         setSearchParams({});
+        setCurrentPage(1);
+
 
     };
 
@@ -369,6 +379,15 @@ function Assets() {
             );
 
         });
+
+        const totalPages = Math.ceil(
+    filteredAssets.length / itemsPerPage
+);
+
+const currentAssets = filteredAssets.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+);
 
 
     // =====================================================
@@ -588,7 +607,7 @@ function Assets() {
                     <thead><tr>${headerHtml}</tr></thead>
                     <tbody>${bodyHtml}</tbody>
                 </table>
-            </body>
+                </body>
             </html>
         `);
 
@@ -920,8 +939,7 @@ function Assets() {
 
                             {/* SEARCH */}
 
-                            <div
-                                style={
+                            <div style={
                                     searchWrapperStyle
                                 }
                             >
@@ -938,11 +956,10 @@ function Assets() {
                                     type="text"
                                     placeholder="Search assets..."
                                     value={search}
-                                    onChange={(e) =>
-                                        setSearch(
-                                            e.target.value
-                                        )
-                                    }
+                                    onChange={(e) => {
+                                         setSearch(e.target.value);
+                                            setCurrentPage(1);
+                                        }}
                                     style={
                                         searchInputStyle
                                     }
@@ -1016,8 +1033,7 @@ function Assets() {
 
                         {/* TABLE */}
 
-                        <div
-                            style={
+                        <div style={
                                 tableWrapperStyle
                             }
                         >
@@ -1167,7 +1183,7 @@ function Assets() {
 
                                     ) : (
 
-                                        filteredAssets.map(
+                                        currentAssets.map(
                                             (asset) => (
 
                                                 <tr
@@ -1259,8 +1275,7 @@ function Assets() {
 
                                                     <td style={tdStyle}>
 
-                                                        <div
-                                                            style={
+                                                        <div style={
                                                                 employeeTextStyle
                                                             }
                                                         >
@@ -1269,8 +1284,7 @@ function Assets() {
                                                         </div>
 
                                                         {asset.display_name && (
-                                                            <div
-                                                                style={
+                                                            <div style={
                                                                     employeeCodeStyle
                                                                 }
                                                             >
@@ -1375,8 +1389,7 @@ function Assets() {
                                                         }}
                                                     >
 
-                                                        <div
-                                                            style={
+                                                        <div style={
                                                                 actionStyle
                                                             }
                                                         >
@@ -1464,6 +1477,134 @@ function Assets() {
 
                     </div>
 
+                {/* =====================================================
+                    PAGINATION
+                ===================================================== */}
+
+                {totalPages > 1 && (
+
+                    <div
+                        style={{
+                            display: "flex",
+                            justifyContent: "center",
+                            alignItems: "center",
+                            gap: "10px",
+                            padding: "20px 0"
+                        }}
+                    >
+
+                        <button
+                            type="button"
+                            onClick={() =>
+                                setCurrentPage(
+                                    currentPage - 1
+                                )
+                            }
+                            disabled={
+                                currentPage === 1
+                            }
+                            style={{
+                                padding: "8px 14px",
+                                border:
+                                    "1px solid var(--border-color)",
+                                borderRadius: "6px",
+                                background:
+                                    currentPage === 1
+                                        ? "var(--input-background)"
+                                        : "var(--card-background)",
+                                color:
+                                    currentPage === 1
+                                        ? "var(--muted-text-color)"
+                                        : "var(--text-color)",
+                                cursor:
+                                    currentPage === 1
+                                        ? "not-allowed"
+                                        : "pointer"
+                            }}
+                        >
+                            Previous
+                        </button>
+
+                        {Array.from(
+                            {
+                                length: totalPages
+                            }
+                        ).map((_, index) => (
+
+                            <button
+                                type="button"
+                                key={index}
+                                onClick={() =>
+                                    setCurrentPage(
+                                        index + 1
+                                    )
+                                }
+                                style={{
+                                    minWidth: "36px",
+                                    height: "36px",
+                                    padding: "0 10px",
+                                    border:
+                                        "1px solid var(--border-color)",
+                                    borderRadius: "6px",
+                                    background:
+                                        currentPage ===
+                                        index + 1
+                                            ? "#2563eb"
+                                            : "var(--card-background)",
+                                    color:
+                                        currentPage ===
+                                        index + 1
+                                            ? "#ffffff"
+                                            : "var(--text-color)",
+                                    cursor: "pointer",
+                                    fontWeight:
+                                        currentPage ===
+                                        index + 1
+                                            ? "700"
+                                            : "500"
+                                }}
+                            >
+                                {index + 1}
+                            </button>
+
+                        ))}
+
+                        <button
+                            type="button"
+                            onClick={() =>
+                                setCurrentPage(
+                                    currentPage + 1
+                                )
+                            }
+                            disabled={
+                                currentPage === totalPages
+                            }
+                            style={{
+                                padding: "8px 14px",
+                                border:
+                                    "1px solid var(--border-color)",
+                                borderRadius: "6px",
+                                background:
+                                    currentPage === totalPages
+                                        ? "var(--input-background)"
+                                        : "var(--card-background)",
+                                color:
+                                    currentPage === totalPages
+                                        ? "var(--muted-text-color)"
+                                        : "var(--text-color)",
+                                cursor:
+                                    currentPage === totalPages
+                                        ? "not-allowed"
+                                        : "pointer"
+                            }}
+                        >
+                            Next
+                        </button>
+
+                    </div>
+
+                )}
+
                 </main>
 
             </div>
@@ -1483,8 +1624,7 @@ function Assets() {
 
                             <div>
 
-                                <div
-                                    style={
+                                <div style={
                                         modalEyebrowStyle
                                     }
                                 >
@@ -1516,8 +1656,7 @@ function Assets() {
                         </div>
 
 
-                        <div
-                            style={
+                        <div style={
                                 detailGridStyle
                             }
                         >
@@ -1593,8 +1732,7 @@ function SummaryCard({
 
         <div style={summaryCardStyle}>
 
-            <div
-                style={{
+            <div style={{
                     ...summaryIconStyle,
                     color,
                     background

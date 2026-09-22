@@ -19,6 +19,8 @@ function Software() {
     const [filter, setFilter] = useState("All");
     const [loading, setLoading] = useState(true);
     const [deletingId, setDeletingId] = useState(null);
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 10;
 
     // =====================================================
     // VIEW SOFTWARE
@@ -51,8 +53,12 @@ function Software() {
     };
 
     useEffect(() => {
-        loadSoftware();
-    }, []);
+    loadSoftware();
+}, []);
+
+useEffect(() => {
+    setCurrentPage(1);
+}, [search, filter]);
 
     // =====================================================
     // VIEW SOFTWARE DETAILS
@@ -261,67 +267,67 @@ function Software() {
     // FILTER SOFTWARE
     // =====================================================
 
-    const filteredSoftware = useMemo(() => {
-        const keyword = search.trim().toLowerCase();
 
-        return software.filter((item) => {
-            const expiry = getExpiryStatus(
-                item.days_remaining
-            );
+        const filteredSoftware = useMemo(() => {
+    const keyword = search.trim().toLowerCase();
 
-            const searchableText = `
-                ${item.software_code || ""}
-                ${item.software_name || ""}
-                ${item.publisher || ""}
-                ${item.version || ""}
-                ${item.license_type || ""}
-                ${item.vendor_name || ""}
-                ${item.status || ""}
-                ${expiry.text}
-            `.toLowerCase();
+    return software.filter((item) => {
+        const expiry = getExpiryStatus(item.days_remaining);
 
-            const matchesSearch =
-                !keyword ||
-                searchableText.includes(keyword);
+        const searchableText = `
+            ${item.software_code || ""}
+            ${item.software_name || ""}
+            ${item.publisher || ""}
+            ${item.version || ""}
+            ${item.license_type || ""}
+            ${item.vendor_name || ""}
+            ${item.status || ""}
+            ${expiry.text}
+        `.toLowerCase();
 
-            let matchesFilter = true;
+        const matchesSearch =
+            !keyword || searchableText.includes(keyword);
 
-            if (filter === "Active") {
-                matchesFilter =
-                    Number(item.days_remaining) > 30 ||
-                    item.days_remaining === null ||
-                    item.days_remaining === undefined;
-            }
+        let matchesFilter = true;
 
-            if (filter === "Critical") {
-                matchesFilter =
-                    item.days_remaining !== null &&
-                    item.days_remaining !== undefined &&
-                    Number(item.days_remaining) >= 0 &&
-                    Number(item.days_remaining) <= 10;
-            }
+        if (filter === "Active") {
+            matchesFilter =
+                Number(item.days_remaining) > 30 ||
+                item.days_remaining == null;
+        }
 
-            if (filter === "Expiring") {
-                matchesFilter =
-                    item.days_remaining !== null &&
-                    item.days_remaining !== undefined &&
-                    Number(item.days_remaining) >= 0 &&
-                    Number(item.days_remaining) <= 30;
-            }
+        if (filter === "Critical") {
+            matchesFilter =
+                item.days_remaining != null &&
+                Number(item.days_remaining) >= 0 &&
+                Number(item.days_remaining) <= 10;
+        }
 
-            if (filter === "Expired") {
-                matchesFilter =
-                    item.days_remaining !== null &&
-                    item.days_remaining !== undefined &&
-                    Number(item.days_remaining) < 0;
-            }
+        if (filter === "Expiring") {
+            matchesFilter =
+                item.days_remaining != null &&
+                Number(item.days_remaining) >= 0 &&
+                Number(item.days_remaining) <= 30;
+        }
 
-            return (
-                matchesSearch &&
-                matchesFilter
-            );
-        });
-    }, [software, search, filter]);
+        if (filter === "Expired") {
+            matchesFilter =
+                item.days_remaining != null &&
+                Number(item.days_remaining) < 0;
+        }
+
+        return matchesSearch && matchesFilter;
+    });
+}, [software, search, filter]);
+
+const totalPages = Math.ceil(
+    filteredSoftware.length / itemsPerPage
+);
+
+const paginatedSoftware = filteredSoftware.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+);
 
     // =====================================================
     // STATS
@@ -686,7 +692,7 @@ function Software() {
                             </div>
 
                         </div>
-
+                        
 
                         {/* =================================================
                             TABLE
@@ -892,8 +898,7 @@ function Software() {
 
                                     ) : (
 
-                                        filteredSoftware.map(
-                                            (item) => {
+                                        paginatedSoftware.map((item) => {
 
                                                 const expiry =
                                                     getExpiryStatus(
@@ -1300,10 +1305,93 @@ function Software() {
 
                     </div>
 
+                {/* =====================================================
+                    PAGINATION
+                ===================================================== */}
+
+                {totalPages > 1 && (
+                    <div
+                        style={{
+                            display: "flex",
+                            justifyContent: "center",
+                            alignItems: "center",
+                            gap: "8px",
+                            padding: "20px 0 5px"
+                        }}
+                    >
+                        <button
+                            type="button"
+                            onClick={() =>
+                                setCurrentPage((prev) => prev - 1)
+                            }
+                            disabled={currentPage === 1}
+                            style={{
+                                ...primaryButton,
+                                opacity:
+                                    currentPage === 1 ? 0.5 : 1,
+                                cursor:
+                                    currentPage === 1
+                                        ? "not-allowed"
+                                        : "pointer"
+                            }}
+                        >
+                            Previous
+                        </button>
+
+                        {Array.from(
+                            { length: totalPages },
+                            (_, index) => index + 1
+                        ).map((page) => (
+                            <button
+                                key={page}
+                                type="button"
+                                onClick={() => setCurrentPage(page)}
+                                style={{
+                                    ...primaryButton,
+                                    minWidth: "35px",
+                                    padding: "0 10px",
+                                    background:
+                                        currentPage === page
+                                            ? "var(--primary-color)"
+                                            : "var(--card-background)",
+                                    color:
+                                        currentPage === page
+                                            ? "#ffffff"
+                                            : "var(--text-color)",
+                                    border:
+                                        currentPage === page
+                                            ? "1px solid var(--primary-color)"
+                                            : "1px solid var(--border-color)"
+                                }}
+                            >
+                                {page}
+                            </button>
+                        ))}
+
+                        <button
+                            type="button"
+                            onClick={() =>
+                                setCurrentPage((prev) => prev + 1)
+                            }
+                            disabled={currentPage === totalPages}
+                            style={{
+                                ...primaryButton,
+                                opacity:
+                                    currentPage === totalPages ? 0.5 : 1,
+                                cursor:
+                                    currentPage === totalPages
+                                        ? "not-allowed"
+                                        : "pointer"
+                            }}
+                        >
+                            Next
+                        </button>
+                    </div>
+                )}
+
                 </main>
 
             </div>
-
 
             {/* =====================================================
                 SOFTWARE VIEW MODAL - NEW
@@ -1692,7 +1780,7 @@ function Software() {
                 </div>
 
             )}
-
+        
 
             {/* =====================================================
                 RESPONSIVE + ANIMATION
