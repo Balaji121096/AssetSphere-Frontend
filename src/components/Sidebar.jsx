@@ -165,115 +165,153 @@ function Sidebar() {
 
 
                 {/* =================================================
-                    HARDWARE
+                    MY TICKETS (Employee)
                 ================================================= */}
 
-                <NavLink
-                    to="/assets"
-                    style={menuStyle}
-                >
+                {currentRole === "Employee" && (
+                    <NavLink
+                        to="/tickets"
+                        style={menuStyle}
+                    >
 
-                    <FaDesktop />
+                        <FaHistory />
 
-                    Hardware
+                        My Tickets
 
-                </NavLink>
-
-
-                {/* =================================================
-                    SOFTWARE
-                ================================================= */}
-
-                <NavLink
-                    to="/software"
-                    style={menuStyle}
-                >
-
-                    <FaLaptop />
-
-                    Software
-
-                </NavLink>
+                    </NavLink>
+                )}
 
 
-                {/* =================================================
-                    EMPLOYEES
-                ================================================= */}
+                {currentRole !== "Employee" && (
+                    <>
+                        {/* =================================================
+                            HARDWARE
+                        ================================================= */}
 
-                <NavLink
-                    to="/employees"
-                    style={menuStyle}
-                >
+                        <NavLink
+                            to="/assets"
+                            style={menuStyle}
+                        >
 
-                    <FaUsers />
+                            <FaDesktop />
 
-                    Employees
+                            Hardware
 
-                </NavLink>
-
-
-                {/* =================================================
-                    VENDORS
-                ================================================= */}
-
-                <NavLink
-                    to="/vendors"
-                    style={menuStyle}
-                >
-
-                    <FaBuilding />
-
-                    Vendors
-
-                </NavLink>
+                        </NavLink>
 
 
-                {/* =================================================
-                    PURCHASE MANAGEMENT
-                ================================================= */}
+                        {/* =================================================
+                            SOFTWARE
+                        ================================================= */}
 
-                <NavLink
-                    to="/purchases"
-                    style={menuStyle}
-                >
+                        <NavLink
+                            to="/software"
+                            style={menuStyle}
+                        >
 
-                    <FaShoppingCart />
+                            <FaLaptop />
 
-                    Purchases
+                            Software
 
-                </NavLink>
-
-
-                {/* =================================================
-                    REPORTS
-                ================================================= */}
-
-                <NavLink
-                    to="/reports"
-                    style={menuStyle}
-                >
-
-                    <FaChartBar />
-
-                    Reports
-
-                </NavLink>
+                        </NavLink>
 
 
-                {/* =================================================
-                    ASSET HISTORY
-                ================================================= */}
+                        {/* =================================================
+                            EMPLOYEES
+                        ================================================= */}
 
-                <NavLink
-                    to="/asset-history"
-                    style={menuStyle}
-                >
+                        <NavLink
+                            to="/employees"
+                            style={menuStyle}
+                        >
 
-                    <FaHistory />
+                            <FaUsers />
 
-                    Asset History
+                            Employees
 
-                </NavLink>
+                        </NavLink>
+
+
+                        {/* =================================================
+                            VENDORS
+                        ================================================= */}
+
+                        <NavLink
+                            to="/vendors"
+                            style={menuStyle}
+                        >
+
+                            <FaBuilding />
+
+                            Vendors
+
+                        </NavLink>
+
+
+                        {/* =================================================
+                            PURCHASE MANAGEMENT
+                        ================================================= */}
+
+                        <NavLink
+                            to="/purchases"
+                            style={menuStyle}
+                        >
+
+                            <FaShoppingCart />
+
+                            Purchases
+
+                        </NavLink>
+
+
+                        {/* =================================================
+                            REPORTS
+                        ================================================= */}
+
+                        <NavLink
+                            to="/reports"
+                            style={menuStyle}
+                        >
+
+                            <FaChartBar />
+
+                            Reports
+
+                        </NavLink>
+
+
+                        {/* =================================================
+                            TICKETS MANAGEMENT
+                        ================================================= */}
+
+                        <NavLink
+                            to="/tickets/manage"
+                            style={menuStyle}
+                        >
+
+                            <FaHistory />
+
+                            Tickets Management
+
+                        </NavLink>
+
+
+                        {/* =================================================
+                            ASSET HISTORY
+                        ================================================= */}
+
+                        <NavLink
+                            to="/asset-history"
+                            style={menuStyle}
+                        >
+
+                            <FaHistory />
+
+                            Asset History
+
+                        </NavLink>
+                    </>
+                )}
 
 
                 {/* =================================================

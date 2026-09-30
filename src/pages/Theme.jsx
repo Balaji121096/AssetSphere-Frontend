@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+import { useTheme } from "../context/ThemeContext";
+
 import Sidebar from "../components/Sidebar";
 import Navbar from "../components/Navbar";
 
@@ -265,6 +267,12 @@ function Theme() {
     const navigate =
         useNavigate();
 
+    const {
+        selectTheme,
+        applyCustomTheme,
+        resetTheme
+    } = useTheme();
+
 
     // =================================================
     // STATE
@@ -317,7 +325,7 @@ function Theme() {
             theme.background
         );
 
-        applyTheme(theme);
+        selectTheme(theme);
 
         setMessage(
             `${theme.name} selected`
@@ -352,14 +360,10 @@ function Theme() {
         );
 
 
-        applyTheme(
-            customTheme
-        );
-
-
-        saveTheme(
-            customTheme
-        );
+        applyCustomTheme({
+            primary: customTheme.primary,
+            background: customTheme.background
+        });
 
 
         setMessage(
@@ -375,14 +379,7 @@ function Theme() {
 
     const handleApply = () => {
 
-        applyTheme(
-            selectedTheme
-        );
-
-
-        saveTheme(
-            selectedTheme
-        );
+        selectTheme(selectedTheme);
 
 
         setMessage(
@@ -403,6 +400,9 @@ function Theme() {
         );
 
 
+        resetTheme();
+
+
         setCustomPrimary(
             defaultTheme.primary
         );
@@ -410,16 +410,6 @@ function Theme() {
 
         setCustomBackground(
             defaultTheme.background
-        );
-
-
-        applyTheme(
-            defaultTheme
-        );
-
-
-        saveTheme(
-            defaultTheme
         );
 
 

@@ -84,6 +84,10 @@ function Login() {
             // STORE USER INFO (NEW)
             // =================================================
 
+            if (result.user) {
+                localStorage.setItem("user", JSON.stringify(result.user));
+            }
+
             // Store the username for displaying in the navbar
             localStorage.setItem(
                 "userFullName",

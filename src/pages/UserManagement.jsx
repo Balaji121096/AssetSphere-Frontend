@@ -200,6 +200,32 @@ export default function UserManagement() {
         normalizeRole(currentRole) ===
         "super admin";
 
+    // =====================================================
+    // USER MANAGEMENT PERMISSIONS
+    // =====================================================
+
+    const normalizedCurrentRole =
+        normalizeRole(currentRole);
+
+    const canViewUserManagement =
+        [
+            "super admin",
+            "admin",
+            "manager",
+            "viewer"
+        ].includes(normalizedCurrentRole);
+
+    const canManageUsers =
+        [
+            "super admin",
+            "admin",
+            "manager"
+        ].includes(normalizedCurrentRole);
+
+    const canResetUserPassword =
+        normalizedCurrentRole ===
+        "super admin";
+
     /* =====================================================
        STATISTICS
     ===================================================== */
@@ -236,6 +262,11 @@ export default function UserManagement() {
     ===================================================== */
 
     const openAddModal = () => {
+
+        if (!canManageUsers) {
+            return;
+        }
+
         setEditingUser(null);
 
         setForm({
@@ -256,6 +287,11 @@ export default function UserManagement() {
     ===================================================== */
 
     const openEditModal = (user) => {
+
+        if (!canManageUsers) {
+            return;
+        }
+
         setEditingUser(user);
 
         setForm({
@@ -419,6 +455,11 @@ export default function UserManagement() {
     ===================================================== */
 
     const handleDeleteUser = async (user) => {
+
+        if (!canManageUsers) {
+            return;
+        }
+
         const userId = getUserId(user);
 
         if (!userId) {
@@ -517,6 +558,11 @@ export default function UserManagement() {
     ===================================================== */
 
     const handleResetPassword = (user) => {
+
+        if (!canResetUserPassword) {
+            return;
+        }
+
         const userId = getUserId(user);
 
         if (!userId) {
@@ -761,6 +807,52 @@ export default function UserManagement() {
     };
 
     /* =====================================================
+       SYNC EMPLOYEES
+    ===================================================== */
+    const handleSyncEmployees = async () => {
+        if (!isSuperAdmin) return;
+        
+        const confirmed = window.confirm("Are you sure you want to synchronize all active employees and create user accounts for them?");
+        if (!confirmed) return;
+        
+        try {
+            setLoading(true);
+            setError("");
+            setMessage("");
+
+            const token = getToken();
+            const response = await fetch(`${API_URL}/api/users/sync-employees`, {
+                method: "POST",
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    "Content-Type": "application/json",
+                }
+            });
+
+            let data = {};
+            try { data = await response.json(); } catch (e) {}
+            
+            if (!response.ok) {
+                throw new Error(data.message || "Failed to sync employees");
+            }
+            
+            setMessage(`Sync complete: ${data.created_count} users created, ${data.skipped_count} skipped.`);
+            await loadUsers();
+            
+            if (data.created_count > 0) {
+                console.log("Newly created users:", data.created_users);
+                alert(`Successfully created ${data.created_count} new employee users. Check console for temporary passwords.`);
+            }
+            
+        } catch (err) {
+            console.error("Sync Employees Error:", err);
+            setError(err.message || "Unable to sync employees.");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    /* =====================================================
        RENDER
     ===================================================== */
 
@@ -807,15 +899,29 @@ export default function UserManagement() {
                                 ← Settings
                             </button>
 
-                            <button
-                                type="button"
-                                className="add-user-button"
-                                onClick={
-                                    openAddModal
-                                }
-                            >
-                                + Add User
-                            </button>
+                            {isSuperAdmin && (
+                                <button
+                                    type="button"
+                                    className="add-user-button"
+                                    style={{ marginLeft: "10px", backgroundColor: "#10b981" }}
+                                    onClick={handleSyncEmployees}
+                                >
+                                    Sync Employees
+                                </button>
+                            )}
+
+                            {canManageUsers && (
+                                <button
+                                    type="button"
+                                    className="add-user-button"
+                                    style={{ marginLeft: "10px" }}
+                                    onClick={
+                                        openAddModal
+                                    }
+                                >
+                                    + Add User
+                                </button>
+                            )}
 
                         </div>
                     </section>
@@ -1108,65 +1214,83 @@ export default function UserManagement() {
 
                                                                 {/* EDIT */}
 
-                                                                <button
-                                                                    type="button"
-                                                                    className="action-button edit-button"
-                                                                    title="Edit User"
-                                                                    onClick={() =>
-                                                                        openEditModal(
-                                                                            user
-                                                                        )
-                                                                    }
-                                                                >
-                                                                    ✏️
-                                                                </button>
-
-                                                                {/* RESET PASSWORD */}
-
-                                                                {!current && (
+                                                                {canManageUsers && (
                                                                     <button
                                                                         type="button"
-                                                                        className="action-button reset-button"
-                                                                        title="Reset Password"
+                                                                        className="action-button edit-button"
+                                                                        title="Edit User"
                                                                         onClick={() =>
-                                                                            handleResetPassword(
+                                                                            openEditModal(
                                                                                 user
                                                                             )
                                                                         }
                                                                     >
-                                                                        🔑
+                                                                        ✏️
                                                                     </button>
                                                                 )}
 
+                                                                {/* RESET PASSWORD */}
+                                                                {/* SUPER ADMIN ONLY */}
+
+                                                                {canResetUserPassword &&
+                                                                    !current && (
+                                                                        <button
+                                                                            type="button"
+                                                                            className="action-button reset-button"
+                                                                            title="Reset Password"
+                                                                            onClick={() =>
+                                                                                handleResetPassword(
+                                                                                    user
+                                                                                )
+                                                                            }
+                                                                        >
+                                                                            🔑
+                                                                        </button>
+                                                                    )}
+
                                                                 {/* DELETE */}
 
-                                                                <button
-                                                                    type="button"
-                                                                    className={`action-button delete-button ${
-                                                                        current ||
-                                                                        superAdminUser
-                                                                            ? "disabled-button"
-                                                                            : ""
-                                                                    }`}
-                                                                    title={
-                                                                        current
-                                                                            ? "You cannot delete your own account"
-                                                                            : superAdminUser
-                                                                            ? "Super Admin cannot be deleted"
-                                                                            : "Delete User"
-                                                                    }
-                                                                    disabled={
-                                                                        current ||
-                                                                        superAdminUser
-                                                                    }
-                                                                    onClick={() =>
-                                                                        handleDeleteUser(
-                                                                            user
-                                                                        )
-                                                                    }
-                                                                >
-                                                                    🗑️
-                                                                </button>
+                                                                {canManageUsers && (
+                                                                    <button
+                                                                        type="button"
+                                                                        className={`action-button delete-button ${
+                                                                            current ||
+                                                                            superAdminUser
+                                                                                ? "disabled-button"
+                                                                                : ""
+                                                                        }`}
+                                                                        title={
+                                                                            current
+                                                                                ? "You cannot delete your own account"
+                                                                                : superAdminUser
+                                                                                ? "Super Admin cannot be deleted"
+                                                                                : "Delete User"
+                                                                        }
+                                                                        disabled={
+                                                                            current ||
+                                                                            superAdminUser
+                                                                        }
+                                                                        onClick={() =>
+                                                                            handleDeleteUser(
+                                                                                user
+                                                                            )
+                                                                        }
+                                                                    >
+                                                                        🗑️
+                                                                    </button>
+                                                                )}
+
+                                                                {!canManageUsers &&
+                                                                    !canResetUserPassword && (
+                                                                        <span
+                                                                            style={{
+                                                                                color: "#8a95ac",
+                                                                                fontSize: "11px"
+                                                                            }}
+                                                                        >
+                                                                            View only
+                                                                        </span>
+                                                                    )}
 
                                                             </div>
 
@@ -1210,22 +1334,21 @@ export default function UserManagement() {
                                 <strong>
                                     Admin
                                 </strong>{" "}
-                                can manage normal
-                                users but cannot
-                                modify or delete
-                                Super Admin
-                                accounts.{" "}
+                                and{" "}
 
                                 <strong>
                                     Manager
                                 </strong>{" "}
-                                and{" "}
+                                can add, edit and
+                                delete users, but cannot
+                                delete a Super Admin.{" "}
 
                                 <strong>
                                     Viewer
                                 </strong>{" "}
-                                do not have user
-                                management access.
+                                can view user data only
+                                and cannot add, edit or
+                                delete users.
 
                             </div>
 

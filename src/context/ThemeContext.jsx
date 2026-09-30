@@ -284,6 +284,38 @@ const applyThemeToDocument = (theme) => {
         theme.name
     );
 
+
+    // -------------------------------------------------
+    // ALIAS VARIABLES (used by ticket/asset pages)
+    // -------------------------------------------------
+
+    root.style.setProperty(
+        "--bg-color",
+        theme.background
+    );
+
+    root.style.setProperty(
+        "--card-bg",
+        theme.card
+    );
+
+    root.style.setProperty(
+        "--text-light",
+        theme.mutedText
+    );
+
+    root.style.setProperty(
+        "--sidebar-bg",
+        theme.background === "#0f172a"
+            ? "#1e293b"
+            : "#f8fafc"
+    );
+
+    root.style.setProperty(
+        "--card-shadow",
+        "0 1px 3px rgba(0, 0, 0, 0.1)"
+    );
+
 };
 
 
