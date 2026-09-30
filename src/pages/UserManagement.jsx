@@ -887,43 +887,46 @@ export default function UserManagement() {
 
                         <div className="hero-actions">
 
-                            <button
-                                type="button"
-                                className="settings-button"
-                                onClick={() =>
-                                    navigate(
-                                        "/settings"
-                                    )
-                                }
-                            >
-                                ← Settings
-                            </button>
+    <button
+        type="button"
+        className="settings-button"
+        onClick={() =>
+            navigate("/settings")
+        }
+    >
+        ← Settings
+    </button>
 
-                            {isSuperAdmin && (
-                                <button
-                                    type="button"
-                                    className="add-user-button"
-                                    style={{ marginLeft: "10px", backgroundColor: "#10b981" }}
-                                    onClick={handleSyncEmployees}
-                                >
-                                    Sync Employees
-                                </button>
-                            )}
+    {isSuperAdmin && (
+        <button
+            type="button"
+            className="add-user-button"
+            style={{
+                marginLeft: "10px",
+                backgroundColor: "#10b981",
+                color: "white",
+                borderColor: "#10b981",
+            }}
+            onClick={handleSyncEmployees}
+        >
+            Sync Employees
+        </button>
+    )}
 
-                            {canManageUsers && (
-                                <button
-                                    type="button"
-                                    className="add-user-button"
-                                    style={{ marginLeft: "10px" }}
-                                    onClick={
-                                        openAddModal
-                                    }
-                                >
-                                    + Add User
-                                </button>
-                            )}
+    {canManageUsers && (
+        <button
+            type="button"
+            className="add-user-button"
+            style={{
+                marginLeft: "10px",
+            }}
+            onClick={openAddModal}
+        >
+            + Add User
+        </button>
+    )}
 
-                        </div>
+</div>
                     </section>
 
                     {/* ALERTS */}
