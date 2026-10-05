@@ -10,7 +10,8 @@ import {
     FaCog,
     FaSignOutAlt,
     FaHistory,
-    FaShoppingCart
+    FaShoppingCart,
+    FaProjectDiagram
 } from "react-icons/fa";
 
 
@@ -165,10 +166,10 @@ function Sidebar() {
 
 
                 {/* =================================================
-                    MY TICKETS (Employee)
+                    MY TICKETS
                 ================================================= */}
 
-                {currentRole === "Employee" && (
+                {["Employee", "Admin", "Manager", "Super Admin", "IT"].includes(currentRole) && (
                     <NavLink
                         to="/tickets"
                         style={menuStyle}
@@ -180,6 +181,18 @@ function Sidebar() {
 
                     </NavLink>
                 )}
+
+                {/* =================================================
+                    PROJECT MANAGEMENT
+                ================================================= */}
+
+                <NavLink
+                    to="/projects"
+                    style={menuStyle}
+                >
+                    <FaProjectDiagram />
+                    Projects
+                </NavLink>
 
 
                 {currentRole !== "Employee" && (

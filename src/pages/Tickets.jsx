@@ -146,12 +146,7 @@ function Tickets() {
             const { data } = await API.post(
                 "/tickets",
                 formData,
-                {
-                    headers: {
-                        "Content-Type":
-                            "multipart/form-data"
-                    }
-                }
+                { headers: { "Content-Type": "multipart/form-data" } }
             );
 
             if (data.success) {
@@ -2797,3 +2792,4 @@ const submitButton = {
 
 
 export default Tickets;
+

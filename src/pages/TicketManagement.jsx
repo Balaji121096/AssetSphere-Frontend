@@ -22,6 +22,9 @@ function TicketManagement() {
     const [search, setSearch] = useState("");
     const [statusFilter, setStatusFilter] = useState("All");
     const [priorityFilter, setPriorityFilter] = useState("All");
+    const [reportMonth, setReportMonth] = useState("");
+    const [reportTickets, setReportTickets] = useState([]);
+    const [loadingReport, setLoadingReport] = useState(false);
 
     // =====================================================
     // PAGINATION
@@ -192,6 +195,25 @@ function TicketManagement() {
         }
     };
 
+    const fetchReportTickets = async (month) => {
+        if (!month) {
+            setReportTickets([]);
+            return;
+        }
+        try {
+            setLoadingReport(true);
+            const res = await API.get(`/tickets/report?month=${month}`);
+            if (res.data.success) {
+                setReportTickets(res.data.data || []);
+            }
+        } catch (err) {
+            console.error("Error fetching report tickets:", err);
+            setReportTickets([]);
+        } finally {
+            setLoadingReport(false);
+        }
+    };
+
     // =====================================================
     // EXPORT EXCEL
     // =====================================================
@@ -295,7 +317,8 @@ function TicketManagement() {
     // FILTER
     // =====================================================
 
-    const filteredTickets = tickets.filter((ticket) => {
+    const baseTickets = reportMonth ? reportTickets : tickets;
+    const filteredTickets = baseTickets.filter((ticket) => {
         const searchText = search
             .trim()
             .toLowerCase();
@@ -979,13 +1002,55 @@ function TicketManagement() {
                                 </select>
                             </div>
 
-                            {/* EXPORT */}
+                            {/* MONTH FILTER & EXPORT */}
 
                             <div
-                                style={
-                                    exportActions
-                                }
+                                style={{
+                                    ...exportActions,
+                                    alignItems: "center"
+                                }}
                             >
+                                <input
+                                    type="month"
+                                    value={reportMonth}
+                                    onChange={(e) => {
+                                        setReportMonth(e.target.value);
+                                        fetchReportTickets(e.target.value);
+                                    }}
+                                    style={{
+                                        padding: "7px 12px",
+                                        borderRadius: "8px",
+                                        border: "1.5px solid var(--border-color, #e2e8f0)",
+                                        background: "var(--card-background, #fff)",
+                                        color: "var(--text-color, #1e293b)",
+                                        fontSize: "13px",
+                                        outline: "none",
+                                        minWidth: "150px"
+                                    }}
+                                />
+                                {reportMonth && (
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setReportMonth("");
+                                            setReportTickets([]);
+                                        }}
+                                        style={{
+                                            padding: "7px 10px",
+                                            borderRadius: "8px",
+                                            border: "1.5px solid var(--border-color, #e2e8f0)",
+                                            background: "var(--card-background, #fff)",
+                                            color: "#ef4444",
+                                            fontSize: "13px",
+                                            cursor: "pointer"
+                                        }}
+                                    >
+                                        ? Clear
+                                    </button>
+                                )}
+                                {loadingReport && (
+                                    <span style={{ fontSize: "12px", color: "var(--muted-text, #64748b)" }}>Loading...</span>
+                                )}
                                 <button
                                     type="button"
                                     onClick={
@@ -996,7 +1061,7 @@ function TicketManagement() {
                                     }
                                 >
                                     <span>
-                                        ▣
+                                        ?
                                     </span>
                                     Excel
                                 </button>
@@ -1011,7 +1076,7 @@ function TicketManagement() {
                                     }
                                 >
                                     <span>
-                                        ▤
+                                        ?
                                     </span>
                                     PDF
                                 </button>
@@ -2495,3 +2560,8 @@ const dotsStyle = {
 };
 
 export default TicketManagement;
+
+
+
+
+

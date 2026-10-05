@@ -13,6 +13,8 @@ import Dashboard from "../pages/Dashboard";
 import Tickets from "../pages/Tickets";
 import TicketManagement from "../pages/TicketManagement";
 import TicketDetails from "../pages/TicketDetails";
+import Projects from "../pages/Projects";
+import ProjectDetails from "../pages/ProjectDetails";
 import ProtectedRoute from "../components/ProtectedRoute";
 
 // =====================================================
@@ -136,6 +138,28 @@ function AppRoutes() {
                 element={
                     <ProtectedRoute>
                         <TicketDetails />
+                    </ProtectedRoute>
+                }
+            />
+
+            {/* =================================================
+                PROJECTS
+            ================================================= */}
+
+            <Route
+                path="/projects"
+                element={
+                    <ProtectedRoute>
+                        <Projects />
+                    </ProtectedRoute>
+                }
+            />
+
+            <Route
+                path="/projects/:id"
+                element={
+                    <ProtectedRoute>
+                        <ProjectDetails />
                     </ProtectedRoute>
                 }
             />
