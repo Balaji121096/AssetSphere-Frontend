@@ -955,17 +955,17 @@ export default function ProjectDetails() {
                     <div style={{ background: "linear-gradient(135deg, var(--sidebar-color, #1e293b) 0%, var(--primary-color, #334155) 100%)", borderRadius: 12, padding: "20px 24px", marginBottom: 20 }}>
                         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
                             <div>
-                                <button onClick={() => navigate("/projects")} style={{ background: "none", border: "none", color: "var(--muted-text)", cursor: "pointer", fontSize: 13, marginBottom: 8, padding: 0 }}>← Back to Projects</button>
-                                <div style={{ fontSize: 11, color: "var(--muted-text)", marginBottom: 4 }}>{project.project_code}</div>
+                                <button onClick={() => navigate("/projects")} style={{ background: "none", border: "none", color: "rgba(255,255,255,0.8)", cursor: "pointer", fontSize: 13, marginBottom: 8, padding: 0 }}>← Back to Projects</button>
+                                <div style={{ fontSize: 11, color: "rgba(255,255,255,0.8)", marginBottom: 4 }}>{project.project_code}</div>
                                 <h1 style={{ margin: 0, fontSize: 22, fontWeight: 700, color: "#ffffff" }}>{project.project_name}</h1>
                                 <div style={{ marginTop: 6, display: "flex", gap: 8, flexWrap: "wrap" }}>
                                     <Badge text={project.status} map={{ ...STATUS_PROJ }} />
                                     <Badge text={project.priority} map={PRIORITY_COLORS} />
-                                    {project.manager_name && <span style={{ fontSize: 12, color: "var(--muted-text)" }}>👤 {project.manager_name}</span>}
+                                    {project.manager_name && <span style={{ fontSize: 12, color: "rgba(255,255,255,0.8)" }}>👤 {project.manager_name}</span>}
                                 </div>
                             </div>
                             <div style={{ textAlign: "right" }}>
-                                <div style={{ fontSize: 11, color: "var(--muted-text)" }}>Progress</div>
+                                <div style={{ fontSize: 11, color: "rgba(255,255,255,0.8)" }}>Progress</div>
                                 <div style={{ fontSize: 24, fontWeight: 700, color: "#ffffff" }}>{prog}%</div>
                                 <div style={{ width: 120, height: 6, background: "rgba(255,255,255,0.2)", borderRadius: 3, marginTop: 4 }}>
                                     <div style={{ height: "100%", width: `${prog}%`, background: "var(--primary-color)", borderRadius: 3 }} />
@@ -997,6 +997,9 @@ export default function ProjectDetails() {
         </div>
     );
 }
+
+
+
 
 
 

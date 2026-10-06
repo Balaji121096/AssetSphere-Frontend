@@ -132,9 +132,9 @@ export default function Projects() {
                     {/* HERO */}
                     <div style={hero}>
                         <div>
-                            <div style={{ fontSize: 11, color: "var(--muted-text)", marginBottom: 6, letterSpacing: 1 }}>DASHBOARD / PROJECT MANAGEMENT</div>
+                            <div style={{ fontSize: 11, color: "rgba(255,255,255,0.8)", marginBottom: 6, letterSpacing: 1 }}>DASHBOARD / PROJECT MANAGEMENT</div>
                             <h1 style={{ margin: 0, fontSize: 26, fontWeight: 700, color: "#ffffff" }}>Project Management</h1>
-                            <p style={{ margin: "6px 0 0", color: "var(--muted-text)", fontSize: 13 }}>Manage and track all projects, tasks, timesheets, and team updates.</p>
+                            <p style={{ margin: "6px 0 0", color: "rgba(255,255,255,0.8)", fontSize: 13 }}>Manage and track all projects, tasks, timesheets, and team updates.</p>
                         </div>
                         <div style={{ display: "flex", gap: "10px" }}>
                             <button onClick={() => { fetchProjects(); fetchStats(); }} style={{ ...btnSecondary, whiteSpace: "nowrap", background: "rgba(255,255,255,0.1)", color: "#ffffff", borderColor: "rgba(255,255,255,0.2)" }}>
@@ -328,6 +328,7 @@ export default function Projects() {
         </div>
     );
 }
+
 
 
 
