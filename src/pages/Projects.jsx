@@ -137,7 +137,7 @@ export default function Projects() {
                             <p style={{ margin: "6px 0 0", color: "rgba(255,255,255,0.8)", fontSize: 13 }}>Manage and track all projects, tasks, timesheets, and team updates.</p>
                         </div>
                         <div style={{ display: "flex", gap: "10px" }}>
-                            <button onClick={() => { fetchProjects(); fetchStats(); }} style={{ ...btnSecondary, whiteSpace: "nowrap", background: "rgba(255,255,255,0.1)", color: "#ffffff", borderColor: "rgba(255,255,255,0.2)" }}>
+                            <button onClick={() => { fetchData(); }} style={{ ...btnSecondary, whiteSpace: "nowrap", background: "rgba(255,255,255,0.1)", color: "#ffffff", borderColor: "rgba(255,255,255,0.2)" }}>
                                 ↻ Refresh
                             </button>
                             {canCreate && (
@@ -328,6 +328,7 @@ export default function Projects() {
         </div>
     );
 }
+
 
 
 
