@@ -1,4 +1,4 @@
-// =====================================================
+﻿// =====================================================
 // ProjectDetails.jsx  — Full project workspace with 9 tabs
 // =====================================================
 import { useEffect, useState, useCallback } from "react";
@@ -43,6 +43,10 @@ const btnDanger = { ...btnSec, color: "#dc2626", borderColor: "rgba(220,38,38,0.
 const card = { background: "var(--card-background)", border: "1px solid var(--border-color)", borderRadius: 12, padding: "20px", boxShadow: "0 1px 4px rgba(0,0,0,0.06)" };
 const fmtDate = d => d ? new Date(d).toLocaleDateString() : "—";
 const fmtDT = d => d ? new Date(d).toLocaleString() : "—";
+const overlay = { position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", padding: 16 };
+const modal = { background: "var(--card-background)", borderRadius: 14, padding: "28px 32px", width: "100%", maxWidth: 680, maxHeight: "90vh", overflowY: "auto" };
+const formGrid = { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 };
+const inputStyle = { ...inp, width: "100%", boxSizing: "border-box" };
 
 // ─── Mini modal ──────────────────────────────────────
 const Modal = ({ title, onClose, children, wide }) => (
@@ -484,6 +488,8 @@ function TimeTab({ projectId, canManage, userRole, tasks }) {
     const [showAdd, setShowAdd] = useState(false);
     const [monthFilter, setMonthFilter] = useState("");
     const [form, setForm] = useState({ log_date: new Date().toISOString().split("T")[0], task_id: "", start_time: "", end_time: "", break_minutes: 0, total_hours: "", work_note: "" });
+    const [editLog, setEditLog] = useState(null);
+    const initTimeForm = { log_date: new Date().toISOString().split("T")[0], task_id: "", start_time: "", end_time: "", break_minutes: 0, total_hours: "", work_note: "" };
 
     const load = useCallback(async () => {
         try {
@@ -497,8 +503,12 @@ function TimeTab({ projectId, canManage, userRole, tasks }) {
 
     const save = async () => {
         if (!form.log_date) return;
-        await API.post(`/projects/${projectId}/timelogs`, form);
-        setShowAdd(false); setForm({ log_date: new Date().toISOString().split("T")[0], task_id: "", start_time: "", end_time: "", break_minutes: 0, total_hours: "", work_note: "" }); load();
+        if (editLog) {
+            await API.put(`/projects/${projectId}/timelogs/${editLog.log_id}`, form);
+        } else {
+            await API.post(`/projects/${projectId}/timelogs`, form);
+        }
+        setShowAdd(false); setEditLog(null); setForm(initTimeForm); load();
     };
 
     const del = async (id) => { if (!window.confirm("Delete entry?")) return; await API.delete(`/projects/${projectId}/timelogs/${id}`); load(); };
@@ -512,7 +522,7 @@ function TimeTab({ projectId, canManage, userRole, tasks }) {
                 <div style={{ display: "flex", gap: 8 }}>
                     <input type="month" style={inp} value={monthFilter} onChange={e => setMonthFilter(e.target.value)} />
                     {monthFilter && <button onClick={() => setMonthFilter("")} style={{ ...btnDanger, padding: "8px 12px" }}>Clear</button>}
-                    <button onClick={() => setShowAdd(true)} style={btnPrim}>+ Log Time</button>
+                    <button onClick={() => { setEditLog(null); setForm(initTimeForm); setShowAdd(true); }} style={btnPrim}>+ Log Time</button>
                 </div>
             </div>
 
@@ -535,7 +545,7 @@ function TimeTab({ projectId, canManage, userRole, tasks }) {
                                 <td style={{ padding: "11px 12px", fontSize: 13, fontWeight: 700, color: "var(--primary-color)", borderBottom: "1px solid var(--border-color)" }}>{parseFloat(l.total_hours || 0).toFixed(2)}h</td>
                                 <td style={{ padding: "11px 12px", fontSize: 12, color: "var(--muted-text)", borderBottom: "1px solid var(--border-color)", maxWidth: 160 }}>{l.work_note || "—"}</td>
                                 <td style={{ padding: "11px 12px", borderBottom: "1px solid var(--border-color)" }}>
-                                    {canManage && <button onClick={() => del(l.log_id)} style={{ ...btnDanger, padding: "4px 10px", fontSize: 11 }}>Del</button>}
+                                    <div style={{ display: "flex", gap: 4 }}><button onClick={() => { setEditLog(l); setForm({ log_date: l.log_date ? new Date(l.log_date).toISOString().split("T")[0] : "", task_id: l.task_id || "", start_time: l.start_time || "", end_time: l.end_time || "", break_minutes: l.break_minutes || 0, total_hours: l.total_hours || "", work_note: l.work_note || "" }); setShowAdd(true); }} style={{ ...btnSec, padding: "4px 10px", fontSize: 11 }}>Edit</button><button onClick={() => del(l.log_id)} style={{ ...btnDanger, padding: "4px 10px", fontSize: 11 }}>Del</button></div>
                                 </td>
                             </tr>
                         ))}
@@ -545,7 +555,7 @@ function TimeTab({ projectId, canManage, userRole, tasks }) {
             </div>
 
             {showAdd && (
-                <Modal title="Log Time" onClose={() => setShowAdd(false)}>
+                <Modal title={editLog ? "Edit Time Log" : "Log Time"} onClose={() => { setShowAdd(false); setEditLog(null); }}>
                     <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
                         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
                             <div><label style={label}>Date *</label><input type="date" style={inputFull} value={form.log_date} onChange={e => setForm(f => ({ ...f, log_date: e.target.value }))} /></div>
@@ -563,7 +573,7 @@ function TimeTab({ projectId, canManage, userRole, tasks }) {
                         <div><label style={label}>Work Note</label><textarea rows={3} style={{ ...inputFull, resize: "vertical" }} value={form.work_note} onChange={e => setForm(f => ({ ...f, work_note: e.target.value }))} /></div>
                         <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
                             <button onClick={() => setShowAdd(false)} style={btnSec}>Cancel</button>
-                            <button onClick={save} style={btnPrim}>Save</button>
+                            <button onClick={save} style={btnPrim}>{editLog ? "Update" : "Save"}</button>
                         </div>
                     </div>
                 </Modal>
@@ -611,7 +621,7 @@ function UpdatesTab({ projectId, canManage, userEmployeeId }) {
                             <span style={{ fontSize: 11, color: "var(--muted-text)", marginLeft: 8 }}>{u.employee_code}</span>
                         </div>
                         <div style={{display: 'flex', gap: '8px', alignItems: 'center'}}>
-                            <span style={{ fontSize: 12, color: "var(--muted-text)" }}>{fmtDate(u.update_date)} � {u.time_spent ? u.time_spent + 'h spent' : ""}</span>
+                            <span style={{ fontSize: 12, color: "var(--muted-text)" }}>{fmtDate(u.update_date)} � {u.time_spent ? u.time_spent + 'h spent' : ""}</span>
                             { (canManage || u.employee_id === userEmployeeId) && <button onClick={() => { setEditU(u); 
                                 setForm({
                                     update_date: u.update_date ? new Date(u.update_date).toISOString().split("T")[0] : "",
@@ -833,13 +843,13 @@ function FilesTab({ projectId, canManage }) {
                         </div>
                         <div style={{ textAlign: "center" }}>
                             <div style={{ fontSize: 13, fontWeight: 600, wordBreak: "break-all" }}>{f.file_name}</div>
-                            <div style={{ fontSize: 11, color: "var(--muted-text)" }}>{fmtSize(f.file_size)} � {fmtDate(f.uploaded_at)}</div>
+                            <div style={{ fontSize: 11, color: "var(--muted-text)" }}>{fmtSize(f.file_size)} � {fmtDate(f.uploaded_at)}</div>
                             <div style={{ fontSize: 11, color: "var(--muted-text)" }}>by {f.uploader_name}</div>
                         </div>
                         <div style={{ display: "flex", gap: 8, justifyContent: "center", marginTop: 8 }}>
                             <a href={"http://192.168.1.158:5000/api/projects/" + projectId + "/files/" + f.file_id + "/view?token=" + token} target="_blank" rel="noreferrer" style={{ ...btnSec, padding: "4px 10px", fontSize: 12, textDecoration: "none", display: "inline-block" }}>View</a>
                             <a href={"http://192.168.1.158:5000/api/projects/" + projectId + "/files/" + f.file_id + "/download?token=" + token} style={{ ...btnSec, padding: "4px 10px", fontSize: 12, textDecoration: "none", display: "inline-block" }}>Download</a>
-                            {canManage && <button onClick={() => del(f.file_id)} style={{ ...btnDanger, padding: "4px 10px", fontSize: 12 }}>Del</button>}
+                            <button onClick={() => del(f.file_id)} style={{ ...btnDanger, padding: "4px 10px", fontSize: 12 }}>Delete</button>
                         </div>
                     </div>
                 ))}
@@ -997,6 +1007,8 @@ export default function ProjectDetails() {
         </div>
     );
 }
+
+
 
 
 
