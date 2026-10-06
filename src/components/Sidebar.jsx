@@ -243,8 +243,11 @@ function Sidebar() {
                             Employees
 
                         </NavLink>
+                    </>
+                )}
 
-
+                {currentRole !== "Employee" && currentRole !== "Manager" && currentRole !== "Viewer" && (
+                    <>
                         {/* =================================================
                             VENDORS
                         ================================================= */}
@@ -307,8 +310,11 @@ function Sidebar() {
                             Tickets Management
 
                         </NavLink>
+                    </>
+                )}
 
-
+                {currentRole !== "Employee" && (
+                    <>
                         {/* =================================================
                             ASSET HISTORY
                         ================================================= */}
