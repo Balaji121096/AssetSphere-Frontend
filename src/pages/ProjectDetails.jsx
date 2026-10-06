@@ -226,7 +226,7 @@ function OverviewTab({ project, stats, canManage, employees, onUpdate }) {
 // =====================================================
 // MEMBERS TAB
 // =====================================================
-function MembersTab({ projectId, canManage, employees }) {
+function MembersTab({ projectId, canManage, employees, projectRoles }) {
     const [members, setMembers] = useState([]);
     const [showAdd, setShowAdd] = useState(false);
     const [editM, setEditM] = useState(null);
@@ -312,7 +312,35 @@ function MembersTab({ projectId, canManage, employees }) {
                             </div>
                             <div>
                                 <span style={label}>Project Role</span>
-                                <input style={inputStyle} placeholder="e.g. Developer, QA, Member" value={form.project_role} onChange={e => setForm({ ...form, project_role: e.target.value })} />
+<select style={inputStyle} value={form.project_role} onChange={async (e) => {
+    if (e.target.value === "__ADD_NEW__") {
+        const newRole = window.prompt("Enter new Project Role:");
+        if (newRole && newRole.trim()) {
+            try {
+                await API.post('/projects/roles', { role_name: newRole.trim() });
+                if (!projectRoles.find(r => r.role_name === newRole.trim())) {
+                    projectRoles.push({ role_name: newRole.trim() });
+                }
+                setForm({ ...form, project_role: newRole.trim() });
+            } catch(er) {
+                alert("Failed to add role or role already exists");
+                setForm({ ...form, project_role: "Member" });
+            }
+        } else {
+            setForm({ ...form, project_role: "Member" });
+        }
+    } else {
+        setForm({ ...form, project_role: e.target.value });
+    }
+}}>
+    <option value="">Select Role</option>
+    <option value="Member">Member</option>
+    {projectRoles?.map(r => <option key={r.role_id || r.role_name} value={r.role_name}>{r.role_name}</option>)}
+    {form.project_role && form.project_role !== "Member" && !projectRoles?.find(r => r.role_name === form.project_role) && <option value={form.project_role}>{form.project_role}</option>}
+    {['Super Admin', 'Admin'].includes(JSON.parse(localStorage.getItem("user") || "{}").role) && (
+        <option style={{fontWeight: 'bold', color: 'var(--primary-color)'}} value="__ADD_NEW__">+ Add New Role</option>
+    )}
+</select>
                             </div>
                             <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
                                 <button onClick={addOrEdit} style={btnPrim}>Save Member</button>
@@ -900,11 +928,11 @@ export default function ProjectDetails() {
     const user = JSON.parse(localStorage.getItem("user") || "{}");
     const role = user.role || "";
     const isManager = role === 'Manager';
-    const canManage = ['Super Admin', 'Admin'].includes(role) || (isManager && project && (project.manager_employee_id === user.employee_id || project.created_by === user.user_id));
-
     const [project, setProject] = useState(null);
+    const canManage = ['Super Admin', 'Admin'].includes(role) || (isManager && project && (project.manager_employee_id === user.employee_id || project.created_by === user.user_id));
     const [stats, setStats] = useState({});
     const [employees, setEmployees] = useState([]);
+    const [projectRoles, setProjectRoles] = useState([]);
     const [tasks, setTasks] = useState([]);
     const [activeTab, setActiveTab] = useState("Overview");
     const [loading, setLoading] = useState(true);
@@ -919,8 +947,12 @@ export default function ProjectDetails() {
         setLoading(false);
     }, [id]);
 
-    const loadEmployees = useCallback(async () => {
-        try { const r = await API.get("/employees"); setEmployees(r.data.data || r.data.employees || []); } catch {}
+        const loadEmployees = useCallback(async () => {
+        try { 
+            const [eRes, rRes] = await Promise.all([API.get("/employees"), API.get("/projects/roles")]);
+            setEmployees(eRes.data.data || eRes.data.employees || []);
+            setProjectRoles(rRes.data.data || []);
+        } catch {}
     }, []);
 
     const loadTasks = useCallback(async () => {
@@ -995,7 +1027,7 @@ export default function ProjectDetails() {
 
                     {/* TAB CONTENT */}
                     {activeTab === "Overview" && <OverviewTab project={project} stats={stats} canManage={canManage} employees={employees} onUpdate={loadProject} />}
-                    {activeTab === "Members" && <MembersTab projectId={id} canManage={canManage} employees={employees} />}
+                    {activeTab === "Members" && <MembersTab projectId={id} canManage={canManage} employees={employees} projectRoles={projectRoles} />}
                     {activeTab === "Tasks" && <TasksTab projectId={id} canManage={canManage} employees={employees} userRole={role} userEmployeeId={user.employee_id} />}
                     {activeTab === "Time" && <TimeTab projectId={id} canManage={canManage} userRole={role} tasks={tasks} />}
                     {activeTab === "Updates" && <UpdatesTab projectId={id} canManage={canManage} userEmployeeId={user.employee_id} />}
@@ -1007,6 +1039,13 @@ export default function ProjectDetails() {
         </div>
     );
 }
+
+
+
+
+
+
+
 
 
 
