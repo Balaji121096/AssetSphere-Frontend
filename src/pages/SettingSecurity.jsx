@@ -61,7 +61,7 @@ const SettingSecurity = () => {
             const token = localStorage.getItem("token");
 
             const response = await axios.put(
-                "http://localhost:5000/api/users/password",
+                "http://192.168.1.158:5000/api/users/password",
                 {
                     current_password,
                     new_password

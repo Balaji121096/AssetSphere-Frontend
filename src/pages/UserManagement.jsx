@@ -5,7 +5,7 @@ import Sidebar from "../components/Sidebar";
 import Navbar from "../components/Navbar";
 
 const API_URL =
-    import.meta.env.VITE_API_URL || "http://localhost:5000";
+    import.meta.env.VITE_API_URL || "http://192.168.1.158:5000";
 
 /* =========================================================
    HELPERS
@@ -51,6 +51,7 @@ export default function UserManagement() {
     const navigate = useNavigate();
 
     const [users, setUsers] = useState([]);
+    const [searchTerm, setSearchTerm] = useState("");
     const [loading, setLoading] = useState(true);
 
     const [error, setError] = useState("");
@@ -225,6 +226,19 @@ export default function UserManagement() {
     const canResetUserPassword =
         normalizedCurrentRole ===
         "super admin";
+
+        /* =====================================================
+       FILTER USERS
+    ===================================================== */
+    const filteredUsers = users.filter((user) => {
+        const search = (searchTerm || "").toLowerCase();
+        return (
+            String(user.username || "").toLowerCase().includes(search) ||
+            String(user.email || "").toLowerCase().includes(search) ||
+            String(user.employee_code || "").toLowerCase().includes(search) ||
+            String(getUserRole(user) || "").toLowerCase().includes(search)
+        );
+    });
 
     /* =====================================================
        STATISTICS
@@ -1032,6 +1046,7 @@ export default function UserManagement() {
                                     System Users
                                 </div>
 
+                                <input type="text" placeholder="Search Users..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} style={{ padding: "8px", borderRadius: "6px", border: "1px solid #ccc", marginBottom: "10px", width: "100%", maxWidth: "300px" }} />
                                 <div className="section-subtitle">
                                     Users who have
                                     access to
@@ -1105,7 +1120,7 @@ export default function UserManagement() {
 
                                     <tbody>
 
-                                        {users.map(
+                                        {filteredUsers.map(
                                             (
                                                 user,
                                                 index
@@ -1131,6 +1146,8 @@ export default function UserManagement() {
                                                         role
                                                     ) ===
                                                     "super admin";
+
+const currentIsSuperAdmin = normalizeRole(currentRole) === "super admin";
 
                                                 return (
                                                     <tr
@@ -1257,8 +1274,7 @@ export default function UserManagement() {
                                                                     <button
                                                                         type="button"
                                                                         className={`action-button delete-button ${
-                                                                            current ||
-                                                                            superAdminUser
+                                                                            current || (!currentIsSuperAdmin && superAdminUser)
                                                                                 ? "disabled-button"
                                                                                 : ""
                                                                         }`}
@@ -1269,10 +1285,7 @@ export default function UserManagement() {
                                                                                 ? "Super Admin cannot be deleted"
                                                                                 : "Delete User"
                                                                         }
-                                                                        disabled={
-                                                                            current ||
-                                                                            superAdminUser
-                                                                        }
+                                                                        disabled={current || (!currentIsSuperAdmin && superAdminUser)}
                                                                         onClick={() =>
                                                                             handleDeleteUser(
                                                                                 user

@@ -166,23 +166,18 @@ function Settings() {
 
         {
             title: "Change Password",
-
             description:
                 "Update your account password securely.",
-
-            icon: "🔐",
-
+            icon: "🔑",
             path: "/settings/change-password",
-
             color: "#7c3aed",
-
             background: "#f5f3ff",
-
             allowedRoles: [
                 "Super Admin",
                 "Admin",
                 "Manager",
-                "Viewer"
+                "Viewer",
+                "Employee"
             ]
 
         },
@@ -212,23 +207,18 @@ function Settings() {
 
         {
             title: "Theme",
-
             description:
                 "Customize the appearance of AssetSphere with your preferred theme.",
-
             icon: "🎨",
-
             path: "/settings/theme",
-
             color: "#db2777",
-
             background: "#fdf2f8",
-
             allowedRoles: [
                 "Super Admin",
                 "Admin",
                 "Manager",
-                "Viewer"
+                "Viewer",
+                "Employee"
             ]
 
         },

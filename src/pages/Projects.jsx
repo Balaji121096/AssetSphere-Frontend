@@ -14,16 +14,16 @@ const PRIORITY_COLORS = {
     Critical: { bg: "rgba(239,68,68,0.12)", color: "#dc2626", border: "rgba(239,68,68,0.25)" }
 };
 const STATUS_COLORS = {
-    Planning: { bg: "rgba(148,163,184,0.15)", color: "#64748b", border: "rgba(148,163,184,0.3)" },
+    Planning: { bg: "rgba(148,163,184,0.15)", color: "var(--muted-text)", border: "rgba(148,163,184,0.3)" },
     "Not Started": { bg: "rgba(99,102,241,0.12)", color: "#6366f1", border: "rgba(99,102,241,0.25)" },
-    "In Progress": { bg: "rgba(59,130,246,0.12)", color: "#2563eb", border: "rgba(59,130,246,0.25)" },
+    "In Progress": { bg: "rgba(59,130,246,0.12)", color: "var(--primary-color)", border: "rgba(59,130,246,0.25)" },
     "On Hold": { bg: "rgba(234,179,8,0.12)", color: "#ca8a04", border: "rgba(234,179,8,0.25)" },
     Completed: { bg: "rgba(34,197,94,0.12)", color: "#16a34a", border: "rgba(34,197,94,0.25)" },
     Cancelled: { bg: "rgba(239,68,68,0.12)", color: "#dc2626", border: "rgba(239,68,68,0.25)" }
 };
 
 const Badge = ({ text, map }) => {
-    const c = (map || {})[text] || { bg: "rgba(148,163,184,0.15)", color: "#64748b", border: "rgba(148,163,184,0.3)" };
+    const c = (map || {})[text] || { bg: "rgba(148,163,184,0.15)", color: "var(--muted-text)", border: "rgba(148,163,184,0.3)" };
     return (
         <span style={{ padding: "3px 10px", borderRadius: 20, fontSize: 11, fontWeight: 600, background: c.bg, color: c.color, border: `1px solid ${c.border}` }}>
             {text}
@@ -104,23 +104,23 @@ export default function Projects() {
     };
 
     // ─── Styles ───
-    const page = { display: "flex", minHeight: "100vh", background: "var(--app-background,#f4f6f8)", color: "var(--text-color,#1e293b)" };
+    const page = { display: "flex", minHeight: "100vh", background: "var(--app-background,#f4f6f8)", color: "var(--text-color)" };
     const main = { flex: 1, display: "flex", flexDirection: "column", minWidth: 0 };
     const content = { padding: "20px", maxWidth: 1500, margin: "0 auto", width: "100%" };
-    const hero = { background: "linear-gradient(135deg,#1e293b 0%,#334155 100%)", borderRadius: 12, padding: "24px 28px", marginBottom: 20, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16 };
+    const hero = { background: "linear-gradient(135deg, var(--sidebar-color, #1e293b) 0%, var(--primary-color, #334155) 100%)", borderRadius: 12, padding: "24px 28px", marginBottom: 20, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16 };
     const statsGrid = { display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(160px,1fr))", gap: 14, marginBottom: 20 };
-    const statCard = { background: "var(--card-background,#fff)", border: "1px solid var(--border-color,#e2e8f0)", borderRadius: 10, padding: "16px 20px", boxShadow: "0 1px 4px rgba(0,0,0,0.07)" };
-    const filterCard = { background: "var(--card-background,#fff)", border: "1px solid var(--border-color,#e2e8f0)", borderRadius: 10, padding: "16px 20px", marginBottom: 20, display: "flex", gap: 12, flexWrap: "wrap", alignItems: "center" };
-    const inp = { padding: "8px 12px", borderRadius: 8, border: "1.5px solid var(--border-color,#e2e8f0)", background: "var(--card-background,#fff)", color: "var(--text-color,#1e293b)", fontSize: 13, outline: "none" };
+    const statCard = { background: "var(--card-background)", border: "1px solid var(--border-color)", borderRadius: 10, padding: "16px 20px", boxShadow: "0 1px 4px rgba(0,0,0,0.07)" };
+    const filterCard = { background: "var(--card-background)", border: "1px solid var(--border-color)", borderRadius: 10, padding: "16px 20px", marginBottom: 20, display: "flex", gap: 12, flexWrap: "wrap", alignItems: "center" };
+    const inp = { padding: "8px 12px", borderRadius: 8, border: "1.5px solid var(--border-color)", background: "var(--card-background)", color: "var(--text-color)", fontSize: 13, outline: "none" };
     const grid = { display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(320px,1fr))", gap: 16 };
-    const card = { background: "var(--card-background,#fff)", border: "1px solid var(--border-color,#e2e8f0)", borderRadius: 12, padding: "20px", boxShadow: "0 1px 4px rgba(0,0,0,0.07)", cursor: "pointer", transition: "box-shadow .15s", display: "flex", flexDirection: "column", gap: 12 };
+    const card = { background: "var(--card-background)", border: "1px solid var(--border-color)", borderRadius: 12, padding: "20px", boxShadow: "0 1px 4px rgba(0,0,0,0.07)", cursor: "pointer", transition: "box-shadow .15s", display: "flex", flexDirection: "column", gap: 12 };
     const overlay = { position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", padding: 16 };
-    const modal = { background: "var(--card-background,#fff)", borderRadius: 14, padding: "28px 32px", width: "100%", maxWidth: 680, maxHeight: "90vh", overflowY: "auto" };
+    const modal = { background: "var(--card-background)", borderRadius: 14, padding: "28px 32px", width: "100%", maxWidth: 680, maxHeight: "90vh", overflowY: "auto" };
     const formGrid = { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 };
-    const label = { fontSize: 12, fontWeight: 600, color: "var(--muted-text,#64748b)", marginBottom: 4, display: "block", textTransform: "uppercase", letterSpacing: .5 };
+    const label = { fontSize: 12, fontWeight: 600, color: "var(--muted-text)", marginBottom: 4, display: "block", textTransform: "uppercase", letterSpacing: .5 };
     const inputStyle = { ...inp, width: "100%", boxSizing: "border-box" };
-    const btnPrimary = { padding: "10px 22px", borderRadius: 8, border: "none", background: "#2563eb", color: "#fff", fontWeight: 600, fontSize: 14, cursor: "pointer" };
-    const btnSecondary = { padding: "10px 22px", borderRadius: 8, border: "1.5px solid var(--border-color,#e2e8f0)", background: "transparent", color: "var(--text-color,#1e293b)", fontWeight: 600, fontSize: 14, cursor: "pointer" };
+    const btnPrimary = { padding: "10px 22px", borderRadius: 8, border: "none", background: "var(--primary-color)", color: "#ffffff", fontWeight: 600, fontSize: 14, cursor: "pointer" };
+    const btnSecondary = { padding: "10px 22px", borderRadius: 8, border: "1.5px solid var(--border-color)", background: "transparent", color: "var(--text-color)", fontWeight: 600, fontSize: 14, cursor: "pointer" };
 
     return (
         <div style={page}>
@@ -132,22 +132,27 @@ export default function Projects() {
                     {/* HERO */}
                     <div style={hero}>
                         <div>
-                            <div style={{ fontSize: 11, color: "#94a3b8", marginBottom: 6, letterSpacing: 1 }}>DASHBOARD / PROJECT MANAGEMENT</div>
-                            <h1 style={{ margin: 0, fontSize: 26, fontWeight: 700, color: "#fff" }}>Project Management</h1>
-                            <p style={{ margin: "6px 0 0", color: "#94a3b8", fontSize: 13 }}>Manage and track all projects, tasks, timesheets, and team updates.</p>
+                            <div style={{ fontSize: 11, color: "var(--muted-text)", marginBottom: 6, letterSpacing: 1 }}>DASHBOARD / PROJECT MANAGEMENT</div>
+                            <h1 style={{ margin: 0, fontSize: 26, fontWeight: 700, color: "#ffffff" }}>Project Management</h1>
+                            <p style={{ margin: "6px 0 0", color: "var(--muted-text)", fontSize: 13 }}>Manage and track all projects, tasks, timesheets, and team updates.</p>
                         </div>
-                        {canCreate && (
-                            <button onClick={() => setShowModal(true)} style={{ ...btnPrimary, whiteSpace: "nowrap", background: "#3b82f6" }}>
-                                + New Project
+                        <div style={{ display: "flex", gap: "10px" }}>
+                            <button onClick={() => { fetchProjects(); fetchStats(); }} style={{ ...btnSecondary, whiteSpace: "nowrap", background: "rgba(255,255,255,0.1)", color: "#ffffff", borderColor: "rgba(255,255,255,0.2)" }}>
+                                ↻ Refresh
                             </button>
-                        )}
+                            {canCreate && (
+                                <button onClick={() => setShowModal(true)} style={{ ...btnPrimary, whiteSpace: "nowrap", background: "var(--primary-color)" }}>
+                                    + New Project
+                                </button>
+                            )}
+                        </div>
                     </div>
 
                     {/* STATS */}
                     {stats && (
                         <div style={statsGrid}>
                             {[
-                                { label: "Total Projects", value: stats.total_projects, color: "#2563eb" },
+                                { label: "Total Projects", value: stats.total_projects, color: "var(--primary-color)" },
                                 { label: "Active", value: stats.active_projects, color: "#f59e0b" },
                                 { label: "Completed", value: stats.completed_projects, color: "#16a34a" },
                                 { label: "On Hold", value: stats.on_hold_projects, color: "#9ca3af" },
@@ -157,7 +162,7 @@ export default function Projects() {
                             ].map(s => (
                                 <div key={s.label} style={statCard}>
                                     <div style={{ fontSize: 22, fontWeight: 700, color: s.color }}>{s.value || 0}</div>
-                                    <div style={{ fontSize: 11, color: "var(--muted-text,#64748b)", fontWeight: 600, marginTop: 2 }}>{s.label}</div>
+                                    <div style={{ fontSize: 11, color: "var(--muted-text)", fontWeight: 600, marginTop: 2 }}>{s.label}</div>
                                 </div>
                             ))}
                         </div>
@@ -179,16 +184,16 @@ export default function Projects() {
                                 Clear
                             </button>
                         )}
-                        <div style={{ marginLeft: "auto", fontSize: 12, color: "var(--muted-text,#64748b)" }}>
+                        <div style={{ marginLeft: "auto", fontSize: 12, color: "var(--muted-text)" }}>
                             {filtered.length} project{filtered.length !== 1 ? "s" : ""} found
                         </div>
                     </div>
 
                     {/* PROJECT CARDS */}
                     {loading ? (
-                        <div style={{ textAlign: "center", padding: 60, color: "var(--muted-text,#64748b)" }}>Loading projects...</div>
+                        <div style={{ textAlign: "center", padding: 60, color: "var(--muted-text)" }}>Loading projects...</div>
                     ) : filtered.length === 0 ? (
-                        <div style={{ textAlign: "center", padding: 60, color: "var(--muted-text,#64748b)" }}>
+                        <div style={{ textAlign: "center", padding: 60, color: "var(--muted-text)" }}>
                             <div style={{ fontSize: 40, marginBottom: 12 }}>📁</div>
                             <div style={{ fontWeight: 600 }}>No projects found</div>
                             {canCreate && <div style={{ marginTop: 8, fontSize: 13 }}>Create your first project using the button above.</div>}
@@ -199,8 +204,8 @@ export default function Projects() {
                                 <div key={p.project_id} style={card} onClick={() => navigate(`/projects/${p.project_id}`)}>
                                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8 }}>
                                         <div>
-                                            <div style={{ fontSize: 11, color: "var(--muted-text,#64748b)", fontWeight: 600, marginBottom: 3 }}>{p.project_code}</div>
-                                            <div style={{ fontSize: 16, fontWeight: 700, color: "var(--text-color,#1e293b)", lineHeight: 1.3 }}>{p.project_name}</div>
+                                            <div style={{ fontSize: 11, color: "var(--muted-text)", fontWeight: 600, marginBottom: 3 }}>{p.project_code}</div>
+                                            <div style={{ fontSize: 16, fontWeight: 700, color: "var(--text-color)", lineHeight: 1.3 }}>{p.project_name}</div>
                                         </div>
                                         <div style={{ display: "flex", flexDirection: "column", gap: 4, alignItems: "flex-end" }}>
                                             <Badge text={p.status} map={STATUS_COLORS} />
@@ -208,15 +213,15 @@ export default function Projects() {
                                         </div>
                                     </div>
 
-                                    {p.description && <div style={{ fontSize: 12, color: "var(--muted-text,#64748b)", lineHeight: 1.5, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{p.description}</div>}
+                                    {p.description && <div style={{ fontSize: 12, color: "var(--muted-text)", lineHeight: 1.5, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{p.description}</div>}
 
                                     {/* Progress Bar */}
                                     <div>
-                                        <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: "var(--muted-text,#64748b)", marginBottom: 5 }}>
+                                        <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: "var(--muted-text)", marginBottom: 5 }}>
                                             <span>Progress</span><span>{progress(p)}%</span>
                                         </div>
-                                        <div style={{ height: 6, background: "var(--border-color,#e2e8f0)", borderRadius: 3, overflow: "hidden" }}>
-                                            <div style={{ height: "100%", width: `${progress(p)}%`, background: progress(p) === 100 ? "#16a34a" : "#3b82f6", borderRadius: 3, transition: "width .3s" }} />
+                                        <div style={{ height: 6, background: "var(--border-color)", borderRadius: 3, overflow: "hidden" }}>
+                                            <div style={{ height: "100%", width: `${progress(p)}%`, background: progress(p) === 100 ? "#16a34a" : "var(--primary-color)", borderRadius: 3, transition: "width .3s" }} />
                                         </div>
                                     </div>
 
@@ -226,14 +231,14 @@ export default function Projects() {
                                             { label: "Done", value: p.completed_tasks || 0 },
                                             { label: "Members", value: p.member_count || 0 }
                                         ].map(s => (
-                                            <div key={s.label} style={{ textAlign: "center", background: "var(--app-background,#f8fafc)", borderRadius: 8, padding: "8px 4px" }}>
-                                                <div style={{ fontSize: 16, fontWeight: 700, color: "var(--text-color,#1e293b)" }}>{s.value}</div>
-                                                <div style={{ fontSize: 10, color: "var(--muted-text,#64748b)", fontWeight: 600 }}>{s.label}</div>
+                                            <div key={s.label} style={{ textAlign: "center", background: "var(--app-background)", borderRadius: 8, padding: "8px 4px" }}>
+                                                <div style={{ fontSize: 16, fontWeight: 700, color: "var(--text-color)" }}>{s.value}</div>
+                                                <div style={{ fontSize: 10, color: "var(--muted-text)", fontWeight: 600 }}>{s.label}</div>
                                             </div>
                                         ))}
                                     </div>
 
-                                    <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: "var(--muted-text,#64748b)", borderTop: "1px solid var(--border-color,#e2e8f0)", paddingTop: 10 }}>
+                                    <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: "var(--muted-text)", borderTop: "1px solid var(--border-color)", paddingTop: 10 }}>
                                         <span>👤 {p.manager_name || "No Manager"}</span>
                                         {p.expected_end_date && <span>📅 {new Date(p.expected_end_date).toLocaleDateString()}</span>}
                                     </div>
@@ -250,7 +255,7 @@ export default function Projects() {
                     <div style={modal}>
                         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 22 }}>
                             <h2 style={{ margin: 0, fontSize: 20, fontWeight: 700 }}>Create New Project</h2>
-                            <button onClick={() => { setShowModal(false); setError(""); }} style={{ background: "none", border: "none", fontSize: 22, cursor: "pointer", color: "var(--muted-text,#64748b)" }}>✕</button>
+                            <button onClick={() => { setShowModal(false); setError(""); }} style={{ background: "none", border: "none", fontSize: 22, cursor: "pointer", color: "var(--muted-text)" }}>✕</button>
                         </div>
 
                         {error && <div style={{ background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.3)", color: "#dc2626", padding: "10px 14px", borderRadius: 8, marginBottom: 16, fontSize: 13 }}>{error}</div>}
@@ -323,3 +328,7 @@ export default function Projects() {
         </div>
     );
 }
+
+
+
+
