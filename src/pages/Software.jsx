@@ -11,6 +11,18 @@ import {
     exportToPDF
 } from "../utils/exportUtils";
 
+
+// =====================================================
+// CONSTANTS
+// =====================================================
+
+const MONTH_NAMES = [
+    "January", "February", "March", "April",
+    "May", "June", "July", "August",
+    "September", "October", "November", "December"
+];
+
+
 function Software() {
     const navigate = useNavigate();
 
@@ -19,6 +31,25 @@ function Software() {
     const [filter, setFilter] = useState("All");
     const [loading, setLoading] = useState(true);
     const [deletingId, setDeletingId] = useState(null);
+
+    // =====================================================
+    // MONTH / YEAR FILTER STATE
+    // =====================================================
+
+    const currentYear = new Date().getFullYear();
+    const [selectedMonth, setSelectedMonth] = useState("All");
+    const [selectedYear, setSelectedYear] = useState(String(currentYear));
+
+    // =====================================================
+    // SUMMARY STATE
+    // =====================================================
+
+    const [summary, setSummary] = useState({
+        total_qty: 0,
+        total_cost: 0,
+        avg_cost: 0
+    });
+    const [summaryLoading, setSummaryLoading] = useState(false);
 
     // =====================================================
     // VIEW SOFTWARE
@@ -50,9 +81,50 @@ function Software() {
         }
     };
 
+    // =====================================================
+    // LOAD SUMMARY
+    // =====================================================
+
+    const loadSummary = async (month, year) => {
+        try {
+            setSummaryLoading(true);
+
+            const params = new URLSearchParams();
+
+            if (month !== "All" && month) {
+                params.append("month", month);
+            }
+
+            if (year && year !== "All") {
+                params.append("year", year);
+            }
+
+            const queryString = params.toString();
+
+            const response = await API.get(
+                `/software/summary${queryString ? `?${queryString}` : ""}`
+            );
+
+            setSummary(response.data?.data || {
+                total_qty: 0,
+                total_cost: 0,
+                avg_cost: 0
+            });
+        } catch (error) {
+            console.error("Load Summary Error:", error);
+            setSummary({ total_qty: 0, total_cost: 0, avg_cost: 0 });
+        } finally {
+            setSummaryLoading(false);
+        }
+    };
+
     useEffect(() => {
         loadSoftware();
     }, []);
+
+    useEffect(() => {
+        loadSummary(selectedMonth, selectedYear);
+    }, [selectedMonth, selectedYear]);
 
     // =====================================================
     // VIEW SOFTWARE DETAILS
@@ -149,6 +221,9 @@ function Software() {
             alert("Software deleted successfully");
 
             await loadSoftware();
+
+            await loadSummary(selectedMonth, selectedYear);
+
         } catch (error) {
             console.error(
                 "Delete Software Error:",
@@ -316,12 +391,53 @@ function Software() {
                     Number(item.days_remaining) < 0;
             }
 
+            // Month / year filter based on purchase_date
+            let matchesMonth = true;
+
+            if (
+                selectedMonth !== "All" ||
+                (selectedYear && selectedYear !== "All")
+            ) {
+                if (!item.purchase_date) {
+                    matchesMonth = false;
+                } else {
+                    const pd = new Date(item.purchase_date);
+
+                    if (
+                        selectedYear &&
+                        selectedYear !== "All"
+                    ) {
+                        if (
+                            pd.getFullYear() !==
+                            Number(selectedYear)
+                        ) {
+                            matchesMonth = false;
+                        }
+                    }
+
+                    if (
+                        matchesMonth &&
+                        selectedMonth !== "All"
+                    ) {
+                        // getMonth() is 0-indexed
+                        if (
+                            pd.getMonth() + 1 !==
+                            Number(selectedMonth)
+                        ) {
+                            matchesMonth = false;
+                        }
+                    }
+                }
+            }
+
             return (
                 matchesSearch &&
-                matchesFilter
+                matchesFilter &&
+                matchesMonth
             );
         });
-    }, [software, search, filter]);
+    }, [software, search, filter, selectedMonth, selectedYear]);
+
 
     // =====================================================
     // STATS
@@ -574,6 +690,69 @@ function Software() {
 
 
                     {/* =================================================
+                        SUMMARY CARDS (QTY / COST / AVG COST)
+                    ================================================= */}
+
+                    <div
+                        style={{
+                            ...summaryCardsGrid,
+                            opacity: summaryLoading ? 0.65 : 1,
+                            transition: "opacity .2s ease"
+                        }}
+                    >
+
+                        <StatCard
+                            title={
+                                selectedMonth === "All"
+                                    ? "Total Quantity (All)"
+                                    : `Total Quantity (${MONTH_NAMES[Number(selectedMonth) - 1]} ${selectedYear})`
+                            }
+                            value={Number(
+                                summary.total_qty
+                            ).toLocaleString("en-IN")}
+                            icon="📦"
+                            iconColor="var(--primary-color)"
+                            iconBackground="var(--primary-light)"
+                        />
+
+                        <StatCard
+                            title={
+                                selectedMonth === "All"
+                                    ? "Total Cost (All)"
+                                    : `Total Cost (${MONTH_NAMES[Number(selectedMonth) - 1]} ${selectedYear})`
+                            }
+                            value={`₹ ${Number(
+                                summary.total_cost
+                            ).toLocaleString("en-IN", {
+                                minimumFractionDigits: 0,
+                                maximumFractionDigits: 2
+                            })}`}
+                            icon="₹"
+                            iconColor="var(--success-color)"
+                            iconBackground="var(--success-background)"
+                        />
+
+                        <StatCard
+                            title={
+                                selectedMonth === "All"
+                                    ? "Average Cost (All)"
+                                    : `Average Cost (${MONTH_NAMES[Number(selectedMonth) - 1]} ${selectedYear})`
+                            }
+                            value={`₹ ${Number(
+                                summary.avg_cost
+                            ).toLocaleString("en-IN", {
+                                minimumFractionDigits: 0,
+                                maximumFractionDigits: 2
+                            })}`}
+                            icon="≈"
+                            iconColor="var(--warning-color)"
+                            iconBackground="var(--warning-background)"
+                        />
+
+                    </div>
+
+
+                    {/* =================================================
                         TOOLBAR
                     ================================================= */}
 
@@ -641,6 +820,85 @@ function Software() {
                                     {item}
                                 </button>
                             ))}
+
+                        </div>
+
+
+                        {/* MONTH / YEAR FILTER */}
+
+                        <div style={monthFilterGroup}>
+
+                            <span style={monthFilterLabel}>
+                                📅 Filter by:
+                            </span>
+
+                            <select
+                                value={selectedMonth}
+                                onChange={(e) =>
+                                    setSelectedMonth(
+                                        e.target.value
+                                    )
+                                }
+                                style={monthSelect}
+                            >
+                                <option value="All">
+                                    All Months
+                                </option>
+
+                                {MONTH_NAMES.map(
+                                    (name, idx) => (
+                                        <option
+                                            key={idx + 1}
+                                            value={String(
+                                                idx + 1
+                                            )}
+                                        >
+                                            {name}
+                                        </option>
+                                    )
+                                )}
+
+                            </select>
+
+                            <select
+                                value={selectedYear}
+                                onChange={(e) =>
+                                    setSelectedYear(
+                                        e.target.value
+                                    )
+                                }
+                                style={monthSelect}
+                            >
+                                {Array.from(
+                                    { length: 6 },
+                                    (_, i) =>
+                                        currentYear - 2 + i
+                                ).map((yr) => (
+                                    <option
+                                        key={yr}
+                                        value={String(yr)}
+                                    >
+                                        {yr}
+                                    </option>
+                                ))}
+
+                            </select>
+
+                            {selectedMonth !== "All" && (
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setSelectedMonth("All");
+                                        setSelectedYear(
+                                            String(currentYear)
+                                        );
+                                    }}
+                                    style={clearMonthButton}
+                                    title="Clear month filter"
+                                >
+                                    ×
+                                </button>
+                            )}
 
                         </div>
 
@@ -1799,6 +2057,27 @@ function Software() {
 
                     }
 
+                    @media (max-width: 900px) {
+
+                        .software-summary-cards-grid {
+                            grid-template-columns:
+                                repeat(2, minmax(0, 1fr)) !important;
+                        }
+
+                    }
+
+                    @media (max-width: 600px) {
+
+                        .software-summary-cards-grid {
+                            grid-template-columns: 1fr !important;
+                        }
+
+                        .software-month-filter-group {
+                            flex-wrap: wrap;
+                        }
+
+                    }
+
                 `}
             </style>
 
@@ -2719,4 +2998,63 @@ const viewLoadingIcon = {
 };
 
 
-export default Software;
+// =====================================================
+// SUMMARY CARDS GRID
+// =====================================================
+
+const summaryCardsGrid = {
+    display: "grid",
+    gridTemplateColumns:
+        "repeat(3, minmax(0, 1fr))",
+    gap: "15px",
+    marginBottom: "20px"
+};
+
+
+// =====================================================
+// MONTH / YEAR FILTER STYLES
+// =====================================================
+
+const monthFilterGroup = {
+    display: "flex",
+    alignItems: "center",
+    gap: "8px",
+    flexWrap: "wrap"
+};
+
+const monthFilterLabel = {
+    fontSize: "11px",
+    color: "var(--muted-text-color)",
+    fontWeight: "600",
+    whiteSpace: "nowrap"
+};
+
+const monthSelect = {
+    height: "34px",
+    padding: "0 8px",
+    border: "1px solid var(--border-color)",
+    borderRadius: "7px",
+    background: "var(--card-background)",
+    color: "var(--text-color)",
+    fontSize: "11px",
+    cursor: "pointer",
+    outline: "none"
+};
+
+const clearMonthButton = {
+    width: "28px",
+    height: "28px",
+    border: "1px solid var(--border-color)",
+    borderRadius: "6px",
+    background: "var(--muted-background)",
+    color: "var(--muted-text-color)",
+    cursor: "pointer",
+    fontSize: "16px",
+    lineHeight: 1,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center"
+};
+
+
+export default Software;
