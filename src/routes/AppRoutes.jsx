@@ -2,7 +2,7 @@
 // AppRoutes.jsx
 // =====================================================
 
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 
 // =====================================================
 // AUTH
@@ -93,9 +93,13 @@ function AppRoutes() {
             ================================================= */}
 
             <Route
-                path="/"
-                element={<Login />}
-            />
+    path="/"
+    element={
+        localStorage.getItem("token")
+            ? <Navigate to="/dashboard" replace />
+            : <Login />
+    }
+/>
 
 
             {/* =================================================
