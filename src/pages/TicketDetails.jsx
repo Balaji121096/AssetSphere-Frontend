@@ -567,7 +567,7 @@ function TicketDetails() {
                                                 {ticket.attachment_path.match(/\.(jpeg|jpg|gif|png)$/i) ? (
                                                     <div style={{ marginTop: "10px", marginBottom: "10px" }}>
                                                         <img
-                                                            src={`http://192.168.1.158:5000/api/tickets/attachments${ticket.attachment_path.replace('/uploads/ticket-attachments', '')}?token=${localStorage.getItem('token') || sessionStorage.getItem('token')}`}
+                                                            src={`${API.defaults.baseURL || ""}/tickets/attachments${ticket.attachment_path.replace('/uploads/ticket-attachments', '')}?token=${localStorage.getItem('token') || sessionStorage.getItem('token')}`}
                                                             alt="Attachment Preview"
                                                             style={{ maxWidth: "100%", maxHeight: "300px", borderRadius: "8px", border: "1px solid var(--border-color, #e5e7eb)" }}
                                                         />
@@ -575,7 +575,7 @@ function TicketDetails() {
                                                 ) : null}
                                                 <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", marginTop: "10px" }}>
                                                     <a
-                                                        href={`http://192.168.1.158:5000/api/tickets/attachments${ticket.attachment_path.replace('/uploads/ticket-attachments', '')}?token=${localStorage.getItem('token') || sessionStorage.getItem('token')}`}
+                                                        href={`${API.defaults.baseURL || ""}/tickets/attachments${ticket.attachment_path.replace('/uploads/ticket-attachments', '')}?token=${localStorage.getItem('token') || sessionStorage.getItem('token')}`}
                                                         target="_blank"
                                                         rel="noreferrer"
                                                         className="attachment-button"
@@ -583,7 +583,7 @@ function TicketDetails() {
                                                         ?? View File ?
                                                     </a>
                                                     <a
-                                                        href={`http://192.168.1.158:5000/api/tickets/attachments${ticket.attachment_path.replace('/uploads/ticket-attachments', '')}/download?token=${localStorage.getItem('token') || sessionStorage.getItem('token')}`}
+                                                        href={`${API.defaults.baseURL || ""}/tickets/attachments${ticket.attachment_path.replace('/uploads/ticket-attachments', '')}/download?token=${localStorage.getItem('token') || sessionStorage.getItem('token')}`}
                                                         className="attachment-button"
                                                         style={{ background: "rgba(34, 197, 94, 0.12)", borderColor: "rgba(34, 197, 94, 0.25)", color: "#16a34a" }}
                                                     >

@@ -875,8 +875,8 @@ function FilesTab({ projectId, canManage }) {
                             <div style={{ fontSize: 11, color: "var(--muted-text)" }}>by {f.uploader_name}</div>
                         </div>
                         <div style={{ display: "flex", gap: 8, justifyContent: "center", marginTop: 8 }}>
-                            <a href={"http://192.168.1.158:5000/api/projects/" + projectId + "/files/" + f.file_id + "/view?token=" + token} target="_blank" rel="noreferrer" style={{ ...btnSec, padding: "4px 10px", fontSize: 12, textDecoration: "none", display: "inline-block" }}>View</a>
-                            <a href={"http://192.168.1.158:5000/api/projects/" + projectId + "/files/" + f.file_id + "/download?token=" + token} style={{ ...btnSec, padding: "4px 10px", fontSize: 12, textDecoration: "none", display: "inline-block" }}>Download</a>
+                            <a href={`${API.defaults.baseURL || ""}/projects/${projectId}/files/${f.file_id}/view?token=${token}`} target="_blank" rel="noreferrer" style={{ ...btnSec, padding: "4px 10px", fontSize: 12, textDecoration: "none", display: "inline-block" }}>View</a>
+                            <a href={`${API.defaults.baseURL || ""}/projects/${projectId}/files/${f.file_id}/download?token=${token}`} style={{ ...btnSec, padding: "4px 10px", fontSize: 12, textDecoration: "none", display: "inline-block" }}>Download</a>
                             <button onClick={() => del(f.file_id)} style={{ ...btnDanger, padding: "4px 10px", fontSize: 12 }}>Delete</button>
                         </div>
                     </div>
