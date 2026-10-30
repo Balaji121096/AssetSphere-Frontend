@@ -1,11 +1,10 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import API from "../api/axios";
 
 import Sidebar from "../components/Sidebar";
 import Navbar from "../components/Navbar";
 
-const API_URL =
-    import.meta.env.VITE_API_URL || "http://192.168.1.158:5000";
 
 /* =========================================================
    HELPERS
@@ -120,40 +119,8 @@ export default function UserManagement() {
             setLoading(true);
             setError("");
 
-            const token = getToken();
-
-            if (!token) {
-                throw new Error(
-                    "Login session expired. Please login again."
-                );
-            }
-
-            const response = await fetch(
-                `${API_URL}/api/users`,
-                {
-                    method: "GET",
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                        "Content-Type": "application/json",
-                    },
-                }
-            );
-
-            let data = {};
-
-            try {
-                data = await response.json();
-            } catch {
-                data = {};
-            }
-
-            if (!response.ok) {
-                throw new Error(
-                    data.message ||
-                        data.error ||
-                        "Failed to load users."
-                );
-            }
+            const response = await API.get("/users");
+            const data = response.data;
 
             const userList = Array.isArray(data)
                 ? data
@@ -168,8 +135,9 @@ export default function UserManagement() {
             console.error("Load Users Error:", err);
 
             setError(
+                err.response?.data?.message ||
                 err.message ||
-                    "Unable to load users."
+                "Unable to load users."
             );
         } finally {
             setLoading(false);
@@ -382,14 +350,6 @@ export default function UserManagement() {
                 editingUser
             );
 
-            const url = editingUser
-                ? `${API_URL}/api/users/${userId}`
-                : `${API_URL}/api/users`;
-
-            const method = editingUser
-                ? "PUT"
-                : "POST";
-
             const payload = {
                 employee_code:
                     employeeCode,
@@ -409,35 +369,10 @@ export default function UserManagement() {
                     form.password;
             }
 
-            const response = await fetch(
-                url,
-                {
-                    method,
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                        "Content-Type":
-                            "application/json",
-                    },
-                    body: JSON.stringify(
-                        payload
-                    ),
-                }
-            );
-
-            let data = {};
-
-            try {
-                data = await response.json();
-            } catch {
-                data = {};
-            }
-
-            if (!response.ok) {
-                throw new Error(
-                    data.message ||
-                        data.error ||
-                        "Failed to save user."
-                );
+            if (editingUser) {
+                await API.put(`/users/${userId}`, payload);
+            } else {
+                await API.post("/users", payload);
             }
 
             setShowModal(false);
@@ -456,8 +391,9 @@ export default function UserManagement() {
             );
 
             setError(
+                err.response?.data?.message ||
                 err.message ||
-                    "Unable to save user."
+                "Unable to save user."
             );
         } finally {
             setSaving(false);
@@ -523,31 +459,7 @@ export default function UserManagement() {
                 );
             }
 
-            const response = await fetch(
-                `${API_URL}/api/users/${userId}`,
-                {
-                    method: "DELETE",
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                }
-            );
-
-            let data = {};
-
-            try {
-                data = await response.json();
-            } catch {
-                data = {};
-            }
-
-            if (!response.ok) {
-                throw new Error(
-                    data.message ||
-                        data.error ||
-                        "Failed to delete user."
-                );
-            }
+            await API.delete(`/users/${userId}`);
 
             setMessage(
                 "User deleted successfully."
@@ -561,8 +473,9 @@ export default function UserManagement() {
             );
 
             setError(
+                err.response?.data?.message ||
                 err.message ||
-                    "Unable to delete user."
+                "Unable to delete user."
             );
         }
     };
@@ -637,43 +550,17 @@ export default function UserManagement() {
             }
 
             console.log(
-                "RESET PASSWORD REQUEST:",
-                `${API_URL}/api/users/${userId}/reset-password`
+                "RESET PASSWORD REQUEST FOR USER ID:",
+                userId
             );
 
-            const response = await fetch(
-                `${API_URL}/api/users/${userId}/reset-password`,
-                {
-                    method: "PUT",
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                        "Content-Type":
-                            "application/json",
-                    },
-                }
-            );
-
-            let data = {};
-
-            try {
-                data =
-                    await response.json();
-            } catch {
-                data = {};
-            }
+            const response = await API.put(`/users/${userId}/reset-password`);
+            const data = response.data;
 
             console.log(
                 "RESET PASSWORD RESPONSE:",
                 data
             );
-
-            if (!response.ok) {
-                throw new Error(
-                    data.message ||
-                        data.error ||
-                        "Failed to reset password."
-                );
-            }
 
             const generatedPassword =
                 data?.temporary_password ||
@@ -704,8 +591,9 @@ export default function UserManagement() {
             );
 
             setError(
+                err.response?.data?.message ||
                 err.message ||
-                    "Unable to reset password."
+                "Unable to reset password."
             );
         } finally {
             setResetting(false);
@@ -834,21 +722,8 @@ export default function UserManagement() {
             setError("");
             setMessage("");
 
-            const token = getToken();
-            const response = await fetch(`${API_URL}/api/users/sync-employees`, {
-                method: "POST",
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                    "Content-Type": "application/json",
-                }
-            });
-
-            let data = {};
-            try { data = await response.json(); } catch (e) {}
-            
-            if (!response.ok) {
-                throw new Error(data.message || "Failed to sync employees");
-            }
+            const response = await API.post("/users/sync-employees");
+            const data = response.data;
             
             setMessage(`Sync complete: ${data.created_count} users created, ${data.skipped_count} skipped.`);
             await loadUsers();
@@ -860,7 +735,7 @@ export default function UserManagement() {
             
         } catch (err) {
             console.error("Sync Employees Error:", err);
-            setError(err.message || "Unable to sync employees.");
+            setError(err.response?.data?.message || err.message || "Unable to sync employees.");
         } finally {
             setLoading(false);
         }

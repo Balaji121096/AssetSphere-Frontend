@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import axios from "axios";
+import API from "../api/axios";
 
 const SettingSecurity = () => {
 
@@ -58,20 +58,10 @@ const SettingSecurity = () => {
 
             setLoading(true);
 
-            const token = localStorage.getItem("token");
-
-            const response = await axios.put(
-                "http://192.168.1.158:5000/api/users/password",
-                {
-                    current_password,
-                    new_password
-                },
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`
-                    }
-                }
-            );
+            const response = await API.put("/users/password", {
+                current_password,
+                new_password
+            });
 
             if (response.data.success) {
 

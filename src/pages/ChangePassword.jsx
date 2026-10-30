@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import axios from "axios";
+import API from "../api/axios";
 import { useNavigate } from "react-router-dom";
 
 import {
@@ -128,21 +128,10 @@ function ChangePassword() {
 
             setLoading(true);
 
-            const token = localStorage.getItem("token");
-
-            const response = await axios.put(
-                "http://192.168.1.158:5000/api/users/password",
-                {
-                    current_password: currentPassword,
-                    new_password: newPassword
-                },
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                        "Content-Type": "application/json"
-                    }
-                }
-            );
+            const response = await API.put("/users/password", {
+                current_password: currentPassword,
+                new_password: newPassword
+            });
 
             if (response.data.success) {
 
